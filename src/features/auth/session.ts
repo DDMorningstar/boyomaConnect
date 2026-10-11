@@ -50,14 +50,15 @@ export const getCurrentRoles = cache(async (): Promise<Set<string>> => {
 });
 
 /**
- * Le fournisseur Google est-il activé dans Supabase Auth ? (réglages publics, mis en cache 60 s).
+ * Le fournisseur Google est-il activé dans Supabase Auth ? (réglages publics, lus à chaque affichage).
  * null si la vérification échoue : le bouton reste alors utilisable.
  */
 export async function isGoogleAuthEnabled(): Promise<boolean | null> {
   try {
     const res = await fetch(`${env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
       headers: { apikey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY },
-      next: { revalidate: 60 },
+      // Pas de cache : la réponse est minuscule et le cache de données Vercel la gardait trop longtemps.
+      cache: "no-store",
     });
     if (!res.ok) return null;
     const settings = (await res.json()) as { external?: { google?: boolean } };

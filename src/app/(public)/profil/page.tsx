@@ -5,6 +5,7 @@ import { InfoPage } from "@/components/ui/info-page";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { getCurrentPermissions, getCurrentProfile, getCurrentUser } from "@/features/auth/session";
 import { signOut } from "@/features/auth/actions";
+import { ThemeSelector } from "@/components/layout/theme-toggle";
 import { PrivacySettings } from "./privacy-settings";
 import { ProfileForms } from "./profile-forms";
 
@@ -23,6 +24,8 @@ export default async function ProfilePage() {
           </p>
           <ButtonLink href="/connexion?next=/profil">Se connecter</ButtonLink>
         </div>
+        <h2>Apparence</h2>
+        <ThemeSelector />
         <h2>Confidentialité sur cet appareil</h2>
         <PrivacySettings />
       </InfoPage>
@@ -68,6 +71,9 @@ export default async function ProfilePage() {
           <LogOut className="size-4" aria-hidden="true" /> Se déconnecter
         </Button>
       </form>
+
+      <h2>Apparence</h2>
+      <ThemeSelector />
 
       <h2>Confidentialité sur cet appareil</h2>
       <PrivacySettings />

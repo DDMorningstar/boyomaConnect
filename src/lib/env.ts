@@ -6,6 +6,7 @@ const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
   NEXT_PUBLIC_MAP_STYLE_URL: z.string().url().default("https://tiles.openfreemap.org/styles/liberty"),
+  NEXT_PUBLIC_MAP_STYLE_DARK_URL: z.string().url().default("https://tiles.openfreemap.org/styles/dark"),
   NEXT_PUBLIC_ROUTING_URL: z
     .string()
     .url()
@@ -19,6 +20,7 @@ const parsed = publicSchema.safeParse({
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   NEXT_PUBLIC_MAP_STYLE_URL: process.env.NEXT_PUBLIC_MAP_STYLE_URL || undefined,
+  NEXT_PUBLIC_MAP_STYLE_DARK_URL: process.env.NEXT_PUBLIC_MAP_STYLE_DARK_URL || undefined,
   NEXT_PUBLIC_ROUTING_URL: process.env.NEXT_PUBLIC_ROUTING_URL,
 });
 

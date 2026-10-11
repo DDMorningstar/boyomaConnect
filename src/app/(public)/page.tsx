@@ -32,13 +32,14 @@ function settled<T>(r: PromiseSettledResult<T>, fallback: T): T {
 }
 
 export default async function HomePage() {
-  const [catsR, cityR, recentR, popularR, sponsoredR, tourismR] = await Promise.allSettled([
+  const [catsR, cityR, recentR, popularR, sponsoredR, tourismR, allR] = await Promise.allSettled([
     getCategoriesWithCounts(),
     getCityWithCommunes("kisangani"),
     getRecentPlaces(8),
     getPopularPlaces(8),
     getSponsoredPlaces(),
     searchPlaces({ ...searchParamsSchema.parse({}), categorySlug: "tourisme" }),
+    searchPlaces(searchParamsSchema.parse({})),
   ]);
   const categories = settled(catsR, []);
   const city = settled(cityR, null);
@@ -49,7 +50,18 @@ export default async function HomePage() {
   const dataUnavailable = catsR.status === "rejected" && recentR.status === "rejected";
 
   const topCategories = categories.filter((c) => !c.parent_id);
-  const totalPlaces = city?.communes.reduce((s, c) => s + c.place_count, 0) ?? 0;
+  // Total réel des lieux publiés (tous rattachements confondus : ville ou commune).
+  const totalPlaces = settled(allR, { rows: [], total: 0 }).total;
+  const stats = [
+    { value: totalPlaces, label: "lieux publiés", Icon: MapPin, tone: "text-cyan" },
+    {
+      value: topCategories.filter((c) => c.place_count > 0).length,
+      label: "catégories actives",
+      Icon: Sparkles,
+      tone: "text-amber-300",
+    },
+    { value: city?.communes.length ?? 6, label: "communes", Icon: MapIcon, tone: "text-emerald-300" },
+  ];
 
   return (
     <div className="pt-5">
@@ -57,36 +69,62 @@ export default async function HomePage() {
       <section className="bg-night relative overflow-hidden rounded-[1.75rem] px-5 pt-5 pb-6 text-white shadow-[var(--shadow-float)] md:px-8 md:pt-7 md:pb-8">
         <div
           aria-hidden="true"
-          className="bg-brand/40 pointer-events-none absolute -top-20 -right-16 size-64 rounded-full blur-3xl"
+          className="bg-brand/40 motion-safe:animate-drift pointer-events-none absolute -top-20 -right-16 size-64 rounded-full blur-3xl md:size-96"
         />
         <div
           aria-hidden="true"
-          className="bg-cyan/25 pointer-events-none absolute -bottom-24 left-10 size-56 rounded-full blur-3xl"
+          className="bg-cyan/25 motion-safe:animate-drift pointer-events-none absolute -bottom-24 left-10 size-56 rounded-full blur-3xl [animation-delay:-7s]"
         />
-        <div className="relative">
-          <Link
-            href="/explorer"
-            className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium backdrop-blur"
-          >
-            <MapPin className="text-cyan size-4" aria-hidden="true" />
-            {city?.city.name ?? "Kisangani"} · Tshopo
-            <ChevronRight className="size-4 opacity-70" aria-hidden="true" />
-          </Link>
-          <h1 className="mt-4 max-w-xl text-[1.7rem] leading-tight font-extrabold tracking-tight md:text-4xl">
-            Trouvez le bon lieu à Kisangani, <span className="text-cyan">simplement.</span>
-          </h1>
-          <p className="mt-2 max-w-lg text-sm text-white/70 md:text-base">
-            Pharmacies, hôtels, restaurants, garages, écoles, services publics… avec leurs contacts et leur
-            position.
-          </p>
-          <div className="text-ink mt-5">
-            <SearchBar />
+        <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div>
+            <Link
+              href="/explorer"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium backdrop-blur"
+            >
+              <MapPin className="text-cyan size-4" aria-hidden="true" />
+              {city?.city.name ?? "Kisangani"} · Tshopo
+              <ChevronRight className="size-4 opacity-70" aria-hidden="true" />
+            </Link>
+            <h1 className="mt-4 max-w-xl text-[1.7rem] leading-tight font-extrabold tracking-tight md:text-4xl">
+              Trouvez le bon lieu à Kisangani, <span className="text-cyan">simplement.</span>
+            </h1>
+            <p className="mt-2 max-w-lg text-sm text-white/70 md:text-base">
+              Pharmacies, hôtels, restaurants, garages, écoles, services publics… avec leurs contacts et leur
+              position.
+            </p>
+            <div className="text-ink mt-5">
+              <SearchBar />
+            </div>
+            <p className="mt-3 text-xs text-white/60 lg:hidden">
+              {totalPlaces > 0
+                ? `${pluralize(totalPlaces, "lieu publié", "lieux publiés")} à Kisangani`
+                : "L'annuaire est en cours de constitution : les premiers lieux vérifiés arrivent."}
+            </p>
           </div>
-          <p className="mt-3 text-xs text-white/60">
-            {totalPlaces > 0
-              ? `${pluralize(totalPlaces, "lieu publié", "lieux publiés")} dans les 6 communes de Kisangani`
-              : "L'annuaire est en cours de constitution : les premiers lieux vérifiés arrivent."}
-          </p>
+
+          {/* Écrans larges : chiffres réels de l'annuaire. */}
+          <ul className="hidden gap-3 lg:grid" aria-label="L'annuaire en chiffres">
+            {stats.map(({ value, label, Icon, tone }, i) => (
+              <li
+                key={label}
+                style={{ animationDelay: `${150 + i * 120}ms` }}
+                className="motion-safe:animate-fade-up flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur"
+              >
+                <span
+                  className={`motion-safe:animate-float flex size-12 items-center justify-center rounded-2xl bg-white/10 ${tone}`}
+                  style={{ animationDelay: `${i * 0.6}s` }}
+                >
+                  <Icon className="size-6" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block text-2xl leading-none font-extrabold">
+                    {value.toLocaleString("fr-FR")}
+                  </span>
+                  <span className="text-sm text-white/70">{label}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -104,9 +142,9 @@ export default async function HomePage() {
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Link
           href="/carte"
-          className="group border-line bg-surface flex items-center gap-3 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] active:scale-[0.98]"
+          className="group border-line bg-surface hover:border-brand/30 flex items-center gap-3 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)] active:scale-[0.98]"
         >
-          <span className="bg-brand/10 text-brand flex size-11 items-center justify-center rounded-2xl">
+          <span className="bg-brand/10 text-brand flex size-11 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
             <MapIcon className="size-5" aria-hidden="true" />
           </span>
           <span>
@@ -116,9 +154,9 @@ export default async function HomePage() {
         </Link>
         <Link
           href="/proximite"
-          className="group border-line bg-surface flex items-center gap-3 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] active:scale-[0.98]"
+          className="group border-line bg-surface hover:border-cyan/30 flex items-center gap-3 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)] active:scale-[0.98]"
         >
-          <span className="bg-cyan/10 text-cyan flex size-11 items-center justify-center rounded-2xl">
+          <span className="bg-cyan/10 text-cyan flex size-11 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
             <LocateFixed className="size-5" aria-hidden="true" />
           </span>
           <span>
@@ -136,7 +174,7 @@ export default async function HomePage() {
               <li key={c.id}>
                 <Link
                   href={`/categories/${c.slug}`}
-                  className={`flex flex-col items-center gap-1.5 rounded-2xl p-2 text-center transition-transform active:scale-95 ${c.place_count === 0 ? "opacity-60" : ""}`}
+                  className={`group hover:bg-surface-2 flex flex-col items-center gap-1.5 rounded-2xl p-2 text-center transition-[transform,background-color] duration-300 hover:-translate-y-1 active:scale-95 ${c.place_count === 0 ? "opacity-60" : ""}`}
                 >
                   <CategoryBadge icon={c.icon} color={c.color} size="lg" />
                   <span className="line-clamp-2 text-[11px] leading-tight font-medium">{c.name}</span>
@@ -179,7 +217,7 @@ export default async function HomePage() {
 
       {recent.length > 0 && (
         <Section title="Récemment ajoutés" href="/recherche?tri=recent">
-          <div className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2">
+          <div className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-4">
             {recent.map((p, i) => (
               <PlaceCard key={p.id} place={p} variant="tile" index={i} />
             ))}
@@ -204,7 +242,7 @@ export default async function HomePage() {
 
       {tourism.length > 0 && (
         <Section title="Boyoma Explore" subtitle="Sites, culture et patrimoine de Kisangani" href="/tourisme">
-          <div className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2">
+          <div className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-4">
             {tourism.map((p, i) => (
               <PlaceCard key={p.id} place={p} variant="tile" index={i} />
             ))}

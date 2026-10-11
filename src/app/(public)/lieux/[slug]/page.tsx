@@ -177,7 +177,7 @@ export default async function PlacePage({ params }: Props) {
       />
       <ViewTracker placeId={p.id} />
 
-      <div className="bg-surface-2 relative -mx-4 aspect-[16/9] max-h-96 overflow-hidden md:mx-0 md:aspect-[16/7] md:rounded-[var(--radius-card)]">
+      <div className="bg-surface-2 relative -mx-4 aspect-[16/9] max-h-96 overflow-hidden md:mx-0 md:aspect-auto md:h-80 md:max-h-none md:rounded-[var(--radius-card)] lg:h-96">
         {logo ? (
           <LogoCover logo={logo} name={p.name} size="lg" priority />
         ) : heroPhoto ? (
@@ -196,76 +196,83 @@ export default async function PlacePage({ params }: Props) {
         )}
       </div>
 
-      <header className="mt-4">
-        <div className="flex flex-wrap items-center gap-2">
-          {p.primary_category && (
-            <Link
-              href={`/categories/${p.primary_category.slug}`}
-              className="inline-flex items-center gap-1.5 text-sm font-medium"
-              style={{ color: p.primary_category.color }}
-            >
-              <CategoryIcon name={p.primary_category.icon} className="size-4" /> {p.primary_category.name}
-            </Link>
-          )}
-          <VerificationBadge status={p.verification_status} />
-          {p.activity_status === "temporarily_closed" && (
-            <span className="bg-warning/15 text-warning rounded-full px-2 py-0.5 text-xs font-medium">
-              Fermé temporairement
-            </span>
-          )}
-          {p.activity_status === "permanently_closed" && (
-            <span className="bg-danger/15 text-danger rounded-full px-2 py-0.5 text-xs font-medium">
-              Fermé définitivement
-            </span>
-          )}
-        </div>
-        <div className="mt-2 flex items-center gap-3">
-          <div className="min-w-0">
-            <h1 className="text-[1.65rem] leading-tight font-extrabold tracking-tight md:text-3xl">
-              {p.name}
-            </h1>
-            {p.ownership_status === "claimed" && (
-              <p className="text-success mt-0.5 flex items-center gap-1 text-sm font-medium">
-                <BadgeCheck className="size-4" aria-hidden="true" /> Fiche gérée par l&apos;établissement
-              </p>
+      {/* Écrans larges : titre à gauche, actions à droite. */}
+      <div className="mt-4 grid gap-4 lg:mt-6 lg:grid-cols-[minmax(0,1fr)_460px] lg:items-end">
+        <header className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            {p.primary_category && (
+              <Link
+                href={`/categories/${p.primary_category.slug}`}
+                className="inline-flex items-center gap-1.5 text-sm font-medium"
+                style={{ color: p.primary_category.color }}
+              >
+                <CategoryIcon name={p.primary_category.icon} className="size-4" /> {p.primary_category.name}
+              </Link>
+            )}
+            <VerificationBadge status={p.verification_status} />
+            {p.activity_status === "temporarily_closed" && (
+              <span className="bg-warning/15 text-warning rounded-full px-2 py-0.5 text-xs font-medium">
+                Fermé temporairement
+              </span>
+            )}
+            {p.activity_status === "permanently_closed" && (
+              <span className="bg-danger/15 text-danger rounded-full px-2 py-0.5 text-xs font-medium">
+                Fermé définitivement
+              </span>
             )}
           </div>
-        </div>
-        {p.official_name && p.official_name !== p.name && (
-          <p className="text-muted text-sm">Nom officiel : {p.official_name}</p>
-        )}
-        <p className="text-muted mt-1 flex items-center gap-1.5 text-sm">
-          <MapPin className="size-4 shrink-0" aria-hidden="true" />
-          {[p.address_text, p.unit?.type_key === "commune" ? `Commune de ${p.unit.name}` : null, "Kisangani"]
-            .filter(Boolean)
-            .join(", ")}
-        </p>
-        {p.rating_count > 0 && p.rating_avg && (
-          <p className="mt-1 flex items-center gap-1 text-sm font-medium">
-            <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
-            {Number(p.rating_avg).toFixed(1).replace(".", ",")}{" "}
-            <span className="text-muted">· {p.rating_count} avis</span>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="min-w-0">
+              <h1 className="text-[1.65rem] leading-tight font-extrabold tracking-tight md:text-3xl">
+                {p.name}
+              </h1>
+              {p.ownership_status === "claimed" && (
+                <p className="text-success mt-0.5 flex items-center gap-1 text-sm font-medium">
+                  <BadgeCheck className="size-4" aria-hidden="true" /> Fiche gérée par l&apos;établissement
+                </p>
+              )}
+            </div>
+          </div>
+          {p.official_name && p.official_name !== p.name && (
+            <p className="text-muted text-sm">Nom officiel : {p.official_name}</p>
+          )}
+          <p className="text-muted mt-1 flex items-center gap-1.5 text-sm">
+            <MapPin className="size-4 shrink-0" aria-hidden="true" />
+            {[
+              p.address_text,
+              p.unit?.type_key === "commune" ? `Commune de ${p.unit.name}` : null,
+              "Kisangani",
+            ]
+              .filter(Boolean)
+              .join(", ")}
           </p>
-        )}
-      </header>
+          {p.rating_count > 0 && p.rating_avg && (
+            <p className="mt-1 flex items-center gap-1 text-sm font-medium">
+              <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+              {Number(p.rating_avg).toFixed(1).replace(".", ",")}{" "}
+              <span className="text-muted">· {p.rating_count} avis</span>
+            </p>
+          )}
+        </header>
 
-      <div className="mt-4">
-        <PlaceActions
-          place={{
-            id: p.id,
-            slug: p.slug,
-            name: p.name,
-            category_name: p.primary_category?.name ?? null,
-            category_icon: p.primary_category?.icon ?? null,
-            category_color: p.primary_category?.color ?? null,
-            unit_name: p.unit?.name ?? null,
-            landmark_description: p.landmark_description,
-          }}
-          phone={phone}
-          whatsapp={whatsapp}
-          latitude={p.latitude}
-          longitude={p.longitude}
-        />
+        <div>
+          <PlaceActions
+            place={{
+              id: p.id,
+              slug: p.slug,
+              name: p.name,
+              category_name: p.primary_category?.name ?? null,
+              category_icon: p.primary_category?.icon ?? null,
+              category_color: p.primary_category?.color ?? null,
+              unit_name: p.unit?.name ?? null,
+              landmark_description: p.landmark_description,
+            }}
+            phone={phone}
+            whatsapp={whatsapp}
+            latitude={p.latitude}
+            longitude={p.longitude}
+          />
+        </div>
       </div>
 
       {/* min-w-0 : une colonne de grille ne rétrécit pas sous la largeur de son contenu

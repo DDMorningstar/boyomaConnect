@@ -6,6 +6,10 @@ import type { GeoJSONSource, Map as MlMap, MapLayerMouseEvent } from "maplibre-g
 import { AlertTriangle, LocateFixed, Loader2, Search, X } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { env } from "@/lib/env";
+import { currentTheme, THEME_EVENT, type Theme } from "@/lib/theme";
+
+const styleFor = (theme: Theme) =>
+  theme === "dark" ? env.NEXT_PUBLIC_MAP_STYLE_DARK_URL : env.NEXT_PUBLIC_MAP_STYLE_URL;
 
 interface BboxRow {
   id: string;
@@ -30,6 +34,8 @@ export function PlacesMap({
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Derniers lieux chargés : réinjectés si le style change (thème).
+  const dataRef = useRef<GeoJSON.FeatureCollection>({ type: "FeatureCollection", features: [] });
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [fetching, setFetching] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -72,15 +78,15 @@ export function PlacesMap({
           ? "Zone dense : zoomez pour voir tous les lieux."
           : null,
     );
-    const source = map.getSource("places") as GeoJSONSource | undefined;
-    source?.setData({
+    dataRef.current = {
       type: "FeatureCollection",
       features: rows.map((r) => ({
         type: "Feature" as const,
         geometry: { type: "Point" as const, coordinates: [r.longitude, r.latitude] },
         properties: { ...r, color: r.category_color ?? "#2563EB" },
       })),
-    });
+    };
+    (map.getSource("places") as GeoJSONSource | undefined)?.setData(dataRef.current);
     if (focusSlug) {
       const f = rows.find((r) => r.slug === focusSlug);
       if (f) setSelected(f);
@@ -95,7 +101,7 @@ export function PlacesMap({
         if (cancelled || !container.current) return;
         const map = new maplibre.Map({
           container: container.current,
-          style: env.NEXT_PUBLIC_MAP_STYLE_URL,
+          style: styleFor(currentTheme()),
           center: [initial?.lng ?? KISANGANI.lng, initial?.lat ?? KISANGANI.lat],
           zoom: initial ? 16 : KISANGANI.zoom,
           attributionControl: { compact: true },
@@ -107,10 +113,12 @@ export function PlacesMap({
           if (!map.isStyleLoaded()) setStatus("error");
           console.warn("[carte]", e.error?.message);
         });
-        map.on("load", () => {
+        // Couches des lieux, (ré)ajoutées à chaque chargement de style (changement de thème compris).
+        map.on("style.load", () => {
+          if (map.getSource("places")) return;
           map.addSource("places", {
             type: "geojson",
-            data: { type: "FeatureCollection", features: [] },
+            data: dataRef.current,
             cluster: true,
             clusterRadius: 48,
             clusterMaxZoom: 15,
@@ -152,7 +160,8 @@ export function PlacesMap({
               "circle-stroke-color": "#ffffff",
             },
           });
-
+        });
+        map.on("load", () => {
           map.on("click", "clusters", async (e: MapLayerMouseEvent) => {
             const f = e.features?.[0];
             if (!f) return;
@@ -176,7 +185,17 @@ export function PlacesMap({
         setStatus("error");
       }
     })();
+    // Le fond de carte suit le thème clair/sombre de l'application.
+    let shownTheme = currentTheme();
+    const onTheme = (e: Event) => {
+      const theme = (e as CustomEvent<{ theme: Theme }>).detail?.theme ?? currentTheme();
+      if (theme === shownTheme || !mapRef.current) return;
+      shownTheme = theme;
+      mapRef.current.setStyle(styleFor(theme));
+    };
+    window.addEventListener(THEME_EVENT, onTheme);
     return () => {
+      window.removeEventListener(THEME_EVENT, onTheme);
       cancelled = true;
       abortRef.current?.abort();
       mapRef.current?.remove();

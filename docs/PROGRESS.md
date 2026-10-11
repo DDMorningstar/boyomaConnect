@@ -40,6 +40,11 @@
   Google désactivé et expliqué tant que le fournisseur n'est pas activé. Vérifié : typecheck, lint, tests,
   build, rendu des pages. Non testé en réel : envoi des e-mails (SMTP personnalisé à configurer).
 
+- 11/10/2026 : thème clair/sombre/automatique (en-tête + Compte), carte sombre, animations, version PC
+  (accueil avec chiffres réels et grilles, fiche pleine largeur, en-tête avec compte, pied de page). Vérifié
+  avec Playwright + Edge : captures 1440 px et 390 px en clair et sombre, aucun débordement horizontal,
+  bascule/mémorisation/rechargement du thème OK, aucune erreur JS. Application Google publiée (production).
+
 ## Problèmes connus
 
 - `/lieux/<slug inexistant>` affiche la page « introuvable » mais avec le code HTTP 200 (streaming dû à

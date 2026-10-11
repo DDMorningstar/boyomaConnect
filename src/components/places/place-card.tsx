@@ -49,7 +49,7 @@ export function PlaceCard({
       <Link
         href={`/lieux/${place.slug}`}
         style={delay}
-        className="group animate-fade-up border-line bg-surface flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-[var(--radius-card)] border shadow-[var(--shadow-card)] transition-transform active:scale-[0.98]"
+        className="group animate-fade-up border-line bg-surface hover:border-brand/30 flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-[var(--radius-card)] border shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-float)] active:scale-[0.98] md:w-auto"
       >
         <div className="bg-surface-2 relative aspect-[16/10] overflow-hidden">
           <PlaceThumb {...visual} variant="tile" />
@@ -68,7 +68,7 @@ export function PlaceCard({
     <Link
       href={`/lieux/${place.slug}`}
       style={delay}
-      className="animate-fade-up border-line bg-surface hover:border-brand/30 flex gap-3.5 rounded-[var(--radius-card)] border p-3.5 shadow-[var(--shadow-card)] transition-colors active:scale-[0.99]"
+      className="group animate-fade-up border-line bg-surface hover:border-brand/30 flex gap-3.5 rounded-[var(--radius-card)] border p-3.5 shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)] active:scale-[0.99]"
     >
       <PlaceThumb {...visual} variant="row" />
       <div className="min-w-0 flex-1">

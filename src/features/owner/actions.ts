@@ -58,7 +58,11 @@ const optionalUrl = z
   .string()
   .trim()
   .transform((v) => (v && !/^https?:\/\//i.test(v) ? `https://${v}` : v))
-  .refine((v) => v === "" || /^https?:\/\/\S{3,290}$/i.test(v), "Adresse du site invalide.")
+  // Un vrai nom de domaine est exigé (ex. « monsite.cd », « facebook.com/mapage »).
+  .refine(
+    (v) => v === "" || (/^https?:\/\/[^\s/.]+(\.[^\s/.]+)+(\/\S*)?$/i.test(v) && v.length <= 300),
+    "Adresse du site invalide (ex. monsite.cd ou facebook.com/mapage).",
+  )
   .transform((v) => (v === "" ? null : v));
 
 const text = (form: FormData, key: string) => String(form.get(key) ?? "");

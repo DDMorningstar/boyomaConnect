@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { PwaManager } from "@/components/layout/pwa";
+import { ThemeWatcher } from "@/components/layout/theme-toggle";
+import { themeInitScript } from "@/lib/theme";
 import { env } from "@/lib/env";
 import "@/styles/globals.css";
 
@@ -34,8 +36,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={jakarta.variable}>
+    // suppressHydrationWarning : data-theme est posé par le script ci-dessous avant l'hydratation.
+    <html lang="fr" className={jakarta.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-dvh font-sans antialiased">
+        <ThemeWatcher />
         <a
           href="#contenu"
           className="focus:bg-brand sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:rounded-full focus:px-4 focus:py-2 focus:text-white"

@@ -1,0 +1,65 @@
+import {
+  Axe, Baby, Banknote, Beer, Bed, BedDouble, Bike, BookOpen, Building, Building2, Bus, CakeSlice, Camera,
+  Car, CarTaxiFront, Castle, ChefHat, Church, Clapperboard, Coffee, Compass, CreditCard, Croissant,
+  Droplets, Dumbbell, FerrisWheel, FlaskConical, Fuel, GraduationCap, Hammer, HeartPulse, Hospital, Hotel,
+  House, IceCreamCone, KeyRound, Landmark, Laptop, Library, Map, MapPin, Mountain, MoonStar, Palette,
+  PartyPopper, PiggyBank, Pill, Presentation, Printer, Receipt, Sandwich, Scale, School, Scissors, Scroll,
+  Send, Shield, Ship, Shirt, ShoppingBag, ShoppingCart, Siren, Smartphone, Sparkles, SquareParking,
+  Stethoscope, Store, Tent, Trees, University, UserRound, Users, Utensils, Volleyball, Waves, Wrench, Zap,
+  type LucideIcon,
+} from "lucide-react";
+
+/** Correspondance nom d'icône (stocké en base) → composant. Liste fermée : aucun import dynamique lourd. */
+const ICONS: Record<string, LucideIcon> = {
+  axe: Axe, baby: Baby, banknote: Banknote, beer: Beer, bed: Bed, "bed-double": BedDouble, bike: Bike,
+  "book-open": BookOpen, building: Building, "building-2": Building2, bus: Bus, "cake-slice": CakeSlice,
+  camera: Camera, car: Car, "car-taxi-front": CarTaxiFront, castle: Castle, "chef-hat": ChefHat,
+  church: Church, clapperboard: Clapperboard, coffee: Coffee, compass: Compass, "credit-card": CreditCard,
+  croissant: Croissant, droplets: Droplets, dumbbell: Dumbbell, "ferris-wheel": FerrisWheel,
+  "flask-conical": FlaskConical, fuel: Fuel, "graduation-cap": GraduationCap, hammer: Hammer,
+  "heart-pulse": HeartPulse, hospital: Hospital, hotel: Hotel, house: House, "ice-cream-cone": IceCreamCone,
+  "key-round": KeyRound, landmark: Landmark, laptop: Laptop, library: Library, map: Map, "map-pin": MapPin,
+  mountain: Mountain, "moon-star": MoonStar, palette: Palette, "party-popper": PartyPopper,
+  "piggy-bank": PiggyBank, pill: Pill, presentation: Presentation, printer: Printer, receipt: Receipt,
+  sandwich: Sandwich, scale: Scale, school: School, scissors: Scissors, scroll: Scroll, send: Send,
+  shield: Shield, ship: Ship, shirt: Shirt, "shopping-bag": ShoppingBag, "shopping-cart": ShoppingCart,
+  siren: Siren, smartphone: Smartphone, sparkles: Sparkles, "square-parking": SquareParking,
+  stethoscope: Stethoscope, store: Store, tent: Tent, trees: Trees, university: University,
+  "user-round": UserRound, users: Users, utensils: Utensils, volleyball: Volleyball, waves: Waves,
+  wrench: Wrench, zap: Zap,
+};
+
+export function CategoryIcon({
+  name,
+  className,
+  strokeWidth = 2,
+}: {
+  name: string | null | undefined;
+  className?: string;
+  strokeWidth?: number;
+}) {
+  const Icon = (name && ICONS[name]) || MapPin;
+  return <Icon className={className} strokeWidth={strokeWidth} aria-hidden="true" />;
+}
+
+export function CategoryBadge({
+  icon,
+  color,
+  size = "md",
+}: {
+  icon: string | null | undefined;
+  color: string | null | undefined;
+  size?: "sm" | "md" | "lg";
+}) {
+  const dims = { sm: "size-8 rounded-xl", md: "size-11 rounded-2xl", lg: "size-14 rounded-2xl" }[size];
+  const iconSize = { sm: "size-4", md: "size-5", lg: "size-6" }[size];
+  const c = color && /^#[0-9a-f]{6}$/i.test(color) ? color : "#2563EB";
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center ${dims}`}
+      style={{ backgroundColor: `${c}1A`, color: c }}
+    >
+      <CategoryIcon name={icon} className={iconSize} />
+    </span>
+  );
+}

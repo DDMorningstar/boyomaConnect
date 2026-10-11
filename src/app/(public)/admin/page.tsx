@@ -20,7 +20,7 @@ const ROLE: Record<string, string> = {
 };
 
 export default async function AdminPage() {
-  await requireUser("/admin");
+  const user = await requireUser("/admin");
   const perms = await getCurrentPermissions();
   if (!perms.has("submissions.review") && !perms.has("claims.review")) redirect("/profil");
   const { submissions, claims, names } = await getModerationQueue();
@@ -96,7 +96,13 @@ export default async function AdminPage() {
               ))}
             </div>
           )}
-          <ReviewForm id={s.id} kind="submission" />
+          {s.submitted_by === user.id ? (
+            <p className="bg-surface-2 rounded-xl p-3 text-sm">
+              Votre propre demande : elle doit être validée par un autre administrateur.
+            </p>
+          ) : (
+            <ReviewForm id={s.id} kind="submission" />
+          )}
         </article>
       ))}
 
@@ -115,7 +121,13 @@ export default async function AdminPage() {
             Téléphone : {c.contact_phone ?? "—"} · E-mail : {c.contact_email ?? "—"}
           </p>
           {c.message && <p className="bg-surface-2 rounded-xl p-3 text-sm">{c.message}</p>}
-          <ReviewForm id={c.id} kind="claim" />
+          {c.claimant_id === user.id ? (
+            <p className="bg-surface-2 rounded-xl p-3 text-sm">
+              Votre propre demande : elle doit être validée par un autre administrateur.
+            </p>
+          ) : (
+            <ReviewForm id={c.id} kind="claim" />
+          )}
         </article>
       ))}
     </InfoPage>

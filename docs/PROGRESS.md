@@ -16,6 +16,11 @@
   (`.returns<T[]>()` retiré), `@supabase/ssr` 0.6 → 0.12, formatage Prettier, `.gitattributes` (LF).
 - Test fumée `next start` : `/`, `/categories`, `/recherche`, `/carte`, `/sitemap.xml` → 200 avec la base réelle.
 
+- 11/10/2026 : dépôt GitHub `DDMorningstar/boyomaConnect` ; projet Vercel `del-hiver/boyoma-connect` (Hobby)
+  relié à `main`, variables `NEXT_PUBLIC_*` définies (Production/Preview/Development), déployé sur
+  https://boyoma-connect.vercel.app. Pages principales, sitemap, robots, manifeste et `sw.js` → 200 ;
+  rendu mobile de l'accueil vérifié ; carte : style OpenFreeMap et RPC `places_in_bbox` chargés.
+
 ## Problèmes connus
 
 - `/lieux/<slug inexistant>` affiche la page « introuvable » mais avec le code HTTP 200 (streaming dû à
@@ -32,9 +37,10 @@
 
 - Aucun lieu réel en base : à collecter (agents) ou à saisir via l'administration (phase 8).
 - Coordonnées de support, textes légaux définitifs : à fournir.
-- Compte GitHub / Vercel : connexion manuelle (voir DEPLOYMENT.md).
+- Secrets GitHub Actions (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) à ajouter,
+  sinon le build de la CI échoue.
+- Plan Vercel Hobby : usage non commercial uniquement.
 
 ## Prochaine étape
 
-1. Publier sur GitHub et déployer une préversion Vercel.
-2. Phase 4 : authentification (connexion, inscription, middleware de session, pages protégées).
+1. Phase 4 : authentification (connexion, inscription, middleware de session, pages protégées).

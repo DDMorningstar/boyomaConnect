@@ -45,6 +45,13 @@
   avec Playwright + Edge : captures 1440 px et 390 px en clair et sombre, aucun débordement horizontal,
   bascule/mémorisation/rechargement du thème OK, aucune erreur JS. Application Google publiée (production).
 
+- 11/10/2026 : console d'administration `/admin` (migration `admin_console`) : tableau de bord (indicateurs,
+  courbe 30 jours, files d'attente, top catégories/fiches, activité), Validations, Signalements, Avis, Photos,
+  Lieux (liste filtrée + édition, publication/suspension/archivage, vérification, historique), Catégories,
+  Utilisateurs (rôles, suspension), Journal d'audit, Paramètres. Vérifié : fonctions SQL avec le compte
+  super-admin (transaction annulée), refus anonyme, 12 requêtes PostgREST valides, typecheck/lint/tests/build.
+  Non vérifié visuellement connecté (nécessite la session de l'utilisateur).
+
 ## Problèmes connus
 
 - `/lieux/<slug inexistant>` affiche la page « introuvable » mais avec le code HTTP 200 (streaming dû à

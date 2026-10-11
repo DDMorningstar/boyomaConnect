@@ -35,6 +35,38 @@
   --animate-float: float 4s ease-in-out infinite;
   --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes grow {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: none;
+    }
+  }
+  @keyframes slide-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: none;
+    }
+  }
   @keyframes page-in {
     from {
       opacity: 0;
@@ -106,6 +138,7 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
+  --chart-1: #2563eb; /* série unique des graphiques (validée : contraste et luminance) */
   --bg: #f8fafc;
   --surface: #ffffff;
   --surface-2: #f1f5f9;
@@ -116,6 +149,7 @@
 }
 
 :root[data-theme="dark"] {
+  --chart-1: #3b82f6;
   --bg: #070f24;
   --surface: #0b1736;
   --surface-2: #12224a;
@@ -127,6 +161,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
+    --chart-1: #3b82f6;
     --bg: #070f24;
     --surface: #0b1736;
     --surface-2: #12224a;

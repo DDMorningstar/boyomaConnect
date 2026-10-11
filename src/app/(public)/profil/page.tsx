@@ -60,7 +60,7 @@ export default async function ProfilePage() {
         {canModerate && (
           <Link href="/admin" className={row}>
             <ShieldCheck className="text-brand size-5" aria-hidden="true" />
-            <span className="flex-1">Modération</span>
+            <span className="flex-1">Console d&apos;administration</span>
             <ChevronRight className="text-muted size-5" aria-hidden="true" />
           </Link>
         )}

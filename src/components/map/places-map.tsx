@@ -195,9 +195,11 @@ export function PlacesMap({
 
   return (
     <div className="bg-surface-2 relative h-full w-full overflow-hidden">
+      {/* Positionnement inline : la feuille MapLibre (hors @layer) impose position: relative
+          à .maplibregl-map et l'emporterait sur les utilitaires Tailwind (hauteur nulle). */}
       <div
         ref={container}
-        className="absolute inset-0"
+        style={{ position: "absolute", inset: 0 }}
         aria-label="Carte interactive des lieux"
         role="region"
       />

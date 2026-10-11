@@ -14,8 +14,9 @@ import {
   ShoppingBag,
   Star,
 } from "lucide-react";
-import { Avatar } from "@/components/ui/avatar";
 import { CategoryBadge, CategoryIcon } from "@/components/places/category-icon";
+import { IconCover, LogoCover } from "@/components/places/place-visual";
+import { CoverPhotoButton, PhotoStrip, type ViewerPhoto } from "@/components/places/photo-viewer";
 import { VerificationBadge } from "@/components/places/verification-badge";
 import { PlaceActions } from "@/components/places/place-actions";
 import { OpeningHours } from "@/components/places/opening-hours";
@@ -144,14 +145,19 @@ export default async function PlacePage({ params }: Props) {
   const p = res.place;
   const reviews = await getPublicReviews(p.id, 5);
 
-  // Couverture : photo dédiée, sinon première photo de la galerie (fiches gérées par leur propriétaire).
-  const coverMedia =
-    p.place_media.find((m) => m.kind === "cover") ?? p.place_media.find((m) => m.kind === "gallery");
-  const cover = placeMediaUrl(p.cover_path) ?? placeMediaUrl(coverMedia?.storage_path);
-  const gallery = p.place_media.filter(
-    (m) => m.kind === "gallery" && (p.cover_path || m.id !== coverMedia?.id),
-  );
+  // Photos : couverture dédiée d'abord, puis la galerie. Le logo, s'il existe, sert de couverture
+  // (toutes les photos restent visibles dans la rangée et la visionneuse).
+  const photos: ViewerPhoto[] = [
+    ...(p.cover_path ? [p.cover_path] : []),
+    ...[...p.place_media]
+      .filter((m) => m.kind === "cover" || m.kind === "gallery")
+      .sort((a, b) => Number(b.kind === "cover") - Number(a.kind === "cover"))
+      .map((m) => m.storage_path),
+  ]
+    .filter((path, i, all) => all.indexOf(path) === i)
+    .map((path, i) => ({ src: placeMediaUrl(path)!, alt: `Photo ${i + 1} de ${p.name}` }));
   const logo = placeMediaUrl(p.logo_path);
+  const heroPhoto = logo ? null : (photos[0] ?? null);
   const phone = p.place_contacts.find((c) => c.kind === "phone")?.value ?? null;
   const whatsapp = p.place_contacts.find((c) => c.kind === "whatsapp")?.value ?? null;
   const otherContacts = p.place_contacts.filter((c) => !["phone", "whatsapp"].includes(c.kind));
@@ -171,26 +177,22 @@ export default async function PlacePage({ params }: Props) {
       />
       <ViewTracker placeId={p.id} />
 
-      <div className="bg-surface-2 relative -mx-4 overflow-hidden md:mx-0 md:rounded-[var(--radius-card)]">
-        {cover ? (
-          <div className="relative aspect-[16/9] max-h-96 w-full">
+      <div className="bg-surface-2 relative -mx-4 aspect-[16/9] max-h-96 overflow-hidden md:mx-0 md:aspect-[16/7] md:rounded-[var(--radius-card)]">
+        {logo ? (
+          <LogoCover logo={logo} name={p.name} size="lg" priority />
+        ) : heroPhoto ? (
+          <CoverPhotoButton photos={photos}>
             <Image
-              src={cover}
-              alt={`Photo de ${p.name}`}
+              src={heroPhoto.src}
+              alt={heroPhoto.alt}
               fill
               priority
               sizes="(min-width: 768px) 1152px, 100vw"
               className="object-cover"
             />
-          </div>
+          </CoverPhotoButton>
         ) : (
-          <div className="from-night to-brand flex aspect-[16/7] items-center justify-center bg-gradient-to-br">
-            <CategoryIcon
-              name={p.primary_category?.icon}
-              className="size-14 text-white/80"
-              strokeWidth={1.5}
-            />
-          </div>
+          <IconCover icon={p.primary_category?.icon} />
         )}
       </div>
 
@@ -218,7 +220,6 @@ export default async function PlacePage({ params }: Props) {
           )}
         </div>
         <div className="mt-2 flex items-center gap-3">
-          {logo && <Avatar src={logo} name={p.name} size={56} rounded="xl" />}
           <div className="min-w-0">
             <h1 className="text-[1.65rem] leading-tight font-extrabold tracking-tight md:text-3xl">
               {p.name}
@@ -267,8 +268,10 @@ export default async function PlacePage({ params }: Props) {
         />
       </div>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-[1fr_340px]">
-        <div className="space-y-6">
+      {/* min-w-0 : une colonne de grille ne rétrécit pas sous la largeur de son contenu
+          (rangée de photos) sans cela, ce qui faisait défiler la page horizontalement. */}
+      <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="min-w-0 space-y-6">
           {(p.short_description || p.full_description) && (
             <section>
               <h2 className="mb-2 text-lg font-bold">Présentation</h2>
@@ -359,31 +362,11 @@ export default async function PlacePage({ params }: Props) {
             </section>
           )}
 
-          {gallery.length > 0 && (
-            <section>
-              <h2 className="mb-2 text-lg font-bold">Photos</h2>
-              <div className="-mx-4 flex snap-x scrollbar-none gap-2 overflow-x-auto px-4">
-                {gallery.map((m) => {
-                  const src = placeMediaUrl(m.storage_path);
-                  return src ? (
-                    <div
-                      key={m.id}
-                      className="bg-surface-2 relative aspect-[4/3] w-64 shrink-0 snap-start overflow-hidden rounded-2xl"
-                    >
-                      <Image
-                        src={src}
-                        alt={m.caption ?? `Photo de ${p.name}`}
-                        fill
-                        sizes="256px"
-                        loading="lazy"
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : null;
-                })}
-              </div>
-            </section>
-          )}
+          <PhotoStrip
+            photos={photos}
+            skip={heroPhoto ? 1 : 0}
+            title={<h2 className="mb-2 text-lg font-bold">Photos ({photos.length})</h2>}
+          />
 
           <section>
             <h2 className="mb-2 text-lg font-bold">Avis</h2>
@@ -415,7 +398,7 @@ export default async function PlacePage({ params }: Props) {
           </section>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <section className="border-line bg-surface rounded-[var(--radius-card)] border p-4">
             <h2 className="mb-2 font-bold">Horaires</h2>
             <OpeningHours hours={p.place_hours} verifiedAt={p.hours_verified_at} />

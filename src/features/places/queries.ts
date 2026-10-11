@@ -109,6 +109,7 @@ export interface PopularPlace {
   name: string;
   short_description: string | null;
   cover_path: string | null;
+  logo_path: string | null;
   category_name: string | null;
   category_icon: string | null;
   category_color: string | null;

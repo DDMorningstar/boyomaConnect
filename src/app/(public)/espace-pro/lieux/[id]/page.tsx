@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { LogoCover } from "@/components/places/place-visual";
 import { ImageUpload } from "@/components/forms/image-upload";
 import { requireUser } from "@/features/auth/session";
 import { getManagedPlace } from "@/features/owner/queries";
@@ -37,8 +38,13 @@ export default async function ManagePlacePage({ params }: Props) {
       <Link href="/espace-pro" className="text-muted inline-flex items-center gap-1 text-sm">
         <ArrowLeft className="size-4" aria-hidden="true" /> Espace professionnel
       </Link>
+      {place.logo_path && (
+        <div className="relative aspect-[16/6] overflow-hidden rounded-[var(--radius-card)]">
+          <LogoCover logo={placeMediaUrl(place.logo_path)!} name={place.name} size="md" priority />
+        </div>
+      )}
       <header className="flex items-center gap-3">
-        <Avatar src={placeMediaUrl(place.logo_path)} name={place.name} size={56} rounded="xl" />
+        {!place.logo_path && <Avatar src={null} name={place.name} size={56} rounded="xl" />}
         <div className="min-w-0">
           <h1 className="truncate text-2xl font-extrabold tracking-tight">{place.name}</h1>
           <Link

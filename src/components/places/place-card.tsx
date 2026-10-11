@@ -1,7 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
-import { CategoryBadge } from "@/components/places/category-icon";
+import { PlaceThumb } from "@/components/places/place-visual";
 import { VerificationBadge } from "@/components/places/verification-badge";
 import { formatDistance } from "@/lib/format";
 import { placeMediaUrl } from "@/lib/supabase/storage";
@@ -17,6 +16,7 @@ export interface PlaceCardData {
   unit_name?: string | null;
   landmark_description?: string | null;
   cover_path?: string | null;
+  logo_path?: string | null;
   rating_avg?: number | null;
   rating_count?: number | null;
   distance_m?: number | null;
@@ -33,6 +33,14 @@ export function PlaceCard({
   index?: number;
 }) {
   const cover = placeMediaUrl(place.cover_path);
+  const logo = placeMediaUrl(place.logo_path);
+  const visual = {
+    logo,
+    cover,
+    name: place.name,
+    icon: place.category_icon,
+    color: place.category_color,
+  };
   const distance = formatDistance(place.distance_m);
   const delay = { animationDelay: `${Math.min(index, 8) * 40}ms` };
 
@@ -43,20 +51,8 @@ export function PlaceCard({
         style={delay}
         className="group animate-fade-up border-line bg-surface flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-[var(--radius-card)] border shadow-[var(--shadow-card)] transition-transform active:scale-[0.98]"
       >
-        <div className="bg-surface-2 relative aspect-[16/10]">
-          {cover ? (
-            <Image
-              src={cover}
-              alt=""
-              fill
-              sizes="256px"
-              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <CategoryBadge icon={place.category_icon} color={place.category_color} size="lg" />
-            </div>
-          )}
+        <div className="bg-surface-2 relative aspect-[16/10] overflow-hidden">
+          <PlaceThumb {...visual} variant="tile" />
         </div>
         <div className="flex flex-1 flex-col gap-1 p-3.5">
           <h3 className="line-clamp-1 font-semibold">{place.name}</h3>
@@ -74,13 +70,7 @@ export function PlaceCard({
       style={delay}
       className="animate-fade-up border-line bg-surface hover:border-brand/30 flex gap-3.5 rounded-[var(--radius-card)] border p-3.5 shadow-[var(--shadow-card)] transition-colors active:scale-[0.99]"
     >
-      {cover ? (
-        <div className="bg-surface-2 relative size-20 shrink-0 overflow-hidden rounded-2xl">
-          <Image src={cover} alt="" fill sizes="80px" className="object-cover" />
-        </div>
-      ) : (
-        <CategoryBadge icon={place.category_icon} color={place.category_color} size="lg" />
-      )}
+      <PlaceThumb {...visual} variant="row" />
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-2 leading-snug font-semibold">{place.name}</h3>

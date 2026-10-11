@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
-import { InfoPage } from "@/components/ui/info-page";
+import { LogoMark } from "@/components/layout/logo";
 import { getCurrentUser, isGoogleAuthEnabled, safeNext } from "@/features/auth/session";
 import { EmailForm } from "./email-form";
 import { GoogleButton } from "./google-button";
@@ -24,32 +24,50 @@ export default async function LoginPage({ searchParams }: Props) {
   const googleEnabled = await isGoogleAuthEnabled();
 
   return (
-    <InfoPage
-      title="Connexion"
-      intro="Connectez-vous ou créez votre compte avec Google, ou avec votre adresse e-mail."
-    >
-      {erreur && ERRORS[erreur] && (
-        <p role="alert" className="bg-danger/10 text-danger rounded-2xl p-3 text-sm">
-          {ERRORS[erreur]}
-        </p>
-      )}
-      <GoogleButton next={next} disabled={googleEnabled === false} />
-      <div className="text-muted flex items-center gap-3 text-sm" aria-hidden="true">
-        <span className="bg-line h-px flex-1" /> ou <span className="bg-line h-px flex-1" />
+    <div className="mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-md flex-col justify-center py-8">
+      <div className="border-line bg-surface rounded-[1.75rem] border p-6 shadow-[var(--shadow-card)] sm:p-8">
+        <div className="flex flex-col items-center text-center">
+          <LogoMark className="size-12" />
+          <h1 className="mt-4 text-2xl font-extrabold tracking-tight">Bienvenue sur Boyoma Connect</h1>
+          <p className="text-muted mt-1.5 text-sm">
+            Connectez-vous ou créez votre compte pour gérer votre établissement, vos photos et votre
+            catalogue.
+          </p>
+        </div>
+
+        {erreur && ERRORS[erreur] && (
+          <p role="alert" className="bg-danger/10 text-danger mt-5 rounded-2xl p-3 text-sm">
+            {ERRORS[erreur]}
+          </p>
+        )}
+
+        <div className="mt-6">
+          <GoogleButton next={next} disabled={googleEnabled === false} />
+        </div>
+
+        <div className="text-muted my-6 flex items-center gap-3 text-xs font-medium tracking-wide uppercase">
+          <span className="bg-line h-px flex-1" aria-hidden="true" />
+          ou avec votre e-mail
+          <span className="bg-line h-px flex-1" aria-hidden="true" />
+        </div>
+
+        <EmailForm next={next} />
       </div>
-      <EmailForm next={next} />
-      <ul className="text-muted text-sm">
-        <li>Propriétaires : créez la fiche de votre établissement, votre catalogue et vos photos.</li>
-        <li>Visiteurs : la recherche, la carte et les favoris restent utilisables sans compte.</li>
-      </ul>
-      <p className="text-muted flex items-start gap-2 text-xs">
+
+      <p className="text-muted mt-5 flex items-start justify-center gap-2 px-2 text-center text-xs">
         <ShieldCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         <span>
-          Avec Google, nous recevons uniquement votre nom, votre adresse e-mail et votre photo de profil. En
-          continuant, vous acceptez les <Link href="/conditions">conditions d&apos;utilisation</Link> et la{" "}
-          <Link href="/confidentialite">politique de confidentialité</Link>.
+          En continuant, vous acceptez les <Link href="/conditions">conditions d&apos;utilisation</Link> et la{" "}
+          <Link href="/confidentialite">politique de confidentialité</Link>. Avec Google, nous recevons
+          uniquement votre nom, votre e-mail et votre photo de profil.
         </span>
       </p>
-    </InfoPage>
+      <p className="text-muted mt-2 text-center text-xs">
+        Pas besoin de compte pour rechercher, consulter la carte ou enregistrer des favoris.{" "}
+        <Link href="/explorer" className="text-brand font-semibold">
+          Explorer
+        </Link>
+      </p>
+    </div>
   );
 }

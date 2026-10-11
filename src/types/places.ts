@@ -27,7 +27,9 @@ export interface PlaceSearchRow {
   price_range: number | null;
   rating_avg: number | null;
   rating_count: number;
+  /** Photo de couverture, ou à défaut la première photo approuvée de la fiche. */
   cover_path: string | null;
+  logo_path: string | null;
   published_at: string | null;
   last_verified_at: string | null;
   distance_m: number | null;

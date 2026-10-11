@@ -14,6 +14,7 @@ import {
 } from "@/features/owner/actions";
 import type { CatalogItem, ManagedPlace } from "@/features/owner/queries";
 import { formatPrice } from "@/lib/format";
+import { PhotoLightbox } from "@/components/places/photo-viewer";
 
 const card = "border-line bg-surface space-y-4 rounded-[var(--radius-card)] border p-4";
 
@@ -85,12 +86,21 @@ export function PhotoGrid({
   photos: { id: string; url: string; pending: boolean }[];
 }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(deletePhoto, null);
+  const [viewing, setViewing] = useState<number | null>(null);
+  const viewerPhotos = photos.map((p, i) => ({ src: p.url, alt: `Photo ${i + 1}` }));
   return (
     <div className="space-y-2">
       <ul className="flex flex-wrap gap-2">
         {photos.map((p, i) => (
           <li key={p.id} className="bg-surface-2 relative h-28 w-36 overflow-hidden rounded-2xl">
-            <Image src={p.url} alt={`Photo ${i + 1}`} fill sizes="144px" className="object-cover" />
+            <button
+              type="button"
+              onClick={() => setViewing(i)}
+              aria-label={`Agrandir la photo ${i + 1}`}
+              className="absolute inset-0"
+            >
+              <Image src={p.url} alt={`Photo ${i + 1}`} fill sizes="144px" className="object-cover" />
+            </button>
             {p.pending && (
               <span className="bg-night/75 absolute bottom-1 left-1 rounded-full px-2 py-0.5 text-[11px] text-white">
                 En modération
@@ -112,6 +122,14 @@ export function PhotoGrid({
         ))}
       </ul>
       <FormMessage state={state} />
+      {viewing != null && (
+        <PhotoLightbox
+          photos={viewerPhotos}
+          index={viewing}
+          onIndex={setViewing}
+          onClose={() => setViewing(null)}
+        />
+      )}
     </div>
   );
 }

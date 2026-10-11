@@ -8,7 +8,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden"
+      className="border-line bg-surface/90 fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden"
     >
       <ul className="mx-auto grid max-w-lg grid-cols-5">
         {PUBLIC_NAV.map(({ href, label, icon: Icon, match }) => {
@@ -22,7 +22,9 @@ export function BottomNav() {
                   active ? "text-brand" : "text-muted"
                 }`}
               >
-                <span className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${active ? "bg-brand/10" : ""}`}>
+                <span
+                  className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${active ? "bg-brand/10" : ""}`}
+                >
                   <Icon className="size-5" strokeWidth={active ? 2.4 : 2} aria-hidden="true" />
                 </span>
                 {label}

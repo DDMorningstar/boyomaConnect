@@ -9,15 +9,21 @@ export const metadata: Metadata = {
   description: "Sites naturels, monuments, lieux historiques et culturels de Kisangani.",
 };
 
-export default async function TourismPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function TourismPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const sp = parseSearchParams(await searchParams);
   const { rows, total } = await searchPlaces({ ...sp, categorySlug: "tourisme" });
   return (
     <div className="space-y-4 pt-5">
-      <div className="rounded-[var(--radius-card)] bg-gradient-to-br from-night to-brand p-6 text-white">
-        <Compass className="size-8 text-cyan" aria-hidden="true" />
+      <div className="from-night to-brand rounded-[var(--radius-card)] bg-gradient-to-br p-6 text-white">
+        <Compass className="text-cyan size-8" aria-hidden="true" />
         <h1 className="mt-3 text-2xl font-extrabold">Boyoma Explore</h1>
-        <p className="text-sm text-white/75">Sites, culture et patrimoine de Kisangani — uniquement des informations vérifiées.</p>
+        <p className="text-sm text-white/75">
+          Sites, culture et patrimoine de Kisangani — uniquement des informations vérifiées.
+        </p>
       </div>
       <ResultsList
         rows={rows}

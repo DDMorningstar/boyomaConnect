@@ -1,6 +1,7 @@
 # Architecture
 
 ## Vue d'ensemble
+
 ```
 Navigateur (PWA)  ──►  Next.js (App Router, Vercel ou Node/VPS)  ──►  Supabase
   • Server Components (pages publiques, SEO)          • PostgreSQL + PostGIS (schéma gis)
@@ -11,6 +12,7 @@ MapLibre GL ──► tuiles OpenFreeMap (configurable)     Routage externe (con
 ```
 
 ## Principes
+
 - **Monolithe modulaire** : un seul déploiement Next.js, logique métier dans `src/features/*`.
   Pas de microservices ni de NestJS en phase 1.
 - **La base fait autorité sur la sécurité** : RLS + fonctions `SECURITY DEFINER` contrôlant `has_permission()`.
@@ -23,14 +25,16 @@ MapLibre GL ──► tuiles OpenFreeMap (configurable)     Routage externe (con
   Supabase peut être remplacé par Supabase auto-hébergé ou PostgreSQL + PostGIS (migrations SQL standard).
 
 ## Routage
-| Groupe | Routes | État |
-|---|---|---|
-| `(public)` | `/`, `/explorer`, `/recherche`, `/carte`, `/proximite`, `/categories`, `/categories/[slug]`, `/communes/[slug]`, `/lieux/[slug]`, `/tourisme`, `/favoris`, `/profil`, `/connexion`, `/inscription`, `/ajouter-un-lieu`, `/aide`, `/confidentialite`, `/conditions`, `/hors-ligne` | livré |
-| `business/` | `/business/**` | phase 9 |
-| `terrain/` | `/terrain/**` | phase 7 |
-| `admin/` | `/admin/**` | phase 8 |
+
+| Groupe      | Routes                                                                                                                                                                                                                                                                            | État    |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `(public)`  | `/`, `/explorer`, `/recherche`, `/carte`, `/proximite`, `/categories`, `/categories/[slug]`, `/communes/[slug]`, `/lieux/[slug]`, `/tourisme`, `/favoris`, `/profil`, `/connexion`, `/inscription`, `/ajouter-un-lieu`, `/aide`, `/confidentialite`, `/conditions`, `/hors-ligne` | livré   |
+| `business/` | `/business/**`                                                                                                                                                                                                                                                                    | phase 9 |
+| `terrain/`  | `/terrain/**`                                                                                                                                                                                                                                                                     | phase 7 |
+| `admin/`    | `/admin/**`                                                                                                                                                                                                                                                                       | phase 8 |
 
 ## Dépendances principales
+
 next 15, react 19, @supabase/ssr + supabase-js, maplibre-gl 5, zod, lucide-react, tailwindcss 4.
 Prévues (ajoutées au moment du module concerné pour ne pas alourdir le bundle) : TanStack Query, Zustand,
 React Hook Form, Motion, idb (IndexedDB) — voir `DECISIONS.md`.

@@ -1,20 +1,20 @@
 # Décisions techniques
 
-| # | Décision | Raison |
-|---|---|---|
-| D1 | Tailwind CSS v4 (config CSS `@theme`) | Moins de fichiers, tokens de design centralisés |
-| D2 | Composants UI écrits à la main dans le style shadcn ; ajout via CLI shadcn quand des primitives complexes seront nécessaires (dialog, sheet, toast) | CLI indisponible dans l'environnement de génération ; éviter les dépendances inutiles |
-| D3 | TanStack Query, Zustand, React Hook Form, Motion, idb : ajoutés au module qui en a besoin (formulaires phase 4/7, offline phase 7) | Bundle minimal ; aucune dépendance installée « pour plus tard » |
-| D4 | Favoris visiteur dans localStorage (instantané de la fiche) | Utilisable sans compte et hors ligne ; synchro compte en phase 4 |
-| D5 | PostGIS dans le schéma `gis` | Exigence ; évite de polluer `public` |
-| D6 | `places.location` colonne générée depuis (lng, lat) | Impossible d'inverser latitude/longitude |
-| D7 | `place_addresses` fusionnée dans `places` | Une seule adresse textuelle + repère + chemin par lieu |
-| D8 | `place_submissions` = public + agents (colonne `source`) ; `field_submissions` non créée | Circuit de validation identique |
-| D9 | `products` + `service_offerings` → `catalog_items(kind)` | Même structure |
-| D10 | Provinces = `geographic_units` de type `province` | Hiérarchie unique, profondeur libre |
-| D11 | Ajout de `place_history`, `place_slug_history`, `subscription_history` | Traçabilité et redirections SEO |
-| D12 | Recherche : FTS `simple` sur texte normalisé + pg_trgm | Noms propres locaux mal servis par le stemming français ; tolérance aux fautes |
-| D13 | Tuiles OpenFreeMap par défaut (sans clé, OSM/ODbL), surchargeables | Gratuit pour développer ; pas de téléchargement massif OSM |
-| D14 | Itinéraire : lien externe (Google Maps) en repli tant qu'aucune API de routage n'est configurée | Exigence 6.4 ; aucun temps de trajet inventé |
-| D15 | Abonnement rattaché à l'établissement | Un propriétaire peut avoir des plans différents par lieu |
-| D16 | Drapeau transactionnel `boyoma.internal_write` pour les écritures internes des fonctions de confiance | Garde-fous stricts sans bloquer les workflows validés |
+| #   | Décision                                                                                                                                            | Raison                                                                                |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| D1  | Tailwind CSS v4 (config CSS `@theme`)                                                                                                               | Moins de fichiers, tokens de design centralisés                                       |
+| D2  | Composants UI écrits à la main dans le style shadcn ; ajout via CLI shadcn quand des primitives complexes seront nécessaires (dialog, sheet, toast) | CLI indisponible dans l'environnement de génération ; éviter les dépendances inutiles |
+| D3  | TanStack Query, Zustand, React Hook Form, Motion, idb : ajoutés au module qui en a besoin (formulaires phase 4/7, offline phase 7)                  | Bundle minimal ; aucune dépendance installée « pour plus tard »                       |
+| D4  | Favoris visiteur dans localStorage (instantané de la fiche)                                                                                         | Utilisable sans compte et hors ligne ; synchro compte en phase 4                      |
+| D5  | PostGIS dans le schéma `gis`                                                                                                                        | Exigence ; évite de polluer `public`                                                  |
+| D6  | `places.location` colonne générée depuis (lng, lat)                                                                                                 | Impossible d'inverser latitude/longitude                                              |
+| D7  | `place_addresses` fusionnée dans `places`                                                                                                           | Une seule adresse textuelle + repère + chemin par lieu                                |
+| D8  | `place_submissions` = public + agents (colonne `source`) ; `field_submissions` non créée                                                            | Circuit de validation identique                                                       |
+| D9  | `products` + `service_offerings` → `catalog_items(kind)`                                                                                            | Même structure                                                                        |
+| D10 | Provinces = `geographic_units` de type `province`                                                                                                   | Hiérarchie unique, profondeur libre                                                   |
+| D11 | Ajout de `place_history`, `place_slug_history`, `subscription_history`                                                                              | Traçabilité et redirections SEO                                                       |
+| D12 | Recherche : FTS `simple` sur texte normalisé + pg_trgm                                                                                              | Noms propres locaux mal servis par le stemming français ; tolérance aux fautes        |
+| D13 | Tuiles OpenFreeMap par défaut (sans clé, OSM/ODbL), surchargeables                                                                                  | Gratuit pour développer ; pas de téléchargement massif OSM                            |
+| D14 | Itinéraire : lien externe (Google Maps) en repli tant qu'aucune API de routage n'est configurée                                                     | Exigence 6.4 ; aucun temps de trajet inventé                                          |
+| D15 | Abonnement rattaché à l'établissement                                                                                                               | Un propriétaire peut avoir des plans différents par lieu                              |
+| D16 | Drapeau transactionnel `boyoma.internal_write` pour les écritures internes des fonctions de confiance                                               | Garde-fous stricts sans bloquer les workflows validés                                 |

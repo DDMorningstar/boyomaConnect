@@ -26,7 +26,9 @@ function read(): FavoriteSnapshot[] {
   if (cache) return cache;
   try {
     const parsed: unknown = JSON.parse(window.localStorage.getItem(KEY) ?? "[]");
-    cache = Array.isArray(parsed) ? (parsed as FavoriteSnapshot[]).filter((f) => f && typeof f.slug === "string") : [];
+    cache = Array.isArray(parsed)
+      ? (parsed as FavoriteSnapshot[]).filter((f) => f && typeof f.slug === "string")
+      : [];
   } catch {
     cache = [];
   }
@@ -65,7 +67,11 @@ export function useFavorites() {
     isFavorite: (id: string) => favorites.some((f) => f.id === id),
     toggle: (snapshot: Omit<FavoriteSnapshot, "saved_at">): boolean => {
       const exists = read().some((f) => f.id === snapshot.id);
-      write(exists ? read().filter((f) => f.id !== snapshot.id) : [{ ...snapshot, saved_at: new Date().toISOString() }, ...read()]);
+      write(
+        exists
+          ? read().filter((f) => f.id !== snapshot.id)
+          : [{ ...snapshot, saved_at: new Date().toISOString() }, ...read()],
+      );
       return !exists;
     },
     remove: (id: string) => write(read().filter((f) => f.id !== id)),

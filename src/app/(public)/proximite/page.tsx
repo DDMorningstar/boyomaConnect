@@ -7,7 +7,9 @@ export default function NearbyPage() {
   return (
     <div className="pt-5">
       <h1 className="text-2xl font-extrabold tracking-tight">À proximité</h1>
-      <p className="mt-1 text-sm text-muted">Les lieux publiés autour de vous. Distances à vol d&apos;oiseau.</p>
+      <p className="text-muted mt-1 text-sm">
+        Les lieux publiés autour de vous. Distances à vol d&apos;oiseau.
+      </p>
       <NearbyClient />
     </div>
   );

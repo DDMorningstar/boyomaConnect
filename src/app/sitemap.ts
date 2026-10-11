@@ -15,7 +15,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const places = await getPublishedPlaceSlugs();
     return [
       ...staticPages,
-      ...places.map((p) => ({ url: `${base}/lieux/${p.slug}`, lastModified: p.updated_at, changeFrequency: "weekly" as const, priority: 0.8 })),
+      ...places.map((p) => ({
+        url: `${base}/lieux/${p.slug}`,
+        lastModified: p.updated_at,
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      })),
     ];
   } catch {
     return staticPages;

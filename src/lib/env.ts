@@ -6,7 +6,11 @@ const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(20),
   NEXT_PUBLIC_MAP_STYLE_URL: z.string().url().default("https://tiles.openfreemap.org/styles/liberty"),
-  NEXT_PUBLIC_ROUTING_URL: z.string().url().optional().or(z.literal("").transform(() => undefined)),
+  NEXT_PUBLIC_ROUTING_URL: z
+    .string()
+    .url()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
 });
 
 // Accès explicite : Next.js ne remplace que les références littérales process.env.NEXT_PUBLIC_*.

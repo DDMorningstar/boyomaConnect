@@ -6,7 +6,10 @@ import { hrefWith } from "@/components/search/search-filters";
 import { getCommuneBySlug, searchPlaces } from "@/features/places/queries";
 import { parseSearchParams } from "@/lib/search-params";
 
-type Props = { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> };
+type Props = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -29,7 +32,9 @@ export default async function CommunePage({ params, searchParams }: Props) {
   return (
     <div className="space-y-4 pt-5">
       <div>
-        <p className="inline-flex items-center gap-1 text-sm text-muted"><MapPin className="size-4" aria-hidden="true" /> {data.city.name} · Tshopo</p>
+        <p className="text-muted inline-flex items-center gap-1 text-sm">
+          <MapPin className="size-4" aria-hidden="true" /> {data.city.name} · Tshopo
+        </p>
         <h1 className="text-2xl font-extrabold tracking-tight">Commune de {data.commune.name}</h1>
       </div>
       <ResultsList

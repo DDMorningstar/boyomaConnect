@@ -11,5 +11,10 @@ export default defineConfig({
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined
-    : { command: "npm run build && npm run start", url: "http://localhost:3000", timeout: 180_000, reuseExistingServer: true },
+    : {
+        command: "npm run build && npm run start",
+        url: "http://localhost:3000",
+        timeout: 180_000,
+        reuseExistingServer: true,
+      },
 });

@@ -34,7 +34,9 @@ export function getRecentSearches(): string[] {
   if (!isRecentSearchEnabled()) return [];
   try {
     const parsed: unknown = JSON.parse(safeGet(KEY) ?? "[]");
-    return Array.isArray(parsed) ? parsed.filter((s): s is string => typeof s === "string").slice(0, MAX) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((s): s is string => typeof s === "string").slice(0, MAX)
+      : [];
   } catch {
     return [];
   }

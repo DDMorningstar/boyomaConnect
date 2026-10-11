@@ -1,6 +1,7 @@
 # Avancement — mis à jour le 11/10/2026
 
 ## Réellement exécuté et vérifié
+
 - Projet Supabase `boyoma-connect` créé (plan gratuit, eu-west-3).
 - 9 migrations appliquées sans erreur : extensions/PostGIS, identité & permissions, géographie (Tshopo,
   Kisangani, 6 communes), catégories (12 + 72), établissements, interactions, collecte & workflows,
@@ -10,25 +11,30 @@
   pas de profils, insertion et paiement refusés).
 - Fonctions utilitaires (`src/lib/format.ts`) exécutées : toutes les assertions passent ; haversine 8 231 m.
 
-## Écrit mais PAS encore exécuté
-L'environnement de génération n'avait pas accès au registre npm : `npm install`, typecheck, lint, Vitest,
-build et Playwright **n'ont pas encore tourné**. À lancer dans `D:\Boyoma` :
-```
-npm install
-npm run check
-```
-Toute erreur doit être corrigée avant de considérer les phases 1, 2, 5 et 6 comme terminées.
+- 11/10/2026 (Windows, Node 24) : `npm install`, typecheck, lint, `format:check`, Vitest (16 tests) et
+  `next build` (23 routes) passent. Corrections : typage des RPC adapté à supabase-js 2.117
+  (`.returns<T[]>()` retiré), `@supabase/ssr` 0.6 → 0.12, formatage Prettier, `.gitattributes` (LF).
+- Test fumée `next start` : `/`, `/categories`, `/recherche`, `/carte`, `/sitemap.xml` → 200 avec la base réelle.
+
+## Problèmes connus
+
+- `/lieux/<slug inexistant>` affiche la page « introuvable » mais avec le code HTTP 200 (streaming dû à
+  `loading.tsx`) ; à corriger pour le SEO.
+- Playwright (E2E) pas encore exécuté.
 
 ## Non testé
+
 - Rendu visuel réel, Lighthouse, Web Vitals (aucune mesure effectuée).
 - Carte (dépend du fournisseur de tuiles), géolocalisation, installation PWA, Service Worker.
 - RLS pour les rôles connectés (nécessite des comptes de test — phase 4).
 
 ## Blocages / actions humaines
+
 - Aucun lieu réel en base : à collecter (agents) ou à saisir via l'administration (phase 8).
 - Coordonnées de support, textes légaux définitifs : à fournir.
 - Compte GitHub / Vercel : connexion manuelle (voir DEPLOYMENT.md).
 
 ## Prochaine étape
-1. Exécuter `npm install && npm run check`, corriger les erreurs remontées.
+
+1. Publier sur GitHub et déployer une préversion Vercel.
 2. Phase 4 : authentification (connexion, inscription, middleware de session, pages protégées).

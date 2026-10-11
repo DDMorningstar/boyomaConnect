@@ -10,7 +10,10 @@ export function LogoMark({ className = "size-9" }: { className?: string }) {
         </linearGradient>
       </defs>
       <rect width="48" height="48" rx="14" fill="#0B1736" />
-      <path d="M24 9c-6.6 0-12 5.2-12 11.7C12 29.5 24 40 24 40s12-10.5 12-19.3C36 14.2 30.6 9 24 9Z" fill="url(#bc-g)" />
+      <path
+        d="M24 9c-6.6 0-12 5.2-12 11.7C12 29.5 24 40 24 40s12-10.5 12-19.3C36 14.2 30.6 9 24 9Z"
+        fill="url(#bc-g)"
+      />
       <circle cx="24" cy="21" r="4.6" fill="#0B1736" />
     </svg>
   );
@@ -24,7 +27,9 @@ export function Logo() {
         <span className="block text-[15px] font-extrabold tracking-tight">
           Boyoma <span className="text-brand">Connect</span>
         </span>
-        <span className="hidden text-[11px] text-muted sm:block">Votre ville. Vos adresses. Votre chemin.</span>
+        <span className="text-muted hidden text-[11px] sm:block">
+          Votre ville. Vos adresses. Votre chemin.
+        </span>
       </span>
     </Link>
   );

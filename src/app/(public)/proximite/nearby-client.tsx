@@ -18,7 +18,11 @@ export function NearbyClient() {
   async function load(p: { lat: number; lng: number }, r: number) {
     setState("loading");
     const { data, error } = await getSupabaseBrowserClient().rpc("search_places", {
-      p_latitude: p.lat, p_longitude: p.lng, p_radius_m: r, p_sort: "distance", p_limit: 50,
+      p_latitude: p.lat,
+      p_longitude: p.lng,
+      p_radius_m: r,
+      p_sort: "distance",
+      p_limit: 50,
     });
     if (error) return setState("error");
     setRows((data as PlaceSearchRow[]) ?? []);
@@ -41,11 +45,22 @@ export function NearbyClient() {
 
   if (state === "idle" || state === "locating") {
     return (
-      <div className="mt-6 flex flex-col items-center rounded-[var(--radius-card)] border border-line bg-surface p-8 text-center">
-        <span className="flex size-16 items-center justify-center rounded-full bg-brand/10 text-brand"><LocateFixed className="size-8" aria-hidden="true" /></span>
-        <p className="mt-4 max-w-xs text-sm text-muted">Autorisez l&apos;accès à votre position pour afficher les lieux les plus proches. Elle n&apos;est pas conservée.</p>
-        <button type="button" onClick={locate} disabled={state === "locating"} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-6 text-sm font-semibold text-white disabled:opacity-60">
-          {state === "locating" && <Loader2 className="size-4 animate-spin" aria-hidden="true" />} Utiliser ma position
+      <div className="border-line bg-surface mt-6 flex flex-col items-center rounded-[var(--radius-card)] border p-8 text-center">
+        <span className="bg-brand/10 text-brand flex size-16 items-center justify-center rounded-full">
+          <LocateFixed className="size-8" aria-hidden="true" />
+        </span>
+        <p className="text-muted mt-4 max-w-xs text-sm">
+          Autorisez l&apos;accès à votre position pour afficher les lieux les plus proches. Elle n&apos;est
+          pas conservée.
+        </p>
+        <button
+          type="button"
+          onClick={locate}
+          disabled={state === "locating"}
+          className="bg-brand mt-5 inline-flex min-h-11 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white disabled:opacity-60"
+        >
+          {state === "locating" && <Loader2 className="size-4 animate-spin" aria-hidden="true" />} Utiliser ma
+          position
         </button>
       </div>
     );
@@ -54,7 +69,8 @@ export function NearbyClient() {
     return (
       <div className="mt-6">
         <EmptyState icon={<MapPinOff className="size-10" />} title="Position refusée">
-          Activez la localisation pour ce site dans les réglages du navigateur, ou utilisez la recherche par commune.
+          Activez la localisation pour ce site dans les réglages du navigateur, ou utilisez la recherche par
+          commune.
         </EmptyState>
       </div>
     );
@@ -62,7 +78,18 @@ export function NearbyClient() {
   if (state === "error") {
     return (
       <div className="mt-6">
-        <EmptyState title="Impossible d'obtenir les résultats" action={<button type="button" onClick={locate} className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white">Réessayer</button>}>
+        <EmptyState
+          title="Impossible d'obtenir les résultats"
+          action={
+            <button
+              type="button"
+              onClick={locate}
+              className="bg-brand rounded-full px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Réessayer
+            </button>
+          }
+        >
           Vérifiez votre connexion et le GPS de votre appareil.
         </EmptyState>
       </div>
@@ -72,9 +99,16 @@ export function NearbyClient() {
     <div className="mt-4 space-y-3">
       <div className="flex gap-2" role="group" aria-label="Rayon">
         {RADII.map((r) => (
-          <button key={r} type="button" aria-pressed={radius === r}
-            onClick={() => { setRadius(r); if (pos) void load(pos, r); }}
-            className={`min-h-10 rounded-full border px-3.5 text-sm font-medium ${radius === r ? "border-brand bg-brand text-white" : "border-line bg-surface"}`}>
+          <button
+            key={r}
+            type="button"
+            aria-pressed={radius === r}
+            onClick={() => {
+              setRadius(r);
+              if (pos) void load(pos, r);
+            }}
+            className={`min-h-10 rounded-full border px-3.5 text-sm font-medium ${radius === r ? "border-brand bg-brand text-white" : "border-line bg-surface"}`}
+          >
             {r < 1000 ? `${r} m` : `${r / 1000} km`}
           </button>
         ))}
@@ -82,10 +116,16 @@ export function NearbyClient() {
       {state === "loading" ? (
         Array.from({ length: 4 }, (_, i) => <PlaceCardSkeleton key={i} />)
       ) : rows.length === 0 ? (
-        <EmptyState title="Aucun lieu publié dans ce rayon">Élargissez le rayon ou explorez la carte.</EmptyState>
+        <EmptyState title="Aucun lieu publié dans ce rayon">
+          Élargissez le rayon ou explorez la carte.
+        </EmptyState>
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">
-          {rows.map((p, i) => (<li key={p.id}><PlaceCard place={p} index={i} /></li>))}
+          {rows.map((p, i) => (
+            <li key={p.id}>
+              <PlaceCard place={p} index={i} />
+            </li>
+          ))}
         </ul>
       )}
     </div>

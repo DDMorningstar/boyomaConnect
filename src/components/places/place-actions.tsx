@@ -37,19 +37,28 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude }: Pr
     }
   }
 
-  const item = "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 text-xs font-medium transition-transform active:scale-95";
+  const item =
+    "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 text-xs font-medium transition-transform active:scale-95";
   const circle = "flex size-12 items-center justify-center rounded-full";
 
   return (
-    <div className="grid grid-cols-5 gap-1 rounded-[var(--radius-card)] border border-line bg-surface p-2 shadow-[var(--shadow-card)]">
+    <div className="border-line bg-surface grid grid-cols-5 gap-1 rounded-[var(--radius-card)] border p-2 shadow-[var(--shadow-card)]">
       {phone ? (
-        <a href={`tel:${phone.replace(/\s/g, "")}`} onClick={() => recordPlaceEvent(place.id, "phone_click")} className={item}>
-          <span className={`${circle} bg-brand text-white`}><Phone className="size-5" aria-hidden="true" /></span>
+        <a
+          href={`tel:${phone.replace(/\s/g, "")}`}
+          onClick={() => recordPlaceEvent(place.id, "phone_click")}
+          className={item}
+        >
+          <span className={`${circle} bg-brand text-white`}>
+            <Phone className="size-5" aria-hidden="true" />
+          </span>
           Appeler
         </a>
       ) : (
         <span className={`${item} opacity-40`} aria-disabled="true" title="Numéro non renseigné">
-          <span className={`${circle} bg-surface-2`}><Phone className="size-5" aria-hidden="true" /></span>
+          <span className={`${circle} bg-surface-2`}>
+            <Phone className="size-5" aria-hidden="true" />
+          </span>
           Appeler
         </span>
       )}
@@ -61,12 +70,16 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude }: Pr
           onClick={() => recordPlaceEvent(place.id, "whatsapp_click")}
           className={item}
         >
-          <span className={`${circle} bg-[#25D366] text-white`}><MessageCircle className="size-5" aria-hidden="true" /></span>
+          <span className={`${circle} bg-[#25D366] text-white`}>
+            <MessageCircle className="size-5" aria-hidden="true" />
+          </span>
           WhatsApp
         </a>
       ) : (
         <span className={`${item} opacity-40`} aria-disabled="true" title="WhatsApp non renseigné">
-          <span className={`${circle} bg-surface-2`}><MessageCircle className="size-5" aria-hidden="true" /></span>
+          <span className={`${circle} bg-surface-2`}>
+            <MessageCircle className="size-5" aria-hidden="true" />
+          </span>
           WhatsApp
         </span>
       )}
@@ -78,18 +91,26 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude }: Pr
           onClick={() => recordPlaceEvent(place.id, "directions_request")}
           className={item}
         >
-          <span className={`${circle} bg-night text-white dark:bg-surface-2`}><Navigation className="size-5" aria-hidden="true" /></span>
+          <span className={`${circle} bg-night dark:bg-surface-2 text-white`}>
+            <Navigation className="size-5" aria-hidden="true" />
+          </span>
           Itinéraire
         </a>
       ) : (
         <span className={`${item} opacity-40`} aria-disabled="true" title="Position GPS non renseignée">
-          <span className={`${circle} bg-surface-2`}><Navigation className="size-5" aria-hidden="true" /></span>
+          <span className={`${circle} bg-surface-2`}>
+            <Navigation className="size-5" aria-hidden="true" />
+          </span>
           Itinéraire
         </span>
       )}
       <button type="button" onClick={share} className={item}>
         <span className={`${circle} bg-surface-2`}>
-          {shared ? <Check className="size-5 text-success" aria-hidden="true" /> : <Share2 className="size-5" aria-hidden="true" />}
+          {shared ? (
+            <Check className="text-success size-5" aria-hidden="true" />
+          ) : (
+            <Share2 className="size-5" aria-hidden="true" />
+          )}
         </span>
         {shared ? "Lien copié" : "Partager"}
       </button>
@@ -101,8 +122,13 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude }: Pr
         }}
         className={item}
       >
-        <span className={`${circle} transition-colors ${fav ? "bg-rose-500/15 text-rose-500" : "bg-surface-2"}`}>
-          <Heart className={`size-5 transition-transform ${fav ? "scale-110 fill-current" : ""}`} aria-hidden="true" />
+        <span
+          className={`${circle} transition-colors ${fav ? "bg-rose-500/15 text-rose-500" : "bg-surface-2"}`}
+        >
+          <Heart
+            className={`size-5 transition-transform ${fav ? "scale-110 fill-current" : ""}`}
+            aria-hidden="true"
+          />
         </span>
         {fav ? "Enregistré" : "Favori"}
       </button>

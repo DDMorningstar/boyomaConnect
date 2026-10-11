@@ -16,7 +16,9 @@ const PRIVATE_PREFIXES = ["/profil", "/connexion", "/inscription", "/business", 
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((c) => c.addAll([OFFLINE_URL, "/manifest.webmanifest", "/icons/icon-192.png"])),
+    caches
+      .open(STATIC_CACHE)
+      .then((c) => c.addAll([OFFLINE_URL, "/manifest.webmanifest", "/icons/icon-192.png"])),
   );
   self.skipWaiting();
 });
@@ -49,7 +51,10 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
 
   // Images publiques Supabase (bucket place-media).
-  if (url.pathname.startsWith("/storage/v1/object/public/") || (url.origin === self.location.origin && url.pathname.startsWith("/_next/image"))) {
+  if (
+    url.pathname.startsWith("/storage/v1/object/public/") ||
+    (url.origin === self.location.origin && url.pathname.startsWith("/_next/image"))
+  ) {
     event.respondWith(
       caches.open(IMAGES_CACHE).then(async (cache) => {
         const hit = await cache.match(req);

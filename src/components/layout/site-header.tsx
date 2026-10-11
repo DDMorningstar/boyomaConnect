@@ -8,7 +8,7 @@ import { PUBLIC_NAV } from "@/components/layout/nav-items";
 export function SiteHeader() {
   const pathname = usePathname() ?? "/";
   return (
-    <header className="sticky top-0 z-30 border-b border-line/70 bg-bg/85 backdrop-blur-lg">
+    <header className="border-line/70 bg-bg/85 sticky top-0 z-30 border-b backdrop-blur-lg">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Logo />
         <nav aria-label="Navigation principale" className="hidden items-center gap-1 md:flex">
@@ -27,7 +27,7 @@ export function SiteHeader() {
         </nav>
         <Link
           href="/ajouter-un-lieu"
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-night px-3.5 text-sm font-semibold text-white dark:bg-brand"
+          className="bg-night dark:bg-brand inline-flex min-h-10 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold text-white"
         >
           <Plus className="size-4" aria-hidden="true" />
           <span className="hidden sm:inline">Ajouter un lieu</span>

@@ -8,7 +8,11 @@ import { LogSearch } from "@/components/search/log-search";
 
 export const metadata: Metadata = { title: "Recherche", robots: { index: false, follow: true } };
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const params = parseSearchParams(await searchParams);
   const [{ rows, total }, city] = await Promise.all([searchPlaces(params), getCityWithCommunes()]);
 

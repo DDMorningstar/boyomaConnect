@@ -23,7 +23,15 @@ export interface PlaceCardData {
   verification_status?: VerificationStatus;
 }
 
-export function PlaceCard({ place, variant = "row", index = 0 }: { place: PlaceCardData; variant?: "row" | "tile"; index?: number }) {
+export function PlaceCard({
+  place,
+  variant = "row",
+  index = 0,
+}: {
+  place: PlaceCardData;
+  variant?: "row" | "tile";
+  index?: number;
+}) {
   const cover = placeMediaUrl(place.cover_path);
   const distance = formatDistance(place.distance_m);
   const delay = { animationDelay: `${Math.min(index, 8) * 40}ms` };
@@ -33,11 +41,17 @@ export function PlaceCard({ place, variant = "row", index = 0 }: { place: PlaceC
       <Link
         href={`/lieux/${place.slug}`}
         style={delay}
-        className="group animate-fade-up flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-[var(--shadow-card)] transition-transform active:scale-[0.98]"
+        className="group animate-fade-up border-line bg-surface flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-[var(--radius-card)] border shadow-[var(--shadow-card)] transition-transform active:scale-[0.98]"
       >
-        <div className="relative aspect-[16/10] bg-surface-2">
+        <div className="bg-surface-2 relative aspect-[16/10]">
           {cover ? (
-            <Image src={cover} alt="" fill sizes="256px" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+            <Image
+              src={cover}
+              alt=""
+              fill
+              sizes="256px"
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            />
           ) : (
             <div className="flex h-full items-center justify-center">
               <CategoryBadge icon={place.category_icon} color={place.category_color} size="lg" />
@@ -46,7 +60,7 @@ export function PlaceCard({ place, variant = "row", index = 0 }: { place: PlaceC
         </div>
         <div className="flex flex-1 flex-col gap-1 p-3.5">
           <h3 className="line-clamp-1 font-semibold">{place.name}</h3>
-          <p className="line-clamp-1 text-sm text-muted">
+          <p className="text-muted line-clamp-1 text-sm">
             {[place.category_name, place.unit_name].filter(Boolean).join(" · ") || "Kisangani"}
           </p>
         </div>
@@ -58,10 +72,10 @@ export function PlaceCard({ place, variant = "row", index = 0 }: { place: PlaceC
     <Link
       href={`/lieux/${place.slug}`}
       style={delay}
-      className="animate-fade-up flex gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3.5 shadow-[var(--shadow-card)] transition-colors hover:border-brand/30 active:scale-[0.99]"
+      className="animate-fade-up border-line bg-surface hover:border-brand/30 flex gap-3.5 rounded-[var(--radius-card)] border p-3.5 shadow-[var(--shadow-card)] transition-colors active:scale-[0.99]"
     >
       {cover ? (
-        <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-surface-2">
+        <div className="bg-surface-2 relative size-20 shrink-0 overflow-hidden rounded-2xl">
           <Image src={cover} alt="" fill sizes="80px" className="object-cover" />
         </div>
       ) : (
@@ -69,18 +83,21 @@ export function PlaceCard({ place, variant = "row", index = 0 }: { place: PlaceC
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 font-semibold leading-snug">{place.name}</h3>
+          <h3 className="line-clamp-2 leading-snug font-semibold">{place.name}</h3>
           {distance && (
-            <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted" title="Distance à vol d'oiseau">
+            <span
+              className="bg-surface-2 text-muted shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
+              title="Distance à vol d'oiseau"
+            >
               {distance}
             </span>
           )}
         </div>
-        <p className="mt-0.5 line-clamp-1 text-sm text-muted">
+        <p className="text-muted mt-0.5 line-clamp-1 text-sm">
           {[place.category_name, place.unit_name].filter(Boolean).join(" · ")}
         </p>
         {place.landmark_description && (
-          <p className="mt-1 flex items-center gap-1 text-xs text-muted">
+          <p className="text-muted mt-1 flex items-center gap-1 text-xs">
             <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
             <span className="line-clamp-1">{place.landmark_description}</span>
           </p>
@@ -102,7 +119,10 @@ export function PlaceCard({ place, variant = "row", index = 0 }: { place: PlaceC
 
 export function PlaceCardSkeleton() {
   return (
-    <div className="flex gap-3.5 rounded-[var(--radius-card)] border border-line bg-surface p-3.5" aria-hidden="true">
+    <div
+      className="border-line bg-surface flex gap-3.5 rounded-[var(--radius-card)] border p-3.5"
+      aria-hidden="true"
+    >
       <div className="skeleton size-14 rounded-2xl" />
       <div className="flex-1 space-y-2 py-1">
         <div className="skeleton h-4 w-3/4 rounded" />

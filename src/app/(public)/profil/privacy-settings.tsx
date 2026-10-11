@@ -6,10 +6,12 @@ export function PrivacySettings() {
   const [enabled, setEnabled] = useState(false);
   useEffect(() => setEnabled(isRecentSearchEnabled()), []);
   return (
-    <label className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-4">
+    <label className="border-line bg-surface flex items-center justify-between gap-4 rounded-2xl border p-4">
       <span>
         <span className="block font-medium">Historique des recherches</span>
-        <span className="text-sm text-muted">Conservé uniquement sur cet appareil. Désactiver efface l&apos;historique.</span>
+        <span className="text-muted text-sm">
+          Conservé uniquement sur cet appareil. Désactiver efface l&apos;historique.
+        </span>
       </span>
       <input
         type="checkbox"

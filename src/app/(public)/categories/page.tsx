@@ -3,7 +3,10 @@ import Link from "next/link";
 import { CategoryBadge } from "@/components/places/category-icon";
 import { getCategoriesWithCounts } from "@/features/places/queries";
 
-export const metadata: Metadata = { title: "Toutes les catégories", description: "Catégories et sous-catégories de lieux à Kisangani." };
+export const metadata: Metadata = {
+  title: "Toutes les catégories",
+  description: "Catégories et sous-catégories de lieux à Kisangani.",
+};
 
 export default async function CategoriesPage() {
   const categories = await getCategoriesWithCounts();
@@ -19,15 +22,18 @@ export default async function CategoriesPage() {
               <Link href={`/categories/${c.slug}`} className="flex items-center gap-3">
                 <CategoryBadge icon={c.icon} color={c.color} />
                 <h2 className="text-lg font-bold">{c.name}</h2>
-                <span className="text-sm text-muted">({c.place_count})</span>
+                <span className="text-muted text-sm">({c.place_count})</span>
               </Link>
               {children.length > 0 && (
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {children.map((s) => (
                     <li key={s.id}>
-                      <Link href={`/categories/${s.slug}`} className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 text-sm ${s.place_count === 0 ? "text-muted" : "font-medium"}`}>
+                      <Link
+                        href={`/categories/${s.slug}`}
+                        className={`border-line bg-surface inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-sm ${s.place_count === 0 ? "text-muted" : "font-medium"}`}
+                      >
                         {s.name}
-                        <span className="text-xs text-muted">{s.place_count}</span>
+                        <span className="text-muted text-xs">{s.place_count}</span>
                       </Link>
                     </li>
                   ))}

@@ -31,7 +31,7 @@ export function ResultsList({
   const pages = Math.ceil(total / PAGE_SIZE);
   return (
     <div>
-      <p className="mb-3 text-sm text-muted" aria-live="polite">
+      <p className="text-muted mb-3 text-sm" aria-live="polite">
         {pluralize(total, "lieu trouvé", "lieux trouvés")}
       </p>
       <ul className="grid gap-3 md:grid-cols-2">
@@ -44,15 +44,21 @@ export function ResultsList({
       {pages > 1 && (
         <nav className="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">
           {page > 1 ? (
-            <Link href={buildHref(page - 1)} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-line bg-surface px-4 text-sm font-medium">
+            <Link
+              href={buildHref(page - 1)}
+              className="border-line bg-surface inline-flex min-h-11 items-center gap-1 rounded-full border px-4 text-sm font-medium"
+            >
               <ChevronLeft className="size-4" aria-hidden="true" /> Précédent
             </Link>
           ) : null}
-          <span className="px-2 text-sm text-muted">
+          <span className="text-muted px-2 text-sm">
             Page {page} / {pages}
           </span>
           {page < pages ? (
-            <Link href={buildHref(page + 1)} className="inline-flex min-h-11 items-center gap-1 rounded-full border border-line bg-surface px-4 text-sm font-medium">
+            <Link
+              href={buildHref(page + 1)}
+              className="border-line bg-surface inline-flex min-h-11 items-center gap-1 rounded-full border px-4 text-sm font-medium"
+            >
               Suivant <ChevronRight className="size-4" aria-hidden="true" />
             </Link>
           ) : null}

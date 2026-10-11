@@ -8,7 +8,13 @@ const PlacesMap = dynamic(() => import("@/components/map/places-map").then((m) =
   loading: () => <div className="skeleton h-full w-full" aria-label="Chargement de la carte" />,
 });
 
-export function MapView({ initial, focusSlug }: { initial?: { lat: number; lng: number }; focusSlug?: string }) {
+export function MapView({
+  initial,
+  focusSlug,
+}: {
+  initial?: { lat: number; lng: number };
+  focusSlug?: string;
+}) {
   const stable = useMemo(() => initial, [initial?.lat, initial?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
   return <PlacesMap initial={stable} focusSlug={focusSlug} />;
 }

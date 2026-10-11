@@ -6,8 +6,14 @@ export const metadata: Metadata = { title: "Inscription", robots: { index: false
 
 export default function Page() {
   return (
-    <InfoPage title="Inscription" intro="Les comptes utilisateurs ouvrent à la phase 4 (authentification Supabase).">
-      <p>En attendant, toutes les fonctions de consultation sont disponibles sans compte : recherche, carte, fiches et favoris locaux.</p>
+    <InfoPage
+      title="Inscription"
+      intro="Les comptes utilisateurs ouvrent à la phase 4 (authentification Supabase)."
+    >
+      <p>
+        En attendant, toutes les fonctions de consultation sont disponibles sans compte : recherche, carte,
+        fiches et favoris locaux.
+      </p>
       <ButtonLink href="/explorer">Explorer les lieux</ButtonLink>
     </InfoPage>
   );

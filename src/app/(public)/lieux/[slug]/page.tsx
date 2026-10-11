@@ -33,13 +33,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = res.place;
   const where = [p.unit?.name, "Kisangani"].filter(Boolean).join(", ");
   const description =
-    p.short_description ?? `${p.primary_category?.name ?? "Lieu"} à ${where} : contacts, adresse et itinéraire sur Boyoma Connect.`;
+    p.short_description ??
+    `${p.primary_category?.name ?? "Lieu"} à ${where} : contacts, adresse et itinéraire sur Boyoma Connect.`;
   const cover = placeMediaUrl(p.cover_path);
   return {
     title: `${p.name} — ${where}`,
     description,
     alternates: { canonical: `/lieux/${p.slug}` },
-    openGraph: { title: p.name, description, url: `/lieux/${p.slug}`, images: cover ? [{ url: cover }] : undefined },
+    openGraph: {
+      title: p.name,
+      description,
+      url: `/lieux/${p.slug}`,
+      images: cover ? [{ url: cover }] : undefined,
+    },
     twitter: { card: cover ? "summary_large_image" : "summary", title: p.name, description },
   };
 }
@@ -68,7 +74,9 @@ function jsonLd(p: PlaceDetail) {
         ? { "@type": "GeoCoordinates", latitude: p.latitude, longitude: p.longitude }
         : undefined,
     aggregateRating:
-      p.rating_count > 0 && p.rating_avg ? { "@type": "AggregateRating", ratingValue: p.rating_avg, reviewCount: p.rating_count } : undefined,
+      p.rating_count > 0 && p.rating_avg
+        ? { "@type": "AggregateRating", ratingValue: p.rating_avg, reviewCount: p.rating_count }
+        : undefined,
   };
 }
 
@@ -80,27 +88,44 @@ export default async function PlacePage({ params }: Props) {
   const p = res.place;
   const reviews = await getPublicReviews(p.id, 5);
 
-  const cover = placeMediaUrl(p.cover_path) ?? placeMediaUrl(p.place_media.find((m) => m.kind === "cover")?.storage_path);
+  const cover =
+    placeMediaUrl(p.cover_path) ?? placeMediaUrl(p.place_media.find((m) => m.kind === "cover")?.storage_path);
   const gallery = p.place_media.filter((m) => m.kind === "gallery");
   const phone = p.place_contacts.find((c) => c.kind === "phone")?.value ?? null;
   const whatsapp = p.place_contacts.find((c) => c.kind === "whatsapp")?.value ?? null;
   const otherContacts = p.place_contacts.filter((c) => !["phone", "whatsapp"].includes(c.kind));
-  const extraCategories = p.place_categories.map((pc) => pc.category).filter((c) => c && c.id !== p.primary_category?.id);
+  const extraCategories = p.place_categories
+    .map((pc) => pc.category)
+    .filter((c) => c && c.id !== p.primary_category?.id);
   const hasCoords = p.latitude != null && p.longitude != null;
 
   return (
     <article className="pt-4">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(p)).replace(/</g, "\\u003c") }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(p)).replace(/</g, "\\u003c") }}
+      />
       <ViewTracker placeId={p.id} />
 
-      <div className="relative -mx-4 overflow-hidden bg-surface-2 md:mx-0 md:rounded-[var(--radius-card)]">
+      <div className="bg-surface-2 relative -mx-4 overflow-hidden md:mx-0 md:rounded-[var(--radius-card)]">
         {cover ? (
           <div className="relative aspect-[16/9] max-h-96 w-full">
-            <Image src={cover} alt={`Photo de ${p.name}`} fill priority sizes="(min-width: 768px) 1152px, 100vw" className="object-cover" />
+            <Image
+              src={cover}
+              alt={`Photo de ${p.name}`}
+              fill
+              priority
+              sizes="(min-width: 768px) 1152px, 100vw"
+              className="object-cover"
+            />
           </div>
         ) : (
-          <div className="flex aspect-[16/7] items-center justify-center bg-gradient-to-br from-night to-brand">
-            <CategoryIcon name={p.primary_category?.icon} className="size-14 text-white/80" strokeWidth={1.5} />
+          <div className="from-night to-brand flex aspect-[16/7] items-center justify-center bg-gradient-to-br">
+            <CategoryIcon
+              name={p.primary_category?.icon}
+              className="size-14 text-white/80"
+              strokeWidth={1.5}
+            />
           </div>
         )}
       </div>
@@ -108,24 +133,43 @@ export default async function PlacePage({ params }: Props) {
       <header className="mt-4">
         <div className="flex flex-wrap items-center gap-2">
           {p.primary_category && (
-            <Link href={`/categories/${p.primary_category.slug}`} className="inline-flex items-center gap-1.5 text-sm font-medium" style={{ color: p.primary_category.color }}>
+            <Link
+              href={`/categories/${p.primary_category.slug}`}
+              className="inline-flex items-center gap-1.5 text-sm font-medium"
+              style={{ color: p.primary_category.color }}
+            >
               <CategoryIcon name={p.primary_category.icon} className="size-4" /> {p.primary_category.name}
             </Link>
           )}
           <VerificationBadge status={p.verification_status} />
-          {p.activity_status === "temporarily_closed" && <span className="rounded-full bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">Fermé temporairement</span>}
-          {p.activity_status === "permanently_closed" && <span className="rounded-full bg-danger/15 px-2 py-0.5 text-xs font-medium text-danger">Fermé définitivement</span>}
+          {p.activity_status === "temporarily_closed" && (
+            <span className="bg-warning/15 text-warning rounded-full px-2 py-0.5 text-xs font-medium">
+              Fermé temporairement
+            </span>
+          )}
+          {p.activity_status === "permanently_closed" && (
+            <span className="bg-danger/15 text-danger rounded-full px-2 py-0.5 text-xs font-medium">
+              Fermé définitivement
+            </span>
+          )}
         </div>
-        <h1 className="mt-2 text-[1.65rem] font-extrabold leading-tight tracking-tight md:text-3xl">{p.name}</h1>
-        {p.official_name && p.official_name !== p.name && <p className="text-sm text-muted">Nom officiel : {p.official_name}</p>}
-        <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
+        <h1 className="mt-2 text-[1.65rem] leading-tight font-extrabold tracking-tight md:text-3xl">
+          {p.name}
+        </h1>
+        {p.official_name && p.official_name !== p.name && (
+          <p className="text-muted text-sm">Nom officiel : {p.official_name}</p>
+        )}
+        <p className="text-muted mt-1 flex items-center gap-1.5 text-sm">
           <MapPin className="size-4 shrink-0" aria-hidden="true" />
-          {[p.address_text, p.unit ? `Commune de ${p.unit.name}` : null, "Kisangani"].filter(Boolean).join(", ")}
+          {[p.address_text, p.unit ? `Commune de ${p.unit.name}` : null, "Kisangani"]
+            .filter(Boolean)
+            .join(", ")}
         </p>
         {p.rating_count > 0 && p.rating_avg && (
           <p className="mt-1 flex items-center gap-1 text-sm font-medium">
             <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
-            {Number(p.rating_avg).toFixed(1).replace(".", ",")} <span className="text-muted">· {p.rating_count} avis</span>
+            {Number(p.rating_avg).toFixed(1).replace(".", ",")}{" "}
+            <span className="text-muted">· {p.rating_count} avis</span>
           </p>
         )}
       </header>
@@ -155,21 +199,39 @@ export default async function PlacePage({ params }: Props) {
             <section>
               <h2 className="mb-2 text-lg font-bold">Présentation</h2>
               {p.short_description && <p className="font-medium">{p.short_description}</p>}
-              {p.full_description && <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-muted">{p.full_description}</p>}
+              {p.full_description && (
+                <p className="text-muted mt-2 text-[15px] leading-relaxed whitespace-pre-line">
+                  {p.full_description}
+                </p>
+              )}
             </section>
           )}
 
-          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-4">
-            <h2 className="mb-3 flex items-center gap-2 text-lg font-bold"><Route className="size-5 text-brand" aria-hidden="true" /> Comment s&apos;y rendre</h2>
-            {p.landmark_description && <p className="text-[15px]"><span className="font-semibold">Repère : </span>{p.landmark_description}</p>}
-            {p.directions && <p className="mt-2 whitespace-pre-line text-[15px] text-muted">{p.directions}</p>}
-            {!p.landmark_description && !p.directions && <p className="text-sm text-muted">Aucune indication de chemin renseignée.</p>}
-            <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-line pt-3 text-sm">
+          <section className="border-line bg-surface rounded-[var(--radius-card)] border p-4">
+            <h2 className="mb-3 flex items-center gap-2 text-lg font-bold">
+              <Route className="text-brand size-5" aria-hidden="true" /> Comment s&apos;y rendre
+            </h2>
+            {p.landmark_description && (
+              <p className="text-[15px]">
+                <span className="font-semibold">Repère : </span>
+                {p.landmark_description}
+              </p>
+            )}
+            {p.directions && (
+              <p className="text-muted mt-2 text-[15px] whitespace-pre-line">{p.directions}</p>
+            )}
+            {!p.landmark_description && !p.directions && (
+              <p className="text-muted text-sm">Aucune indication de chemin renseignée.</p>
+            )}
+            <div className="border-line mt-3 flex flex-wrap items-center gap-3 border-t pt-3 text-sm">
               <span className="text-muted">{PRECISION_LABEL[p.geographic_precision]}</span>
               {hasCoords && (
                 <>
                   <span className="font-mono text-xs">{formatCoordinates(p.latitude!, p.longitude!)}</span>
-                  <Link href={`/carte?lieu=${p.slug}&lat=${p.latitude}&lng=${p.longitude}`} className="inline-flex items-center gap-1 font-semibold text-brand">
+                  <Link
+                    href={`/carte?lieu=${p.slug}&lat=${p.latitude}&lng=${p.longitude}`}
+                    className="text-brand inline-flex items-center gap-1 font-semibold"
+                  >
                     <MapIcon className="size-4" aria-hidden="true" /> Voir sur la carte
                   </Link>
                 </>
@@ -182,9 +244,9 @@ export default async function PlacePage({ params }: Props) {
               <h2 className="mb-2 text-lg font-bold">Services proposés</h2>
               <ul className="grid gap-2 sm:grid-cols-2">
                 {p.place_services.map((s) => (
-                  <li key={s.id} className="rounded-2xl bg-surface-2 p-3">
+                  <li key={s.id} className="bg-surface-2 rounded-2xl p-3">
                     <span className="font-medium">{s.name}</span>
-                    {s.description && <p className="text-sm text-muted">{s.description}</p>}
+                    {s.description && <p className="text-muted text-sm">{s.description}</p>}
                   </li>
                 ))}
               </ul>
@@ -194,12 +256,22 @@ export default async function PlacePage({ params }: Props) {
           {gallery.length > 0 && (
             <section>
               <h2 className="mb-2 text-lg font-bold">Photos</h2>
-              <div className="scrollbar-none -mx-4 flex snap-x gap-2 overflow-x-auto px-4">
+              <div className="-mx-4 flex snap-x scrollbar-none gap-2 overflow-x-auto px-4">
                 {gallery.map((m) => {
                   const src = placeMediaUrl(m.storage_path);
                   return src ? (
-                    <div key={m.id} className="relative aspect-[4/3] w-64 shrink-0 snap-start overflow-hidden rounded-2xl bg-surface-2">
-                      <Image src={src} alt={m.caption ?? `Photo de ${p.name}`} fill sizes="256px" loading="lazy" className="object-cover" />
+                    <div
+                      key={m.id}
+                      className="bg-surface-2 relative aspect-[4/3] w-64 shrink-0 snap-start overflow-hidden rounded-2xl"
+                    >
+                      <Image
+                        src={src}
+                        alt={m.caption ?? `Photo de ${p.name}`}
+                        fill
+                        sizes="256px"
+                        loading="lazy"
+                        className="object-cover"
+                      />
                     </div>
                   ) : null;
                 })}
@@ -210,18 +282,26 @@ export default async function PlacePage({ params }: Props) {
           <section>
             <h2 className="mb-2 text-lg font-bold">Avis</h2>
             {reviews.length === 0 ? (
-              <p className="text-sm text-muted">Aucun avis publié pour l&apos;instant.</p>
+              <p className="text-muted text-sm">Aucun avis publié pour l&apos;instant.</p>
             ) : (
               <ul className="space-y-3">
                 {reviews.map((r) => (
-                  <li key={r.id} className="rounded-2xl border border-line bg-surface p-4">
+                  <li key={r.id} className="border-line bg-surface rounded-2xl border p-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-semibold">{r.author_name}</span>
-                      <span className="inline-flex items-center gap-1"><Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />{r.rating}/5</span>
+                      <span className="inline-flex items-center gap-1">
+                        <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+                        {r.rating}/5
+                      </span>
                     </div>
                     {r.title && <p className="mt-1 font-medium">{r.title}</p>}
-                    {r.body && <p className="mt-1 text-sm text-muted">{r.body}</p>}
-                    {r.owner_response && <p className="mt-2 rounded-xl bg-surface-2 p-3 text-sm"><span className="font-semibold">Réponse de l&apos;établissement : </span>{r.owner_response}</p>}
+                    {r.body && <p className="text-muted mt-1 text-sm">{r.body}</p>}
+                    {r.owner_response && (
+                      <p className="bg-surface-2 mt-2 rounded-xl p-3 text-sm">
+                        <span className="font-semibold">Réponse de l&apos;établissement : </span>
+                        {r.owner_response}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -230,22 +310,31 @@ export default async function PlacePage({ params }: Props) {
         </div>
 
         <aside className="space-y-4">
-          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-4">
+          <section className="border-line bg-surface rounded-[var(--radius-card)] border p-4">
             <h2 className="mb-2 font-bold">Horaires</h2>
             <OpeningHours hours={p.place_hours} verifiedAt={p.hours_verified_at} />
           </section>
 
           {otherContacts.length > 0 && (
-            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-4">
+            <section className="border-line bg-surface rounded-[var(--radius-card)] border p-4">
               <h2 className="mb-2 font-bold">Contacts</h2>
               <ul className="space-y-2 text-sm">
                 {otherContacts.map((c) => (
                   <li key={c.id}>
                     {c.kind === "email" ? (
-                      <a href={`mailto:${c.value}`} className="inline-flex items-center gap-2 text-brand"><Mail className="size-4" aria-hidden="true" />{c.value}</a>
+                      <a href={`mailto:${c.value}`} className="text-brand inline-flex items-center gap-2">
+                        <Mail className="size-4" aria-hidden="true" />
+                        {c.value}
+                      </a>
                     ) : /^https?:\/\//.test(c.value) ? (
-                      <a href={c.value} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-2 break-all text-brand">
-                        <Globe className="size-4 shrink-0" aria-hidden="true" />{c.label ?? c.value.replace(/^https?:\/\//, "")}
+                      <a
+                        href={c.value}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className="text-brand inline-flex items-center gap-2 break-all"
+                      >
+                        <Globe className="size-4 shrink-0" aria-hidden="true" />
+                        {c.label ?? c.value.replace(/^https?:\/\//, "")}
                       </a>
                     ) : (
                       <span>{c.value}</span>
@@ -256,42 +345,64 @@ export default async function PlacePage({ params }: Props) {
             </section>
           )}
 
-          {(p.place_amenity_links.length > 0 || p.wheelchair_accessible != null || p.payment_methods.length > 0 || p.price_range) && (
-            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-4 text-sm">
+          {(p.place_amenity_links.length > 0 ||
+            p.wheelchair_accessible != null ||
+            p.payment_methods.length > 0 ||
+            p.price_range) && (
+            <section className="border-line bg-surface rounded-[var(--radius-card)] border p-4 text-sm">
               <h2 className="mb-2 font-bold">Informations pratiques</h2>
               <ul className="space-y-1.5">
-                {p.place_amenity_links.map((a) => a.amenity && <li key={a.amenity.key}>• {a.amenity.name}</li>)}
+                {p.place_amenity_links.map(
+                  (a) => a.amenity && <li key={a.amenity.key}>• {a.amenity.name}</li>,
+                )}
                 {p.wheelchair_accessible != null && (
-                  <li className="flex items-center gap-1.5"><Accessibility className="size-4" aria-hidden="true" />{p.wheelchair_accessible ? "Accessible en fauteuil roulant" : "Non accessible en fauteuil roulant"}</li>
+                  <li className="flex items-center gap-1.5">
+                    <Accessibility className="size-4" aria-hidden="true" />
+                    {p.wheelchair_accessible
+                      ? "Accessible en fauteuil roulant"
+                      : "Non accessible en fauteuil roulant"}
+                  </li>
                 )}
                 {p.payment_methods.length > 0 && <li>Paiements déclarés : {p.payment_methods.join(", ")}</li>}
                 {p.price_range && <li>Gamme de prix : {"$".repeat(p.price_range)}</li>}
               </ul>
-              <p className="mt-2 text-xs text-muted">Informations déclarées, susceptibles d&apos;évoluer.</p>
+              <p className="text-muted mt-2 text-xs">Informations déclarées, susceptibles d&apos;évoluer.</p>
             </section>
           )}
 
           {extraCategories.length > 0 && (
             <ul className="flex flex-wrap gap-2">
-              {extraCategories.map((c) => c && (
-                <li key={c.id}>
-                  <Link href={`/categories/${c.slug}`} className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1.5 text-xs font-medium">
-                    <CategoryBadge icon={c.icon} color={c.color} size="sm" /> {c.name}
-                  </Link>
-                </li>
-              ))}
+              {extraCategories.map(
+                (c) =>
+                  c && (
+                    <li key={c.id}>
+                      <Link
+                        href={`/categories/${c.slug}`}
+                        className="bg-surface-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
+                      >
+                        <CategoryBadge icon={c.icon} color={c.color} size="sm" /> {c.name}
+                      </Link>
+                    </li>
+                  ),
+              )}
             </ul>
           )}
 
-          <section className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-sm">
+          <section className="border-line bg-surface space-y-3 rounded-[var(--radius-card)] border p-4 text-sm">
             <p className="text-muted">
-              {p.last_verified_at ? `Dernière vérification : ${formatDate(p.last_verified_at)}` : "Fiche pas encore vérifiée sur le terrain."}
-              <br />Mise à jour : {formatDate(p.updated_at)}
+              {p.last_verified_at
+                ? `Dernière vérification : ${formatDate(p.last_verified_at)}`
+                : "Fiche pas encore vérifiée sur le terrain."}
+              <br />
+              Mise à jour : {formatDate(p.updated_at)}
             </p>
             {p.ownership_status === "unclaimed" && (
               <p className="flex items-start gap-2">
-                <Building2 className="size-4 shrink-0 text-brand" aria-hidden="true" />
-                <span>Vous gérez cet établissement ? La revendication de fiche ouvre avec l&apos;espace professionnel.</span>
+                <Building2 className="text-brand size-4 shrink-0" aria-hidden="true" />
+                <span>
+                  Vous gérez cet établissement ? La revendication de fiche ouvre avec l&apos;espace
+                  professionnel.
+                </span>
               </p>
             )}
             <ReportForm placeId={p.id} />

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatCoordinates, formatDistance, haversineMeters, normalizeText, toWhatsAppNumber } from "@/lib/format";
+import {
+  formatCoordinates,
+  formatDistance,
+  haversineMeters,
+  normalizeText,
+  toWhatsAppNumber,
+} from "@/lib/format";
 
 describe("formatDistance", () => {
   it("arrondit les petites distances à 10 m (minimum 10 m)", () => {

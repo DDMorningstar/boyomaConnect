@@ -31,40 +31,73 @@ export function ReportForm({ placeId }: { placeId: string }) {
     });
     if (error) {
       setState("error");
-      setMessage(error.message.includes("Trop") ? "Trop de signalements récents, réessayez plus tard." : "Envoi impossible. Vérifiez votre connexion.");
+      setMessage(
+        error.message.includes("Trop")
+          ? "Trop de signalements récents, réessayez plus tard."
+          : "Envoi impossible. Vérifiez votre connexion.",
+      );
     } else setState("sent");
   }
 
   if (state === "sent") {
-    return <p role="status" className="rounded-2xl bg-success/10 p-4 text-sm text-success">Merci ! Votre signalement sera examiné par un modérateur.</p>;
+    return (
+      <p role="status" className="bg-success/10 text-success rounded-2xl p-4 text-sm">
+        Merci ! Votre signalement sera examiné par un modérateur.
+      </p>
+    );
   }
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-ink">
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="text-muted hover:text-ink inline-flex items-center gap-2 text-sm font-medium"
+      >
         <Flag className="size-4" aria-hidden="true" /> Signaler une erreur
       </button>
     );
   }
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-2xl border border-line bg-surface p-4">
+    <form onSubmit={onSubmit} className="border-line bg-surface space-y-3 rounded-2xl border p-4">
       <label className="block text-sm font-medium">
         Motif
-        <select name="reason" required className="mt-1 block h-11 w-full rounded-xl border border-line bg-bg px-3">
+        <select
+          name="reason"
+          required
+          className="border-line bg-bg mt-1 block h-11 w-full rounded-xl border px-3"
+        >
           {REASONS.map(([v, l]) => (
-            <option key={v} value={v}>{l}</option>
+            <option key={v} value={v}>
+              {l}
+            </option>
           ))}
         </select>
       </label>
       <label className="block text-sm font-medium">
         Précisions (facultatif)
-        <textarea name="details" maxLength={2000} rows={3} className="mt-1 block w-full rounded-xl border border-line bg-bg p-3" />
+        <textarea
+          name="details"
+          maxLength={2000}
+          rows={3}
+          className="border-line bg-bg mt-1 block w-full rounded-xl border p-3"
+        />
       </label>
-      {state === "error" && <p role="alert" className="text-sm text-danger">{message}</p>}
+      {state === "error" && (
+        <p role="alert" className="text-danger text-sm">
+          {message}
+        </p>
+      )}
       <div className="flex gap-2">
-        <button type="submit" disabled={state === "sending"} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-brand px-5 text-sm font-semibold text-white disabled:opacity-60">
+        <button
+          type="submit"
+          disabled={state === "sending"}
+          className="bg-brand inline-flex min-h-11 items-center gap-2 rounded-full px-5 text-sm font-semibold text-white disabled:opacity-60"
+        >
           {state === "sending" && <Loader2 className="size-4 animate-spin" aria-hidden="true" />} Envoyer
         </button>
-        <button type="button" onClick={() => setOpen(false)} className="min-h-11 rounded-full px-4 text-sm">Annuler</button>
+        <button type="button" onClick={() => setOpen(false)} className="min-h-11 rounded-full px-4 text-sm">
+          Annuler
+        </button>
       </div>
     </form>
   );

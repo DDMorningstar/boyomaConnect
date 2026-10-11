@@ -1,7 +1,14 @@
 "use client";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
-export type PlaceEventType = "view" | "phone_click" | "whatsapp_click" | "website_click" | "directions_request" | "share" | "favorite_add";
+export type PlaceEventType =
+  | "view"
+  | "phone_click"
+  | "whatsapp_click"
+  | "website_click"
+  | "directions_request"
+  | "share"
+  | "favorite_add";
 
 const SESSION_KEY = "boyoma.session";
 

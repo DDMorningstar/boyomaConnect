@@ -12,7 +12,10 @@ import type {
 } from "@/types/places";
 
 export class DataError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown,
+  ) {
     super(message);
     this.name = "DataError";
   }
@@ -24,12 +27,17 @@ const CATEGORY_FIELDS = "id, parent_id, name, slug, description, icon, color, so
 export const getCategoriesWithCounts = cache(async (): Promise<CategoryWithCount[]> => {
   const supabase = await createSupabaseServerClient();
   const [cats, counts] = await Promise.all([
-    supabase.from("categories").select(CATEGORY_FIELDS).order("sort_order").returns<Category[]>(),
-    supabase.rpc("category_place_counts").returns<{ category_id: string; place_count: number }[]>(),
+    supabase
+      .from("categories")
+      .select(CATEGORY_FIELDS)
+      .order("sort_order")
+      .overrideTypes<Category[], { merge: false }>(),
+    supabase.rpc("category_place_counts"),
   ]);
   if (cats.error) throw new DataError("Impossible de charger les catégories", cats.error);
   if (counts.error) throw new DataError("Impossible de compter les lieux", counts.error);
-  const byId = new Map((counts.data ?? []).map((c) => [c.category_id, Number(c.place_count)]));
+  const countRows: { category_id: string; place_count: number }[] = counts.data ?? [];
+  const byId = new Map(countRows.map((c) => [c.category_id, Number(c.place_count)]));
   return (cats.data ?? []).map((c) => ({ ...c, place_count: byId.get(c.id) ?? 0 }));
 });
 
@@ -53,13 +61,12 @@ export const getCityWithCommunes = cache(async (citySlug = "kisangani") => {
     .maybeSingle<GeoUnit>();
   if (error) throw new DataError("Impossible de charger la ville", error);
   if (!city) return null;
-  const { data: communes, error: e2 } = await supabase
-    .rpc("unit_place_counts", { p_parent_id: city.id })
-    .returns<{ unit_id: string; slug: string; name: string; place_count: number }[]>();
+  const { data, error: e2 } = await supabase.rpc("unit_place_counts", { p_parent_id: city.id });
   if (e2) throw new DataError("Impossible de charger les communes", e2);
+  const communes: { unit_id: string; slug: string; name: string; place_count: number }[] = data ?? [];
   return {
     city,
-    communes: (communes ?? []).map((c) => ({ ...c, place_count: Number(c.place_count) })),
+    communes: communes.map((c) => ({ ...c, place_count: Number(c.place_count) })),
   };
 });
 
@@ -72,30 +79,26 @@ export const getCommuneBySlug = cache(async (slug: string, citySlug = "kisangani
 
 export async function searchPlaces(params: ParsedSearch & { categorySlug?: string; unitId?: string }) {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .rpc("search_places", {
-      p_query: params.q ?? null,
-      p_category_slug: params.categorySlug ?? params.categorie ?? null,
-      p_unit_id: params.unitId ?? params.commune ?? null,
-      p_latitude: params.lat ?? null,
-      p_longitude: params.lng ?? null,
-      p_open_now: params.ouvert,
-      p_verified_only: params.verifie,
-      p_sort: params.tri,
-      p_limit: PAGE_SIZE,
-      p_offset: (params.page - 1) * PAGE_SIZE,
-    })
-    .returns<PlaceSearchRow[]>();
+  const { data, error } = await supabase.rpc("search_places", {
+    p_query: params.q ?? null,
+    p_category_slug: params.categorySlug ?? params.categorie ?? null,
+    p_unit_id: params.unitId ?? params.commune ?? null,
+    p_latitude: params.lat ?? null,
+    p_longitude: params.lng ?? null,
+    p_open_now: params.ouvert,
+    p_verified_only: params.verifie,
+    p_sort: params.tri,
+    p_limit: PAGE_SIZE,
+    p_offset: (params.page - 1) * PAGE_SIZE,
+  });
   if (error) throw new DataError("La recherche a échoué", error);
-  const rows = data ?? [];
+  const rows: PlaceSearchRow[] = data ?? [];
   return { rows, total: rows[0] ? Number(rows[0].total_count) : 0 };
 }
 
 export const getRecentPlaces = cache(async (limit = 8): Promise<PlaceSearchRow[]> => {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .rpc("search_places", { p_sort: "recent", p_limit: limit })
-    .returns<PlaceSearchRow[]>();
+  const { data, error } = await supabase.rpc("search_places", { p_sort: "recent", p_limit: limit });
   if (error) throw new DataError("Impossible de charger les lieux récents", error);
   return data ?? [];
 });
@@ -115,9 +118,7 @@ export interface PopularPlace {
 
 export const getPopularPlaces = cache(async (limit = 8): Promise<PopularPlace[]> => {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .rpc("popular_places", { p_days: 30, p_limit: limit })
-    .returns<PopularPlace[]>();
+  const { data, error } = await supabase.rpc("popular_places", { p_days: 30, p_limit: limit });
   if (error) throw new DataError("Impossible de charger les lieux populaires", error);
   return data ?? [];
 });
@@ -133,9 +134,10 @@ export interface SponsoredPlace {
 
 export const getSponsoredPlaces = cache(async (): Promise<SponsoredPlace[]> => {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .rpc("active_sponsored_places", { p_placement: "home_featured", p_limit: 3 })
-    .returns<SponsoredPlace[]>();
+  const { data, error } = await supabase.rpc("active_sponsored_places", {
+    p_placement: "home_featured",
+    p_limit: 3,
+  });
   if (error) return []; // non bloquant : l'accueil reste utilisable sans publicité
   return data ?? [];
 });
@@ -156,9 +158,7 @@ const PLACE_DETAIL_SELECT = `
 `;
 
 export type PlaceLookup =
-  | { kind: "found"; place: PlaceDetail }
-  | { kind: "redirect"; slug: string }
-  | { kind: "not_found" };
+  { kind: "found"; place: PlaceDetail } | { kind: "redirect"; slug: string } | { kind: "not_found" };
 
 export const getPlaceBySlug = cache(async (slug: string): Promise<PlaceLookup> => {
   if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length > 120) return { kind: "not_found" };
@@ -174,16 +174,18 @@ export const getPlaceBySlug = cache(async (slug: string): Promise<PlaceLookup> =
   if (error) throw new DataError("Impossible de charger la fiche", error);
   if (data) return { kind: "found", place: data };
 
-  const { data: current } = await supabase.rpc("resolve_place_slug", { p_slug: slug }).returns<string | null>();
+  const { data: current } = await supabase.rpc("resolve_place_slug", { p_slug: slug });
   if (typeof current === "string" && current !== slug) return { kind: "redirect", slug: current };
   return { kind: "not_found" };
 });
 
 export async function getPublicReviews(placeId: string, limit = 10): Promise<PublicReview[]> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .rpc("place_public_reviews", { p_place_id: placeId, p_limit: limit, p_offset: 0 })
-    .returns<PublicReview[]>();
+  const { data, error } = await supabase.rpc("place_public_reviews", {
+    p_place_id: placeId,
+    p_limit: limit,
+    p_offset: 0,
+  });
   if (error) return [];
   return data ?? [];
 }

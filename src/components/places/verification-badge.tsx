@@ -9,7 +9,13 @@ const LABELS: Record<VerificationStatus, { label: string; tone: "ok" | "info" | 
   unverified: { label: "Non vérifié", tone: "muted" },
 };
 
-export function VerificationBadge({ status, compact = false }: { status: VerificationStatus; compact?: boolean }) {
+export function VerificationBadge({
+  status,
+  compact = false,
+}: {
+  status: VerificationStatus;
+  compact?: boolean;
+}) {
   const { label, tone } = LABELS[status];
   const Icon = tone === "ok" ? (status === "agent_verified" ? ShieldCheck : BadgeCheck) : CircleDashed;
   const cls =

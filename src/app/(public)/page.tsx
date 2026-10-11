@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { ChevronRight, Info, LocateFixed, Map as MapIcon, MapPin, Megaphone, Plus, Sparkles } from "lucide-react";
+import {
+  ChevronRight,
+  Info,
+  LocateFixed,
+  Map as MapIcon,
+  MapPin,
+  Megaphone,
+  Plus,
+  Sparkles,
+} from "lucide-react";
 import { SearchBar } from "@/components/search/search-bar";
 import { CategoryBadge } from "@/components/places/category-icon";
 import { PlaceCard } from "@/components/places/place-card";
@@ -45,22 +54,32 @@ export default async function HomePage() {
   return (
     <div className="pt-5">
       {/* En-tête : emplacement + recherche */}
-      <section className="relative overflow-hidden rounded-[1.75rem] bg-night px-5 pb-6 pt-5 text-white shadow-[var(--shadow-float)] md:px-8 md:pb-8 md:pt-7">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-brand/40 blur-3xl" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 left-10 size-56 rounded-full bg-cyan/25 blur-3xl" />
+      <section className="bg-night relative overflow-hidden rounded-[1.75rem] px-5 pt-5 pb-6 text-white shadow-[var(--shadow-float)] md:px-8 md:pt-7 md:pb-8">
+        <div
+          aria-hidden="true"
+          className="bg-brand/40 pointer-events-none absolute -top-20 -right-16 size-64 rounded-full blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="bg-cyan/25 pointer-events-none absolute -bottom-24 left-10 size-56 rounded-full blur-3xl"
+        />
         <div className="relative">
-          <Link href="/explorer" className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium backdrop-blur">
-            <MapPin className="size-4 text-cyan" aria-hidden="true" />
+          <Link
+            href="/explorer"
+            className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium backdrop-blur"
+          >
+            <MapPin className="text-cyan size-4" aria-hidden="true" />
             {city?.city.name ?? "Kisangani"} · Tshopo
             <ChevronRight className="size-4 opacity-70" aria-hidden="true" />
           </Link>
-          <h1 className="mt-4 max-w-xl text-[1.7rem] font-extrabold leading-tight tracking-tight md:text-4xl">
+          <h1 className="mt-4 max-w-xl text-[1.7rem] leading-tight font-extrabold tracking-tight md:text-4xl">
             Trouvez le bon lieu à Kisangani, <span className="text-cyan">simplement.</span>
           </h1>
           <p className="mt-2 max-w-lg text-sm text-white/70 md:text-base">
-            Pharmacies, hôtels, restaurants, garages, écoles, services publics… avec leurs contacts et leur position.
+            Pharmacies, hôtels, restaurants, garages, écoles, services publics… avec leurs contacts et leur
+            position.
           </p>
-          <div className="mt-5 text-ink">
+          <div className="text-ink mt-5">
             <SearchBar />
           </div>
           <p className="mt-3 text-xs text-white/60">
@@ -72,21 +91,40 @@ export default async function HomePage() {
       </section>
 
       {dataUnavailable && (
-        <div role="alert" className="mt-4 flex gap-3 rounded-2xl border border-warning/30 bg-warning/10 p-4 text-sm">
-          <Info className="size-5 shrink-0 text-warning" aria-hidden="true" />
+        <div
+          role="alert"
+          className="border-warning/30 bg-warning/10 mt-4 flex gap-3 rounded-2xl border p-4 text-sm"
+        >
+          <Info className="text-warning size-5 shrink-0" aria-hidden="true" />
           Les données sont momentanément indisponibles. Vérifiez votre connexion puis rechargez la page.
         </div>
       )}
 
       {/* Accès rapides */}
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <Link href="/carte" className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-[var(--shadow-card)] active:scale-[0.98]">
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-brand/10 text-brand"><MapIcon className="size-5" aria-hidden="true" /></span>
-          <span><span className="block font-semibold">Carte</span><span className="text-xs text-muted">Explorer la ville</span></span>
+        <Link
+          href="/carte"
+          className="group border-line bg-surface flex items-center gap-3 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] active:scale-[0.98]"
+        >
+          <span className="bg-brand/10 text-brand flex size-11 items-center justify-center rounded-2xl">
+            <MapIcon className="size-5" aria-hidden="true" />
+          </span>
+          <span>
+            <span className="block font-semibold">Carte</span>
+            <span className="text-muted text-xs">Explorer la ville</span>
+          </span>
         </Link>
-        <Link href="/proximite" className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 shadow-[var(--shadow-card)] active:scale-[0.98]">
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-cyan/10 text-cyan"><LocateFixed className="size-5" aria-hidden="true" /></span>
-          <span><span className="block font-semibold">À proximité</span><span className="text-xs text-muted">Autour de moi</span></span>
+        <Link
+          href="/proximite"
+          className="group border-line bg-surface flex items-center gap-3 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] active:scale-[0.98]"
+        >
+          <span className="bg-cyan/10 text-cyan flex size-11 items-center justify-center rounded-2xl">
+            <LocateFixed className="size-5" aria-hidden="true" />
+          </span>
+          <span>
+            <span className="block font-semibold">À proximité</span>
+            <span className="text-muted text-xs">Autour de moi</span>
+          </span>
         </Link>
       </div>
 
@@ -101,8 +139,10 @@ export default async function HomePage() {
                   className={`flex flex-col items-center gap-1.5 rounded-2xl p-2 text-center transition-transform active:scale-95 ${c.place_count === 0 ? "opacity-60" : ""}`}
                 >
                   <CategoryBadge icon={c.icon} color={c.color} size="lg" />
-                  <span className="line-clamp-2 text-[11px] font-medium leading-tight">{c.name}</span>
-                  <span className="text-[10px] text-muted">{c.place_count > 0 ? c.place_count : "bientôt"}</span>
+                  <span className="line-clamp-2 text-[11px] leading-tight font-medium">{c.name}</span>
+                  <span className="text-muted text-[10px]">
+                    {c.place_count > 0 ? c.place_count : "bientôt"}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -112,16 +152,24 @@ export default async function HomePage() {
 
       {/* Offres sponsorisées : toujours identifiées */}
       {sponsored.length > 0 && (
-        <Section title="Offres sponsorisées" subtitle="Contenus payés par les établissements, distincts des résultats naturels.">
+        <Section
+          title="Offres sponsorisées"
+          subtitle="Contenus payés par les établissements, distincts des résultats naturels."
+        >
           <ul className="grid gap-3 md:grid-cols-3">
             {sponsored.map((s) => (
               <li key={s.campaign_id}>
-                <Link href={`/lieux/${s.slug}`} className="flex flex-col gap-1 rounded-[var(--radius-card)] border border-amber-400/40 bg-amber-50 p-4 dark:bg-amber-400/10">
-                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                <Link
+                  href={`/lieux/${s.slug}`}
+                  className="flex flex-col gap-1 rounded-[var(--radius-card)] border border-amber-400/40 bg-amber-50 p-4 dark:bg-amber-400/10"
+                >
+                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-amber-700 uppercase dark:text-amber-300">
                     <Megaphone className="size-3" aria-hidden="true" /> Sponsorisé
                   </span>
                   <span className="font-semibold">{s.name}</span>
-                  {s.short_description && <span className="line-clamp-2 text-sm text-muted">{s.short_description}</span>}
+                  {s.short_description && (
+                    <span className="text-muted line-clamp-2 text-sm">{s.short_description}</span>
+                  )}
                 </Link>
               </li>
             ))}
@@ -131,7 +179,7 @@ export default async function HomePage() {
 
       {recent.length > 0 && (
         <Section title="Récemment ajoutés" href="/recherche?tri=recent">
-          <div className="scrollbar-none -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2">
+          <div className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2">
             {recent.map((p, i) => (
               <PlaceCard key={p.id} place={p} variant="tile" index={i} />
             ))}
@@ -140,7 +188,10 @@ export default async function HomePage() {
       )}
 
       {popular.length > 0 && (
-        <Section title="Populaires ce mois-ci" subtitle="Classement : consultations + contacts + demandes d'itinéraire réels des 30 derniers jours.">
+        <Section
+          title="Populaires ce mois-ci"
+          subtitle="Classement : consultations + contacts + demandes d'itinéraire réels des 30 derniers jours."
+        >
           <ul className="grid gap-3 md:grid-cols-2">
             {popular.map((p, i) => (
               <li key={p.id}>
@@ -153,7 +204,7 @@ export default async function HomePage() {
 
       {tourism.length > 0 && (
         <Section title="Boyoma Explore" subtitle="Sites, culture et patrimoine de Kisangani" href="/tourisme">
-          <div className="scrollbar-none -mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2">
+          <div className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2">
             {tourism.map((p, i) => (
               <PlaceCard key={p.id} place={p} variant="tile" index={i} />
             ))}
@@ -166,9 +217,12 @@ export default async function HomePage() {
           <ul className="flex flex-wrap gap-2">
             {city.communes.map((c) => (
               <li key={c.unit_id}>
-                <Link href={`/communes/${c.slug}`} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface px-4 text-sm font-medium hover:border-brand/40">
+                <Link
+                  href={`/communes/${c.slug}`}
+                  className="border-line bg-surface hover:border-brand/40 inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium"
+                >
                   {c.name}
-                  <span className="rounded-full bg-surface-2 px-1.5 text-xs text-muted">{c.place_count}</span>
+                  <span className="bg-surface-2 text-muted rounded-full px-1.5 text-xs">{c.place_count}</span>
                 </Link>
               </li>
             ))}
@@ -178,16 +232,16 @@ export default async function HomePage() {
 
       {recent.length === 0 && !dataUnavailable && (
         <Section title="À découvrir bientôt">
-          <div className="flex gap-3 rounded-[var(--radius-card)] border border-dashed border-line bg-surface p-5 text-sm text-muted">
-            <Sparkles className="size-5 shrink-0 text-brand" aria-hidden="true" />
-            Aucun lieu n&apos;est encore publié. Nos agents cartographes collectent et vérifient les établissements sur le terrain.
-            Vous connaissez un lieu ? Proposez-le.
+          <div className="border-line bg-surface text-muted flex gap-3 rounded-[var(--radius-card)] border border-dashed p-5 text-sm">
+            <Sparkles className="text-brand size-5 shrink-0" aria-hidden="true" />
+            Aucun lieu n&apos;est encore publié. Nos agents cartographes collectent et vérifient les
+            établissements sur le terrain. Vous connaissez un lieu ? Proposez-le.
           </div>
         </Section>
       )}
 
       {/* Ajouter un lieu */}
-      <section className="mt-10 flex flex-col items-start gap-4 rounded-[var(--radius-card)] bg-gradient-to-br from-brand to-cyan p-6 text-white md:flex-row md:items-center md:justify-between">
+      <section className="from-brand to-cyan mt-10 flex flex-col items-start gap-4 rounded-[var(--radius-card)] bg-gradient-to-br p-6 text-white md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-lg font-bold">Un lieu manque sur Boyoma Connect ?</h2>
           <p className="text-sm text-white/85">Proposez-le : il sera vérifié avant publication.</p>

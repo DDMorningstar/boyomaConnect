@@ -1,9 +1,5 @@
 export type VerificationStatus =
-  | "unverified"
-  | "community_reported"
-  | "agent_verified"
-  | "owner_verified"
-  | "admin_verified";
+  "unverified" | "community_reported" | "agent_verified" | "owner_verified" | "admin_verified";
 
 export type GeographicPrecision = "exact" | "approximate" | "street" | "neighborhood" | "commune" | "unknown";
 export type ActivityStatus = "operating" | "temporarily_closed" | "permanently_closed" | "unknown";
@@ -128,7 +124,14 @@ export interface PlaceDetail {
   place_contacts: PlaceContact[];
   place_hours: PlaceHour[];
   place_services: { id: string; name: string; description: string | null }[];
-  place_media: { id: string; storage_path: string; kind: string; caption: string | null; width: number | null; height: number | null }[];
+  place_media: {
+    id: string;
+    storage_path: string;
+    kind: string;
+    caption: string | null;
+    width: number | null;
+    height: number | null;
+  }[];
   place_amenity_links: { amenity: { key: string; name: string; icon: string } | null }[];
 }
 

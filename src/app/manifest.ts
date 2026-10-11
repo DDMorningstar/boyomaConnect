@@ -5,7 +5,8 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Boyoma Connect",
     short_name: "Boyoma",
-    description: "Votre ville. Vos adresses. Votre chemin. Trouvez et localisez les lieux et services de Kisangani.",
+    description:
+      "Votre ville. Vos adresses. Votre chemin. Trouvez et localisez les lieux et services de Kisangani.",
     lang: "fr",
     dir: "ltr",
     start_url: "/?source=pwa",

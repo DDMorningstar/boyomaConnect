@@ -14,7 +14,15 @@ interface Suggestion {
 }
 
 /** Barre de recherche avec suggestions instantanées (debounce 220 ms, annulation des requêtes obsolètes). */
-export function SearchBar({ defaultValue = "", autoFocus = false, size = "lg" }: { defaultValue?: string; autoFocus?: boolean; size?: "lg" | "md" }) {
+export function SearchBar({
+  defaultValue = "",
+  autoFocus = false,
+  size = "lg",
+}: {
+  defaultValue?: string;
+  autoFocus?: boolean;
+  size?: "lg" | "md";
+}) {
   const router = useRouter();
   const listId = useId();
   const [value, setValue] = useState(defaultValue);
@@ -81,7 +89,10 @@ export function SearchBar({ defaultValue = "", autoFocus = false, size = "lg" }:
       <label htmlFor={`${listId}-input`} className="sr-only">
         Rechercher un lieu, un service, une catégorie ou une commune
       </label>
-      <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted" aria-hidden="true" />
+      <Search
+        className="text-muted pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2"
+        aria-hidden="true"
+      />
       <input
         id={`${listId}-input`}
         type="search"
@@ -110,13 +121,18 @@ export function SearchBar({ defaultValue = "", autoFocus = false, size = "lg" }:
         aria-expanded={open && items.length > 0}
         aria-controls={listId}
         aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-        className={`w-full rounded-2xl border border-line bg-surface pl-12 pr-12 shadow-[var(--shadow-card)] outline-none transition-shadow placeholder:text-muted focus:border-brand/50 focus:ring-4 focus:ring-brand/10 ${height}`}
+        className={`border-line bg-surface placeholder:text-muted focus:border-brand/50 focus:ring-brand/10 w-full rounded-2xl border pr-12 pl-12 shadow-[var(--shadow-card)] transition-shadow outline-none focus:ring-4 ${height}`}
       />
-      <div className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center">
+      <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center">
         {loading ? (
-          <Loader2 className="size-5 animate-spin text-muted" aria-label="Chargement" />
+          <Loader2 className="text-muted size-5 animate-spin" aria-label="Chargement" />
         ) : value ? (
-          <button type="button" onClick={() => setValue("")} className="rounded-full p-1.5 text-muted hover:bg-surface-2" aria-label="Effacer">
+          <button
+            type="button"
+            onClick={() => setValue("")}
+            className="text-muted hover:bg-surface-2 rounded-full p-1.5"
+            aria-label="Effacer"
+          >
             <X className="size-4" />
           </button>
         ) : null}
@@ -126,10 +142,15 @@ export function SearchBar({ defaultValue = "", autoFocus = false, size = "lg" }:
         <ul
           id={listId}
           role="listbox"
-          className="animate-fade-up absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-line bg-surface py-1.5 shadow-[var(--shadow-float)]"
+          className="animate-fade-up border-line bg-surface absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border py-1.5 shadow-[var(--shadow-float)]"
         >
           {items.map((s, i) => (
-            <li key={`${s.kind}-${s.ref_id}`} id={`${listId}-${i}`} role="option" aria-selected={i === active}>
+            <li
+              key={`${s.kind}-${s.ref_id}`}
+              id={`${listId}-${i}`}
+              role="option"
+              aria-selected={i === active}
+            >
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
@@ -137,15 +158,15 @@ export function SearchBar({ defaultValue = "", autoFocus = false, size = "lg" }:
                 className={`flex w-full items-center gap-3 px-4 py-2.5 text-left ${i === active ? "bg-surface-2" : "hover:bg-surface-2"}`}
               >
                 {s.kind === "place" ? (
-                  <Search className="size-4 shrink-0 text-muted" aria-hidden="true" />
+                  <Search className="text-muted size-4 shrink-0" aria-hidden="true" />
                 ) : s.kind === "category" ? (
-                  <Tag className="size-4 shrink-0 text-brand" aria-hidden="true" />
+                  <Tag className="text-brand size-4 shrink-0" aria-hidden="true" />
                 ) : (
-                  <MapPin className="size-4 shrink-0 text-cyan" aria-hidden="true" />
+                  <MapPin className="text-cyan size-4 shrink-0" aria-hidden="true" />
                 )}
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{s.label}</span>
-                  {s.sublabel && <span className="block truncate text-xs text-muted">{s.sublabel}</span>}
+                  {s.sublabel && <span className="text-muted block truncate text-xs">{s.sublabel}</span>}
                 </span>
               </button>
             </li>

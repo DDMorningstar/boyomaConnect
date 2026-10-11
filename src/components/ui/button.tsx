@@ -10,7 +10,11 @@ const variants: Record<Variant, string> = {
   ghost: "text-ink hover:bg-surface-2",
 };
 
-export function Button({ variant = "primary", className = "", ...props }: ComponentProps<"button"> & { variant?: Variant }) {
+export function Button({
+  variant = "primary",
+  className = "",
+  ...props
+}: ComponentProps<"button"> & { variant?: Variant }) {
   return <button className={`${base} ${variants[variant]} ${className}`} {...props} />;
 }
 
@@ -20,7 +24,10 @@ export function ButtonLink({
   className = "",
   children,
   ...props
-}: { href: string; variant?: Variant; className?: string; children: ReactNode } & Omit<ComponentProps<typeof Link>, "href" | "className">) {
+}: { href: string; variant?: Variant; className?: string; children: ReactNode } & Omit<
+  ComponentProps<typeof Link>,
+  "href" | "className"
+>) {
   return (
     <Link href={href} className={`${base} ${variants[variant]} ${className}`} {...props}>
       {children}

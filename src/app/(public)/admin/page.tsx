@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MapPin, Phone } from "lucide-react";
 import { InfoPage } from "@/components/ui/info-page";
-import { getCurrentPermissions, requireUser } from "@/features/auth/session";
+import { getCurrentPermissions, getCurrentRoles, requireUser } from "@/features/auth/session";
 import { getModerationQueue } from "@/features/admin/moderation";
 import { formatCoordinates, formatDate } from "@/lib/format";
 import { placeMediaUrl } from "@/lib/supabase/storage";
@@ -21,10 +21,28 @@ const ROLE: Record<string, string> = {
 
 export default async function AdminPage() {
   const user = await requireUser("/admin");
-  const perms = await getCurrentPermissions();
+  const [perms, roles] = await Promise.all([getCurrentPermissions(), getCurrentRoles()]);
   if (!perms.has("submissions.review") && !perms.has("claims.review")) redirect("/profil");
   const { submissions, claims, names } = await getModerationQueue();
   const card = "border-line bg-surface space-y-3 rounded-[var(--radius-card)] border p-4";
+  // Seul le super-administrateur peut valider ses propres demandes (tracé dans le journal d'audit).
+  const isSuperAdmin = roles.has("super_admin");
+  const ownRequest = (authorId: string, form: React.ReactNode) =>
+    authorId !== user.id ? (
+      form
+    ) : isSuperAdmin ? (
+      <div className="space-y-2">
+        <p className="bg-warning/10 rounded-xl p-3 text-sm">
+          Votre propre demande : en tant que super-administrateur vous pouvez la valider ; cette
+          auto-validation est enregistrée dans le journal d&apos;audit.
+        </p>
+        {form}
+      </div>
+    ) : (
+      <p className="bg-surface-2 rounded-xl p-3 text-sm">
+        Votre propre demande : elle doit être validée par un autre administrateur.
+      </p>
+    );
 
   return (
     <InfoPage
@@ -96,13 +114,7 @@ export default async function AdminPage() {
               ))}
             </div>
           )}
-          {s.submitted_by === user.id ? (
-            <p className="bg-surface-2 rounded-xl p-3 text-sm">
-              Votre propre demande : elle doit être validée par un autre administrateur.
-            </p>
-          ) : (
-            <ReviewForm id={s.id} kind="submission" />
-          )}
+          {ownRequest(s.submitted_by, <ReviewForm id={s.id} kind="submission" />)}
         </article>
       ))}
 
@@ -121,13 +133,7 @@ export default async function AdminPage() {
             Téléphone : {c.contact_phone ?? "—"} · E-mail : {c.contact_email ?? "—"}
           </p>
           {c.message && <p className="bg-surface-2 rounded-xl p-3 text-sm">{c.message}</p>}
-          {c.claimant_id === user.id ? (
-            <p className="bg-surface-2 rounded-xl p-3 text-sm">
-              Votre propre demande : elle doit être validée par un autre administrateur.
-            </p>
-          ) : (
-            <ReviewForm id={c.id} kind="claim" />
-          )}
+          {ownRequest(c.claimant_id, <ReviewForm id={c.id} kind="claim" />)}
         </article>
       ))}
     </InfoPage>

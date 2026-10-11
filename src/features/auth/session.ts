@@ -40,6 +40,15 @@ export const getCurrentPermissions = cache(async (): Promise<Set<string>> => {
   return new Set(rows.map((r) => r.permission_key));
 });
 
+export const getCurrentRoles = cache(async (): Promise<Set<string>> => {
+  const user = await getCurrentUser();
+  if (!user) return new Set();
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("current_user_roles");
+  const rows: { role_key: string }[] = data ?? [];
+  return new Set(rows.map((r) => r.role_key));
+});
+
 /**
  * Le fournisseur Google est-il activé dans Supabase Auth ? (réglages publics, mis en cache 60 s).
  * null si la vérification échoue : le bouton reste alors utilisable.

@@ -69,22 +69,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: "fr_CD",
     },
     twitter: { card: "summary_large_image", title: p.name, description },
-    other: {
-      // Open Graph « business » : coordonnées lues par Facebook, WhatsApp, etc.
-      "og:type": "business.business",
-      "business:contact_data:locality": "Kisangani",
-      "business:contact_data:region": "Tshopo",
-      "business:contact_data:country_name": "République démocratique du Congo",
-      ...(p.address_text ? { "business:contact_data:street_address": p.address_text } : {}),
-      ...(phone ? { "business:contact_data:phone_number": phone } : {}),
-      ...(p.latitude != null && p.longitude != null && p.geographic_precision !== "unknown"
-        ? {
-            "place:location:latitude": String(p.latitude),
-            "place:location:longitude": String(p.longitude),
-          }
-        : {}),
-    },
+    // Copie en <meta name> dans <head> (Next n'émet pas de property pour ces clés), voir businessOgTags.
+    other: Object.fromEntries(businessOgTags(p)),
   };
+}
+
+/**
+ * Open Graph « business.business » (coordonnées lues par Facebook, WhatsApp…). L'API metadata de Next
+ * refuse ce type et n'émet que des <meta name> : copie en <meta name> dans <head> (via `other`) et en
+ * <meta property> dans la page (React les hoiste ; en streaming elles restent dans le corps).
+ */
+function businessOgTags(p: PlaceDetail): [string, string][] {
+  const phone = p.place_contacts.find((c) => c.kind === "phone")?.value;
+  const tags: [string, string | null | undefined][] = [
+    ["og:type", "business.business"],
+    ["business:contact_data:street_address", p.address_text],
+    ["business:contact_data:locality", "Kisangani"],
+    ["business:contact_data:region", "Tshopo"],
+    ["business:contact_data:country_name", "République démocratique du Congo"],
+    ["business:contact_data:phone_number", phone],
+  ];
+  if (p.latitude != null && p.longitude != null && p.geographic_precision !== "unknown") {
+    tags.push(
+      ["place:location:latitude", String(p.latitude)],
+      ["place:location:longitude", String(p.longitude)],
+    );
+  }
+  return tags.filter((t): t is [string, string] => Boolean(t[1]));
 }
 
 function jsonLd(p: PlaceDetail) {
@@ -151,6 +162,9 @@ export default async function PlacePage({ params }: Props) {
 
   return (
     <article className="pt-4">
+      {businessOgTags(p).map(([property, content]) => (
+        <meta key={property} property={property} content={content} />
+      ))}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(p)).replace(/</g, "\\u003c") }}

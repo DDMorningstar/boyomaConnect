@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, LogOut, ShieldCheck, Store, UserRound } from "lucide-react";
+import { ChevronRight, KeyRound, LogOut, ShieldCheck, Store, UserRound } from "lucide-react";
 import { InfoPage } from "@/components/ui/info-page";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { getCurrentPermissions, getCurrentProfile, getCurrentUser } from "@/features/auth/session";
@@ -18,8 +18,8 @@ export default async function ProfilePage() {
         <div className="border-line bg-surface space-y-3 rounded-[var(--radius-card)] border p-4">
           <p className="flex items-start gap-3 text-sm">
             <UserRound className="text-brand mt-0.5 size-5 shrink-0" aria-hidden="true" />
-            Connectez-vous avec Google pour gérer la fiche de votre établissement, votre catalogue et vos
-            photos. La consultation reste possible sans compte.
+            Connectez-vous (Google ou e-mail) pour gérer la fiche de votre établissement, votre catalogue et
+            vos photos. La consultation reste possible sans compte.
           </p>
           <ButtonLink href="/connexion?next=/profil">Se connecter</ButtonLink>
         </div>
@@ -47,6 +47,11 @@ export default async function ProfilePage() {
         <Link href="/espace-pro" className={row}>
           <Store className="text-brand size-5" aria-hidden="true" />
           <span className="flex-1">Espace professionnel</span>
+          <ChevronRight className="text-muted size-5" aria-hidden="true" />
+        </Link>
+        <Link href="/profil/mot-de-passe" className={row}>
+          <KeyRound className="text-brand size-5" aria-hidden="true" />
+          <span className="flex-1">Mot de passe</span>
           <ChevronRight className="text-muted size-5" aria-hidden="true" />
         </Link>
         {canModerate && (

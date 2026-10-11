@@ -32,7 +32,12 @@ Production et seulement quand les webhooks de paiement existeront ; ne pas l'exp
 3. Supabase → Authentication → URL Configuration : Site URL `https://boyoma-connect.vercel.app` ;
    Redirect URLs : `https://boyoma-connect.vercel.app/auth/callback`, `http://localhost:3000/auth/callback`,
    `https://boyoma-connect-*-del-hiver.vercel.app/auth/callback` (préversions).
-4. Premier administrateur : après sa première connexion, lui attribuer le rôle `admin` en SQL
+4. E-mail + mot de passe (déjà activé dans Supabase, confirmation d'adresse obligatoire) : sans SMTP
+   personnalisé, Supabase n'envoie les e-mails qu'aux membres de l'équipe du projet, avec un quota très bas.
+   Avant d'ouvrir l'inscription au public : Supabase → Authentication → Emails → SMTP Settings (ex. Resend,
+   Brevo), expéditeur `no-reply@<votre-domaine>` ; traduire les modèles « Confirm signup » et
+   « Reset password » en français. Les liens reviennent sur `/auth/callback` (déjà autorisé ci-dessus).
+5. Premier administrateur : après sa première connexion, lui attribuer le rôle `admin` en SQL
    (`insert into public.user_roles (user_id, role_key) values ('<uuid>', 'admin')`). Un administrateur ne
    peut pas valider ses propres demandes : tester avec un second compte Google.
 

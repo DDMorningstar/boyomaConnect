@@ -35,6 +35,11 @@
   `business.business` + image de partage générée. Vérifié : typecheck, lint, 18 tests, build (27 routes),
   balises OG et image PNG en local sur la base réelle.
 
+- 11/10/2026 : connexion par e-mail + mot de passe ajoutée (`/connexion` onglets connexion/création,
+  confirmation par e-mail avec renvoi, `/connexion/mot-de-passe-oublie`, `/profil/mot-de-passe`) ; bouton
+  Google désactivé et expliqué tant que le fournisseur n'est pas activé. Vérifié : typecheck, lint, tests,
+  build, rendu des pages. Non testé en réel : envoi des e-mails (SMTP personnalisé à configurer).
+
 ## Problèmes connus
 
 - `/lieux/<slug inexistant>` affiche la page « introuvable » mais avec le code HTTP 200 (streaming dû à

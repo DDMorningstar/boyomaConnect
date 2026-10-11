@@ -26,7 +26,7 @@ export default function AddPlacePage() {
           <PlusCircle className="size-4" aria-hidden="true" /> Créer ma fiche
         </ButtonLink>
       </div>
-      <p className="text-muted text-sm">Une connexion avec votre compte Google est demandée.</p>
+      <p className="text-muted text-sm">Une connexion (compte Google ou adresse e-mail) est demandée.</p>
     </InfoPage>
   );
 }

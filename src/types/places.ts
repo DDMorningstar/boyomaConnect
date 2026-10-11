@@ -135,6 +135,16 @@ export interface PlaceDetail {
   place_amenity_links: { amenity: { key: string; name: string; icon: string } | null }[];
   /** Provenance d'un lieu importé (ex. OpenStreetMap) : attribution obligatoire. */
   place_external_refs: { source: string; license: string; attribution: string; source_url: string | null }[];
+  /** Catalogue publié par l'établissement (prix facultatifs, jamais inventés). */
+  catalog_items: {
+    id: string;
+    kind: "product" | "service";
+    name: string;
+    description: string | null;
+    price: number | null;
+    currency: "USD" | "CDF" | null;
+    availability: "available" | "on_request" | "unavailable" | "unknown";
+  }[];
 }
 
 export interface PublicReview {

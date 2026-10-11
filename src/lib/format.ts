@@ -44,6 +44,24 @@ export function toWhatsAppNumber(raw: string): string | null {
   return /^[0-9]{8,15}$/.test(digits) ? digits : null;
 }
 
+/** Prix d'un article de catalogue ; « Prix sur demande » s'il n'est pas renseigné (jamais inventé). */
+export function formatPrice(
+  price: number | string | null | undefined,
+  currency: string | null | undefined,
+): string {
+  const value = price == null || price === "" ? null : Number(price);
+  if (value == null || !Number.isFinite(value) || (currency !== "USD" && currency !== "CDF")) {
+    return "Prix sur demande";
+  }
+  return new Intl.NumberFormat("fr-CD", {
+    style: "currency",
+    currency,
+    currencyDisplay: "narrowSymbol",
+    minimumFractionDigits: currency === "CDF" || Number.isInteger(value) ? 0 : 2,
+    maximumFractionDigits: currency === "CDF" ? 0 : 2,
+  }).format(value);
+}
+
 export function pluralize(n: number, singular: string, plural = `${singular}s`): string {
   return `${n.toLocaleString("fr-FR")} ${n > 1 ? plural : singular}`;
 }

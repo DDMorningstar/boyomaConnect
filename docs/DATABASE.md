@@ -37,6 +37,16 @@ RDC → Tshopo → Kisangani (centre indicatif 0.5153 N, 25.1910 E pour la carte
 Tshopo, Kabondo, Kisangani, Lubunga) sans coordonnées inventées. 12 catégories, 72 sous-catégories, 12 équipements,
 4 plans (0/3/10/25 USD), paramètres applicatifs. Aucun établissement dans les migrations.
 
+## Comptes et espace propriétaire (migration `20261011170000`)
+
+- `handle_new_user` reprend nom et photo fournis par Google ; bucket public `avatars` (`<uid>/…`).
+- `place_submissions.owner_request` + `logo_path` : téléphone public obligatoire, 3 photos max (contraintes) ;
+  à la validation (`review_place_submission`), le trigger `place_submissions_owner_approval` crée le lien
+  `place_owners`, le rôle `place_owner`, le logo et `ownership_status = claimed`.
+- `place_media_limit` : limite de photos du plan (`gallery_photos`, 3 en gratuit) ; photos d'un gestionnaire
+  publiées directement. `place_contacts_keep_phone` : une fiche gérée garde au moins un téléphone.
+- Catalogue (`catalog_items`) ouvert au plan gratuit.
+
 ## Lieux importés (OpenStreetMap)
 
 - `place_external_refs` (migration `20261011150000`) : source, identifiant d'origine (`node/123`), licence,

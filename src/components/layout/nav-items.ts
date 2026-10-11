@@ -24,6 +24,7 @@ export const PUBLIC_NAV: NavItem[] = [
     href: "/profil",
     label: "Compte",
     icon: UserRound,
-    match: (p) => ["/profil", "/connexion", "/inscription"].some((x) => p.startsWith(x)),
+    match: (p) =>
+      ["/profil", "/connexion", "/inscription", "/espace-pro", "/admin"].some((x) => p.startsWith(x)),
   },
 ];

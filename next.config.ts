@@ -18,9 +18,17 @@ const nextConfig: NextConfig = {
   output: process.env.BUILD_STANDALONE === "1" ? "standalone" : undefined,
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: supabaseHost
-      ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }]
-      : [],
+    remotePatterns: [
+      ...(supabaseHost
+        ? [{ protocol: "https" as const, hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }]
+        : []),
+      // Photo de profil fournie par Google à la connexion.
+      { protocol: "https" as const, hostname: "lh3.googleusercontent.com" },
+    ],
+  },
+  experimental: {
+    // Images déjà réduites par le navigateur ; le serveur refuse au-delà de 4 Mo.
+    serverActions: { bodySizeLimit: "5mb" },
   },
   async headers() {
     return [

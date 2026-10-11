@@ -2,7 +2,19 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Accessibility, Building2, Globe, Mail, Map as MapIcon, MapPin, Route, Star } from "lucide-react";
+import {
+  Accessibility,
+  BadgeCheck,
+  Building2,
+  Globe,
+  Mail,
+  Map as MapIcon,
+  MapPin,
+  Route,
+  ShoppingBag,
+  Star,
+} from "lucide-react";
+import { Avatar } from "@/components/ui/avatar";
 import { CategoryBadge, CategoryIcon } from "@/components/places/category-icon";
 import { VerificationBadge } from "@/components/places/verification-badge";
 import { PlaceActions } from "@/components/places/place-actions";
@@ -11,7 +23,7 @@ import { ReportForm } from "@/components/places/report-form";
 import { ViewTracker } from "@/components/places/view-tracker";
 import { getPlaceBySlug, getPublicReviews } from "@/features/places/queries";
 import { env } from "@/lib/env";
-import { formatCoordinates, formatDate } from "@/lib/format";
+import { formatCoordinates, formatDate, formatPrice } from "@/lib/format";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 import type { PlaceDetail } from "@/types/places";
 
@@ -31,22 +43,47 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const res = await getPlaceBySlug(slug);
   if (res.kind !== "found") return { title: "Lieu introuvable", robots: { index: false } };
   const p = res.place;
-  const where = [p.unit?.name, "Kisangani"].filter(Boolean).join(", ");
-  const description =
-    p.short_description ??
-    `${p.primary_category?.name ?? "Lieu"} à ${where} : contacts, adresse et itinéraire sur Boyoma Connect.`;
-  const cover = placeMediaUrl(p.cover_path);
+  const where = [p.unit?.type_key === "commune" ? p.unit.name : null, "Kisangani"].filter(Boolean).join(", ");
+  const phone = p.place_contacts.find((c) => c.kind === "phone")?.value;
+  const priced = p.catalog_items.filter((i) => i.price != null && i.currency).length;
+  const description = [
+    p.short_description ?? `${p.primary_category?.name ?? "Lieu"} à ${where}`,
+    phone ? `Tél. ${phone}` : null,
+    p.catalog_items.length
+      ? `Catalogue : ${p.catalog_items.length} article${p.catalog_items.length > 1 ? "s" : ""}${priced ? " avec prix" : ""}`
+      : null,
+    "Itinéraire et contacts sur Boyoma Connect.",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  // L'image de partage est générée par opengraph-image.tsx (logo, nom, téléphone, prix).
   return {
     title: `${p.name} — ${where}`,
     description,
     alternates: { canonical: `/lieux/${p.slug}` },
     openGraph: {
-      title: p.name,
+      title: `${p.name} — ${p.primary_category?.name ?? "Kisangani"}`,
       description,
       url: `/lieux/${p.slug}`,
-      images: cover ? [{ url: cover }] : undefined,
+      siteName: "Boyoma Connect",
+      locale: "fr_CD",
     },
-    twitter: { card: cover ? "summary_large_image" : "summary", title: p.name, description },
+    twitter: { card: "summary_large_image", title: p.name, description },
+    other: {
+      // Open Graph « business » : coordonnées lues par Facebook, WhatsApp, etc.
+      "og:type": "business.business",
+      "business:contact_data:locality": "Kisangani",
+      "business:contact_data:region": "Tshopo",
+      "business:contact_data:country_name": "République démocratique du Congo",
+      ...(p.address_text ? { "business:contact_data:street_address": p.address_text } : {}),
+      ...(phone ? { "business:contact_data:phone_number": phone } : {}),
+      ...(p.latitude != null && p.longitude != null && p.geographic_precision !== "unknown"
+        ? {
+            "place:location:latitude": String(p.latitude),
+            "place:location:longitude": String(p.longitude),
+          }
+        : {}),
+    },
   };
 }
 
@@ -62,6 +99,14 @@ function jsonLd(p: PlaceDetail) {
     telephone: phone,
     sameAs: site ? [site] : undefined,
     image: placeMediaUrl(p.cover_path) ?? undefined,
+    logo: placeMediaUrl(p.logo_path) ?? undefined,
+    makesOffer: p.catalog_items.length
+      ? p.catalog_items.map((i) => ({
+          "@type": "Offer",
+          itemOffered: { "@type": i.kind === "service" ? "Service" : "Product", name: i.name },
+          ...(i.price != null && i.currency ? { price: Number(i.price), priceCurrency: i.currency } : {}),
+        }))
+      : undefined,
     address: {
       "@type": "PostalAddress",
       streetAddress: p.address_text ?? undefined,
@@ -88,9 +133,14 @@ export default async function PlacePage({ params }: Props) {
   const p = res.place;
   const reviews = await getPublicReviews(p.id, 5);
 
-  const cover =
-    placeMediaUrl(p.cover_path) ?? placeMediaUrl(p.place_media.find((m) => m.kind === "cover")?.storage_path);
-  const gallery = p.place_media.filter((m) => m.kind === "gallery");
+  // Couverture : photo dédiée, sinon première photo de la galerie (fiches gérées par leur propriétaire).
+  const coverMedia =
+    p.place_media.find((m) => m.kind === "cover") ?? p.place_media.find((m) => m.kind === "gallery");
+  const cover = placeMediaUrl(p.cover_path) ?? placeMediaUrl(coverMedia?.storage_path);
+  const gallery = p.place_media.filter(
+    (m) => m.kind === "gallery" && (p.cover_path || m.id !== coverMedia?.id),
+  );
+  const logo = placeMediaUrl(p.logo_path);
   const phone = p.place_contacts.find((c) => c.kind === "phone")?.value ?? null;
   const whatsapp = p.place_contacts.find((c) => c.kind === "whatsapp")?.value ?? null;
   const otherContacts = p.place_contacts.filter((c) => !["phone", "whatsapp"].includes(c.kind));
@@ -153,15 +203,25 @@ export default async function PlacePage({ params }: Props) {
             </span>
           )}
         </div>
-        <h1 className="mt-2 text-[1.65rem] leading-tight font-extrabold tracking-tight md:text-3xl">
-          {p.name}
-        </h1>
+        <div className="mt-2 flex items-center gap-3">
+          {logo && <Avatar src={logo} name={p.name} size={56} rounded="xl" />}
+          <div className="min-w-0">
+            <h1 className="text-[1.65rem] leading-tight font-extrabold tracking-tight md:text-3xl">
+              {p.name}
+            </h1>
+            {p.ownership_status === "claimed" && (
+              <p className="text-success mt-0.5 flex items-center gap-1 text-sm font-medium">
+                <BadgeCheck className="size-4" aria-hidden="true" /> Fiche gérée par l&apos;établissement
+              </p>
+            )}
+          </div>
+        </div>
         {p.official_name && p.official_name !== p.name && (
           <p className="text-muted text-sm">Nom officiel : {p.official_name}</p>
         )}
         <p className="text-muted mt-1 flex items-center gap-1.5 text-sm">
           <MapPin className="size-4 shrink-0" aria-hidden="true" />
-          {[p.address_text, p.unit ? `Commune de ${p.unit.name}` : null, "Kisangani"]
+          {[p.address_text, p.unit?.type_key === "commune" ? `Commune de ${p.unit.name}` : null, "Kisangani"]
             .filter(Boolean)
             .join(", ")}
         </p>
@@ -238,6 +298,38 @@ export default async function PlacePage({ params }: Props) {
               )}
             </div>
           </section>
+
+          {p.catalog_items.length > 0 && (
+            <section>
+              <h2 className="mb-2 flex items-center gap-2 text-lg font-bold">
+                <ShoppingBag className="text-brand size-5" aria-hidden="true" /> Catalogue
+              </h2>
+              <ul className="border-line bg-surface divide-line divide-y rounded-[var(--radius-card)] border">
+                {p.catalog_items.map((it) => (
+                  <li key={it.id} className="flex items-start justify-between gap-3 p-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold">{it.name}</p>
+                      {it.description && (
+                        <p className="text-muted text-sm whitespace-pre-line">{it.description}</p>
+                      )}
+                      {it.availability === "unavailable" && (
+                        <p className="text-warning text-xs font-medium">Actuellement indisponible</p>
+                      )}
+                      {it.availability === "on_request" && (
+                        <p className="text-muted text-xs font-medium">Sur demande</p>
+                      )}
+                    </div>
+                    <p className="shrink-0 text-right font-bold whitespace-nowrap">
+                      {formatPrice(it.price, it.currency)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-muted mt-1 text-xs">
+                Prix indiqués par l&apos;établissement, susceptibles d&apos;évoluer.
+              </p>
+            </section>
+          )}
 
           {p.place_services.length > 0 && (
             <section>
@@ -423,12 +515,18 @@ export default async function PlacePage({ params }: Props) {
                 ). Informations importées, à confirmer sur place.
               </p>
             ))}
-            {p.ownership_status === "unclaimed" && (
+            {p.ownership_status !== "claimed" && (
               <p className="flex items-start gap-2">
                 <Building2 className="text-brand size-4 shrink-0" aria-hidden="true" />
                 <span>
-                  Vous gérez cet établissement ? La revendication de fiche ouvre avec l&apos;espace
-                  professionnel.
+                  Vous gérez cet établissement ?{" "}
+                  <Link
+                    href={`/espace-pro/reclamer/${p.slug}`}
+                    className="text-brand font-semibold underline"
+                  >
+                    Réclamez cette fiche
+                  </Link>{" "}
+                  pour ajouter votre téléphone, vos photos, votre logo et votre catalogue.
                 </span>
               </p>
             )}

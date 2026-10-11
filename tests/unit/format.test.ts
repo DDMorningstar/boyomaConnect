@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatCoordinates,
   formatDistance,
+  formatPrice,
   haversineMeters,
   normalizeText,
   toWhatsAppNumber,
@@ -60,5 +61,19 @@ describe("toWhatsAppNumber", () => {
   it("rejette les numéros invalides", () => {
     expect(toWhatsAppNumber("abc")).toBeNull();
     expect(toWhatsAppNumber("123")).toBeNull();
+  });
+});
+
+describe("formatPrice", () => {
+  it("n'invente jamais de prix : « Prix sur demande » si absent ou devise inconnue", () => {
+    expect(formatPrice(null, "USD")).toBe("Prix sur demande");
+    expect(formatPrice(10, null)).toBe("Prix sur demande");
+    expect(formatPrice(10, "EUR")).toBe("Prix sur demande");
+    expect(formatPrice("abc", "USD")).toBe("Prix sur demande");
+  });
+  it("formate USD (2 décimales max) et CDF (sans décimale)", () => {
+    expect(formatPrice(15, "USD")).toMatch(/^15\s?\$$/);
+    expect(formatPrice("12.5", "USD")).toMatch(/^12,50\s?\$$/);
+    expect(formatPrice(25000, "CDF")).toMatch(/^25\s000\s?(FC|CDF)/);
   });
 });

@@ -21,6 +21,21 @@ Production et seulement quand les webhooks de paiement existeront ; ne pas l'exp
 3. Supabase → Authentication → URL Configuration : ajouter l'URL Vercel (phase 4).
 4. GitHub → Settings → Secrets : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (CI).
 
+## Connexion Google (Supabase Auth)
+
+1. Google Cloud Console → API et services → Écran de consentement OAuth (type « Externe », nom
+   « Boyoma Connect ») puis Identifiants → Créer un ID client OAuth → « Application Web » :
+   - Origines JavaScript autorisées : `https://boyoma-connect.vercel.app`, `http://localhost:3000`
+   - URI de redirection autorisés : `https://fhqgohyfjeymvomkeqlf.supabase.co/auth/v1/callback`
+2. Supabase → Authentication → Sign In / Providers → Google : activer, coller l'ID client et le code
+   secret (le secret reste dans Supabase, jamais dans le dépôt ni dans Vercel).
+3. Supabase → Authentication → URL Configuration : Site URL `https://boyoma-connect.vercel.app` ;
+   Redirect URLs : `https://boyoma-connect.vercel.app/auth/callback`, `http://localhost:3000/auth/callback`,
+   `https://boyoma-connect-*-del-hiver.vercel.app/auth/callback` (préversions).
+4. Premier administrateur : après sa première connexion, lui attribuer le rôle `admin` en SQL
+   (`insert into public.user_roles (user_id, role_key) values ('<uuid>', 'admin')`). Un administrateur ne
+   peut pas valider ses propres demandes : tester avec un second compte Google.
+
 ## Migrations
 
 Appliquées via le connecteur Supabase le 11/10/2026 (les versions enregistrées dans

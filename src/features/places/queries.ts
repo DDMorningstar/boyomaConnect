@@ -155,7 +155,8 @@ const PLACE_DETAIL_SELECT = `
   place_services (id, name, description, sort_order),
   place_media (id, storage_path, kind, caption, width, height, sort_order),
   place_amenity_links (amenity:place_amenities (key, name, icon)),
-  place_external_refs (source, license, attribution, source_url)
+  place_external_refs (source, license, attribution, source_url),
+  catalog_items (id, kind, name, description, price, currency, availability, sort_order)
 `;
 
 export type PlaceLookup =
@@ -171,6 +172,7 @@ export const getPlaceBySlug = cache(async (slug: string): Promise<PlaceLookup> =
     .order("sort_order", { referencedTable: "place_contacts" })
     .order("sort_order", { referencedTable: "place_services" })
     .order("sort_order", { referencedTable: "place_media" })
+    .order("sort_order", { referencedTable: "catalog_items" })
     .maybeSingle<PlaceDetail>();
   if (error) throw new DataError("Impossible de charger la fiche", error);
   if (data) return { kind: "found", place: data };
@@ -189,6 +191,38 @@ export async function getPublicReviews(placeId: string, limit = 10): Promise<Pub
   });
   if (error) return [];
   return data ?? [];
+}
+
+export interface ShareCardData {
+  name: string;
+  logo_path: string | null;
+  cover_path: string | null;
+  ownership_status: string;
+  primary_category: { name: string; color: string } | null;
+  unit: { name: string; type_key: string } | null;
+  place_contacts: { kind: string; value: string; is_primary: boolean }[];
+  place_media: { storage_path: string; kind: string }[];
+  catalog_items: { price: number | null; currency: string | null }[];
+}
+
+/** Données publiques pour l'image de partage (client sans session : lieux publiés seulement). */
+export async function getShareCardData(slug: string): Promise<ShareCardData | null> {
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length > 120) return null;
+  const supabase = createSupabasePublicClient();
+  const { data } = await supabase
+    .from("places")
+    .select(
+      `name, logo_path, cover_path, ownership_status,
+       primary_category:categories!places_primary_category_id_fkey (name, color),
+       unit:geographic_units!places_administrative_unit_id_fkey (name, type_key),
+       place_contacts (kind, value, is_primary),
+       place_media (storage_path, kind),
+       catalog_items (price, currency)`,
+    )
+    .eq("slug", slug)
+    .eq("publication_status", "published")
+    .maybeSingle<ShareCardData>();
+  return data;
 }
 
 /** Slugs publiés pour le sitemap (pagination serveur). */

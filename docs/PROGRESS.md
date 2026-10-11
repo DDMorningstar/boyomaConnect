@@ -27,6 +27,14 @@
   `scripts/osm-import.mjs`) : publiés, non vérifiés, provenance + attribution ODbL sur la fiche ; contrôles SQL :
   167 refs, 0 lieu sans catégorie, recherche « hotel » → 9, « pharmacie » → 2, bbox centre → 146.
 
+- 11/10/2026 : comptes et espace propriétaire (migration `20261011170000_owner_space`) : connexion Google
+  (`/connexion`, `/auth/callback`, middleware de session), compte (`/profil` : nom, photo optimisée),
+  espace pro (`/espace-pro` : création de fiche avec téléphone public obligatoire, logo, 3 photos, détection
+  de doublons ; réclamation ; gestion contacts, photos, logo, infos, catalogue avec prix USD/CDF),
+  modération (`/admin`), fiche publique (logo, catalogue, « Réclamez cette fiche »), Open Graph
+  `business.business` + image de partage générée. Vérifié : typecheck, lint, 18 tests, build (27 routes),
+  balises OG et image PNG en local sur la base réelle.
+
 ## Problèmes connus
 
 - `/lieux/<slug inexistant>` affiche la page « introuvable » mais avec le code HTTP 200 (streaming dû à
@@ -37,7 +45,8 @@
 
 - Rendu visuel réel, Lighthouse, Web Vitals (aucune mesure effectuée).
 - Carte (dépend du fournisseur de tuiles), géolocalisation, installation PWA, Service Worker.
-- RLS pour les rôles connectés (nécessite des comptes de test — phase 4).
+- Parcours connecté complet (connexion Google réelle, création, validation, gestion, envoi d'images) :
+  dépend de l'activation du fournisseur Google dans Supabase (voir DEPLOYMENT.md).
 
 ## Blocages / actions humaines
 
@@ -50,4 +59,5 @@
 
 ## Prochaine étape
 
-1. Phase 4 : authentification (connexion, inscription, middleware de session, pages protégées).
+1. Activer Google dans Supabase, tester le parcours complet avec deux comptes (propriétaire + admin).
+2. Favoris synchronisés au compte, avis ; correction du code 404 des fiches inexistantes.

@@ -27,7 +27,7 @@ function GoogleLogo() {
 }
 
 /** Connexion / inscription via Google (Supabase Auth, flux PKCE). */
-export function GoogleButton({ next }: { next: string }) {
+export function GoogleButton({ next, disabled = false }: { next: string; disabled?: boolean }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,11 +43,7 @@ export function GoogleButton({ next }: { next: string }) {
     });
     if (error) {
       setPending(false);
-      setError(
-        /provider is not enabled|Unsupported provider/i.test(error.message)
-          ? "La connexion Google n'est pas encore activée sur le serveur. Réessayez plus tard."
-          : "Connexion impossible. Vérifiez votre connexion internet et réessayez.",
-      );
+      setError("Connexion impossible. Vérifiez votre connexion internet et réessayez.");
     }
   }
 
@@ -56,12 +52,18 @@ export function GoogleButton({ next }: { next: string }) {
       <button
         type="button"
         onClick={signIn}
-        disabled={pending}
+        disabled={pending || disabled}
         className="border-line bg-surface hover:bg-surface-2 flex min-h-12 w-full items-center justify-center gap-3 rounded-full border px-5 font-semibold shadow-[var(--shadow-card)] transition-[transform,background-color] active:scale-[0.98] disabled:opacity-60"
       >
         {pending ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleLogo />}
         {pending ? "Redirection vers Google…" : "Continuer avec Google"}
       </button>
+      {disabled && (
+        <p className="text-muted text-sm">
+          La connexion Google est en cours d&apos;activation et n&apos;est pas encore disponible. Revenez un
+          peu plus tard.
+        </p>
+      )}
       {error && (
         <p role="alert" className="text-danger text-sm">
           {error}

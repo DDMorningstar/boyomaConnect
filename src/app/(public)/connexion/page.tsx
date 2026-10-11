@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { InfoPage } from "@/components/ui/info-page";
-import { getCurrentUser, safeNext } from "@/features/auth/session";
+import { getCurrentUser, isGoogleAuthEnabled, safeNext } from "@/features/auth/session";
 import { GoogleButton } from "./google-button";
 
 export const metadata: Metadata = { title: "Connexion", robots: { index: false } };
@@ -19,6 +19,7 @@ export default async function LoginPage({ searchParams }: Props) {
   const { next: rawNext, erreur } = await searchParams;
   const next = safeNext(rawNext);
   if (await getCurrentUser()) redirect(next);
+  const googleEnabled = await isGoogleAuthEnabled();
 
   return (
     <InfoPage
@@ -30,7 +31,7 @@ export default async function LoginPage({ searchParams }: Props) {
           {ERRORS[erreur]}
         </p>
       )}
-      <GoogleButton next={next} />
+      <GoogleButton next={next} disabled={googleEnabled === false} />
       <ul className="text-muted text-sm">
         <li>Propriétaires : créez la fiche de votre établissement, votre catalogue et vos photos.</li>
         <li>Visiteurs : la recherche, la carte et les favoris restent utilisables sans compte.</li>

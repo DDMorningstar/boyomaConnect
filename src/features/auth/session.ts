@@ -3,6 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { env } from "@/lib/env";
 
 export interface Profile {
   id: string;
@@ -38,6 +39,24 @@ export const getCurrentPermissions = cache(async (): Promise<Set<string>> => {
   const rows: { permission_key: string }[] = data ?? [];
   return new Set(rows.map((r) => r.permission_key));
 });
+
+/**
+ * Le fournisseur Google est-il activé dans Supabase Auth ? (réglages publics, mis en cache 60 s).
+ * null si la vérification échoue : le bouton reste alors utilisable.
+ */
+export async function isGoogleAuthEnabled(): Promise<boolean | null> {
+  try {
+    const res = await fetch(`${env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/settings`, {
+      headers: { apikey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY },
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const settings = (await res.json()) as { external?: { google?: boolean } };
+    return settings.external?.google === true;
+  } catch {
+    return null;
+  }
+}
 
 /** Chemin interne sûr pour une redirection après connexion (pas de redirection ouverte). */
 export function safeNext(next: string | null | undefined, fallback = "/profil"): string {

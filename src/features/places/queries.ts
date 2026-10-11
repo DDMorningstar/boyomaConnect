@@ -154,7 +154,8 @@ const PLACE_DETAIL_SELECT = `
   place_hours (day_of_week, opens_at, closes_at, is_closed),
   place_services (id, name, description, sort_order),
   place_media (id, storage_path, kind, caption, width, height, sort_order),
-  place_amenity_links (amenity:place_amenities (key, name, icon))
+  place_amenity_links (amenity:place_amenities (key, name, icon)),
+  place_external_refs (source, license, attribution, source_url)
 `;
 
 export type PlaceLookup =

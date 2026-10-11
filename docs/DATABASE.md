@@ -35,7 +35,18 @@ Migrations : `supabase/migrations/` (9 fichiers, tous appliqués le 11/10/2026).
 
 RDC → Tshopo → Kisangani (centre indicatif 0.5153 N, 25.1910 E pour la carte) → 6 communes (Makiso, Mangobo,
 Tshopo, Kabondo, Kisangani, Lubunga) sans coordonnées inventées. 12 catégories, 72 sous-catégories, 12 équipements,
-4 plans (0/3/10/25 USD), paramètres applicatifs. **Aucun établissement.**
+4 plans (0/3/10/25 USD), paramètres applicatifs. Aucun établissement dans les migrations.
+
+## Lieux importés (OpenStreetMap)
+
+- `place_external_refs` (migration `20261011150000`) : source, identifiant d'origine (`node/123`), licence,
+  attribution, URL. Clé `(source, external_id)` → réimport sans doublon. Attribution affichée sur la fiche.
+- `scripts/osm-import.mjs` génère le SQL (Overpass, bbox de Kisangani, correspondance étiquettes OSM →
+  catégories, dédoublonnage nom + 500 m, corrections manuelles `OVERRIDES`). À exécuter avec un rôle de service.
+- Lieux importés : `unverified`, `coordinates_source = imported`, précision `exact` (point) ou `approximate`
+  (centre d'un bâtiment), rattachés à la **ville** (pas de limites de communes en base), horaires non repris.
+- Licence ODbL 1.0 : attribution « © Contributeurs OpenStreetMap » obligatoire ; une base dérivée diffusée
+  publiquement doit rester sous ODbL (voir DECISIONS.md D17).
 
 ## Fonctions RPC
 

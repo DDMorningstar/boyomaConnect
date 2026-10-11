@@ -21,6 +21,12 @@
   https://boyoma-connect.vercel.app. Pages principales, sitemap, robots, manifeste et `sw.js` → 200 ;
   rendu mobile de l'accueil vérifié ; carte : style OpenFreeMap et RPC `places_in_bbox` chargés.
 
+- 11/10/2026 : carte invisible corrigée (conteneur de hauteur nulle : `maplibre-gl.css` hors `@layer`
+  l'emportait sur `absolute inset-0` de Tailwind v4) ; vérifié en production (fond de carte affiché).
+- 11/10/2026 : 167 lieux réels importés d'OpenStreetMap (migration `place_external_refs`, script
+  `scripts/osm-import.mjs`) : publiés, non vérifiés, provenance + attribution ODbL sur la fiche ; contrôles SQL :
+  167 refs, 0 lieu sans catégorie, recherche « hotel » → 9, « pharmacie » → 2, bbox centre → 146.
+
 ## Problèmes connus
 
 - `/lieux/<slug inexistant>` affiche la page « introuvable » mais avec le code HTTP 200 (streaming dû à
@@ -35,7 +41,8 @@
 
 ## Blocages / actions humaines
 
-- Aucun lieu réel en base : à collecter (agents) ou à saisir via l'administration (phase 8).
+- Lieux importés d'OSM à vérifier sur le terrain (catégorie, activité, commune) ; aucun horaire ni commune
+  renseignés. Limites des communes à obtenir (source et licence compatibles) pour les rattacher.
 - Coordonnées de support, textes légaux définitifs : à fournir.
 - Secrets GitHub Actions (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) à ajouter,
   sinon le build de la CI échoue.

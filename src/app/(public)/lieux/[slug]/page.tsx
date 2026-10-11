@@ -396,6 +396,33 @@ export default async function PlacePage({ params }: Props) {
               <br />
               Mise à jour : {formatDate(p.updated_at)}
             </p>
+            {p.place_external_refs.map((ref) => (
+              <p key={`${ref.source}-${ref.source_url}`} className="text-muted">
+                Source :{" "}
+                {ref.source_url ? (
+                  <a
+                    href={ref.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand underline"
+                  >
+                    {ref.attribution}
+                  </a>
+                ) : (
+                  ref.attribution
+                )}{" "}
+                (
+                <a
+                  href="https://www.openstreetmap.org/copyright"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  {ref.license}
+                </a>
+                ). Informations importées, à confirmer sur place.
+              </p>
+            ))}
             {p.ownership_status === "unclaimed" && (
               <p className="flex items-start gap-2">
                 <Building2 className="text-brand size-4 shrink-0" aria-hidden="true" />

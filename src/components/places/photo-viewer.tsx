@@ -56,7 +56,7 @@ export function PhotoLightbox({
       role="dialog"
       aria-modal="true"
       aria-label={`Photo ${index + 1} sur ${count}`}
-      className="motion-safe:animate-fade-in fixed inset-0 z-50 flex flex-col bg-black/95"
+      className="motion-safe:animate-fade-in fixed inset-0 z-50 flex flex-col bg-black"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       onTouchStart={(e) => (touchX.current = e.touches[0]?.clientX ?? null)}
       onTouchEnd={(e) => {

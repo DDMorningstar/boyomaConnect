@@ -21,18 +21,21 @@ interface BboxRow {
   category_color: string | null;
 }
 
-const KISANGANI = { lng: 25.191, lat: 0.5153, zoom: 12.5 };
+/** Vue de repli si la zone n'a pas pu être chargée (centre indicatif de Kisangani, voir DATABASE.md). */
+const FALLBACK_VIEW = { lng: 25.191, lat: 0.5153, zoom: 12.5 };
+
+export interface MapViewport {
+  lat: number;
+  lng: number;
+  zoom: number;
+}
 
 /** Carte MapLibre : ne charge que les lieux de la zone visible, avec regroupement des marqueurs. */
-export function PlacesMap({
-  initial,
-  focusSlug,
-}: {
-  initial?: { lat: number; lng: number };
-  focusSlug?: string;
-}) {
+export function PlacesMap({ view, focusSlug }: { view?: MapViewport; focusSlug?: string }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
+  // Vue au moment de la création de la carte ; les changements suivants la déplacent (flyTo).
+  const viewRef = useRef(view);
   const abortRef = useRef<AbortController | null>(null);
   // Derniers lieux chargés : réinjectés si le style change (thème).
   const dataRef = useRef<GeoJSON.FeatureCollection>({ type: "FeatureCollection", features: [] });
@@ -99,11 +102,12 @@ export function PlacesMap({
       try {
         const maplibre = (await import("maplibre-gl")).default;
         if (cancelled || !container.current) return;
+        const start = viewRef.current ?? FALLBACK_VIEW;
         const map = new maplibre.Map({
           container: container.current,
           style: styleFor(currentTheme()),
-          center: [initial?.lng ?? KISANGANI.lng, initial?.lat ?? KISANGANI.lat],
-          zoom: initial ? 16 : KISANGANI.zoom,
+          center: [start.lng, start.lat],
+          zoom: start.zoom,
           attributionControl: { compact: true },
           maxZoom: 19,
         });
@@ -201,7 +205,20 @@ export function PlacesMap({
       mapRef.current?.remove();
       mapRef.current = null;
     };
-  }, [initial, loadVisible]);
+  }, [loadVisible]);
+
+  // Changement de zone : déplacement de la carte puis chargement des lieux de la nouvelle vue.
+  useEffect(() => {
+    if (!view) return;
+    const prev = viewRef.current;
+    viewRef.current = view;
+    const map = mapRef.current;
+    if (!map || (prev && prev.lat === view.lat && prev.lng === view.lng && prev.zoom === view.zoom)) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    map.once("moveend", () => void loadVisible());
+    if (reduce) map.jumpTo({ center: [view.lng, view.lat], zoom: view.zoom });
+    else map.flyTo({ center: [view.lng, view.lat], zoom: view.zoom });
+  }, [view, loadVisible]);
 
   function locate() {
     if (!navigator.geolocation) return setNotice("La géolocalisation n'est pas disponible sur cet appareil.");

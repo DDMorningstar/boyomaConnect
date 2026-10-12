@@ -5,7 +5,9 @@ import { ChevronLeft } from "lucide-react";
 import { CategoryBadge } from "@/components/places/category-icon";
 import { ResultsList } from "@/components/places/results-list";
 import { SearchFilters, hrefWith } from "@/components/search/search-filters";
-import { getCategoryBySlug, getCityWithCommunes, searchPlaces } from "@/features/places/queries";
+import { getCategoryBySlug, searchPlaces } from "@/features/places/queries";
+import { resolveSearchScope } from "@/features/zones/queries";
+import { zoneIn } from "@/features/zones/zones";
 import { parseSearchParams } from "@/lib/search-params";
 
 type Props = {
@@ -18,23 +20,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getCategoryBySlug(slug);
   if (!data) return { title: "Catégorie introuvable" };
   return {
-    title: `${data.category.name} à Kisangani`,
+    title: `${data.category.name} — Kisangani et Tshopo`,
     description:
-      data.category.description ?? `${data.category.name} à Kisangani : adresses, contacts et localisation.`,
+      data.category.description ??
+      `${data.category.name} à Kisangani et dans la province de la Tshopo : adresses, contacts et localisation.`,
     alternates: { canonical: `/categories/${slug}` },
   };
 }
 
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const data = await getCategoryBySlug(slug);
+  const scope = await resolveSearchScope(parseSearchParams(await searchParams));
+  const sp = scope.params;
+  const data = await getCategoryBySlug(slug, scope.zone?.id);
   if (!data) notFound();
-  const sp = parseSearchParams(await searchParams);
-  const [{ rows, total }, city] = await Promise.all([
-    searchPlaces({ ...sp, categorySlug: slug }),
-    getCityWithCommunes(),
-  ]);
+  const { rows, total } = await searchPlaces({ ...sp, categorySlug: slug, unitId: scope.unitId });
   const path = `/categories/${slug}`;
+  const where = scope.zone ? ` ${zoneIn(scope.zone)}` : "";
 
   return (
     <div className="space-y-4 pt-5">
@@ -67,14 +69,20 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           ))}
         </ul>
       )}
-      <SearchFilters params={{ ...sp, categorie: undefined }} communes={city?.communes ?? []} path={path} />
+      <SearchFilters
+        params={{ ...sp, categorie: undefined }}
+        communes={scope.communes}
+        zones={scope.zones}
+        activeZone={scope.zone}
+        path={path}
+      />
       <ResultsList
         rows={rows}
         total={total}
         page={sp.page}
         buildHref={(page) => hrefWith({ ...sp, categorie: undefined }, { page: String(page) }, path)}
-        emptyTitle={`Aucun lieu publié dans « ${data.category.name} » pour l'instant`}
-        emptyText="Les établissements sont ajoutés après vérification. Vous pouvez proposer un lieu manquant."
+        emptyTitle={`Aucun lieu publié dans « ${data.category.name} »${where} pour l'instant`}
+        emptyText="Les établissements sont ajoutés après vérification. Essayez une autre zone ou proposez un lieu manquant."
       />
     </div>
   );

@@ -6,7 +6,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { addRecentSearch } from "@/features/search/recent-searches";
 
 interface Suggestion {
-  kind: "place" | "category" | "unit";
+  kind: "place" | "category" | "unit" | "zone";
   label: string;
   sublabel: string | null;
   slug: string;
@@ -64,12 +64,14 @@ export function SearchBar({
     const trimmed = q.trim();
     if (!trimmed) return;
     addRecentSearch(trimmed);
+    // La zone active (mémorisée) s'applique à /recherche ; aucun paramètre à ajouter ici.
     go(`/recherche?q=${encodeURIComponent(trimmed)}`);
   }
 
   function hrefFor(s: Suggestion) {
     if (s.kind === "place") return `/lieux/${s.slug}`;
     if (s.kind === "category") return `/categories/${s.slug}`;
+    if (s.kind === "zone") return `/zones/${s.slug}`;
     return `/communes/${s.slug}`;
   }
 

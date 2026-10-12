@@ -121,7 +121,13 @@ export interface PlaceDetail {
   last_verified_at: string | null;
   updated_at: string;
   primary_category: Pick<Category, "id" | "name" | "slug" | "icon" | "color"> | null;
-  unit: { id: string; name: string; slug: string; type_key: string } | null;
+  unit: {
+    id: string;
+    name: string;
+    slug: string;
+    type_key: string;
+    parent: { name: string; slug: string; type_key: string } | null;
+  } | null;
   place_categories: { category: Pick<Category, "id" | "name" | "slug" | "icon" | "color"> | null }[];
   place_contacts: PlaceContact[];
   place_hours: PlaceHour[];

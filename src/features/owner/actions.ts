@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ImageError, optimizeImage } from "@/lib/images";
 import { getCurrentUser } from "@/features/auth/session";
+import { getListingFormOptions } from "@/features/owner/queries";
 
 export type ActionState = {
   ok?: string;
@@ -110,7 +111,7 @@ const listingSchema = z
     gps_accuracy_m: z.coerce.number().min(0).max(100000).nullable().catch(null),
   })
   .refine((v) => v.category_id !== "", { message: "Choisissez une catégorie." })
-  .refine((v) => v.commune_id !== "", { message: "Choisissez la commune." });
+  .refine((v) => v.commune_id !== "", { message: "Choisissez la commune ou le territoire." });
 
 /** Demande de création de fiche par un propriétaire (publiée après validation). */
 export async function createListing(_: ActionState, form: FormData): Promise<ActionState> {
@@ -142,21 +143,21 @@ export async function createListing(_: ActionState, form: FormData): Promise<Act
   const v = parsed.data;
   const hasCoords = v.latitude != null && v.longitude != null;
 
+  // Rattachement : une commune d'une ville de la province ou un territoire (liste du formulaire).
+  const area = (await getListingFormOptions()).areas.find((a) =>
+    a.options.some((o) => o.id === v.commune_id),
+  );
+  if (!area) return { error: "Choisissez la commune ou le territoire dans la liste." };
+
   const photos = files(form, "photos");
   if (photos.length > 3) return { error: "3 photos maximum." };
   const logo = files(form, "logo")[0];
 
   // Doublons probables (ex. lieu déjà importé) : proposer la réclamation plutôt qu'une 2e fiche.
   if (text(form, "confirm_new") !== "1") {
-    // Nom proche dans un rayon de 300 m (si position), ou nom identique dans la commune ou la ville
-    // (les lieux importés sont rattachés à la ville).
-    const { data: city } = await supabase
-      .from("geographic_units")
-      .select("id")
-      .eq("slug", "kisangani")
-      .eq("type_key", "ville")
-      .maybeSingle();
-    const unitIds = [v.commune_id, city?.id].filter((x): x is string => Boolean(x));
+    // Nom proche dans un rayon de 300 m (si position), ou nom identique dans la commune (ou le
+    // territoire) et dans sa ville : les lieux importés y sont rattachés à la ville.
+    const unitIds = [v.commune_id, area.cityId].filter((x): x is string => Boolean(x));
     const found = await Promise.all(
       unitIds.map((unitId, i) =>
         supabase.rpc("find_duplicate_places", {

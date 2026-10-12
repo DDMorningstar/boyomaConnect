@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s · Boyoma Connect",
   },
   description:
-    "Trouvez, contactez et localisez pharmacies, hôtels, restaurants, garages, écoles et services à Kisangani.",
+    "Trouvez, contactez et localisez pharmacies, hôtels, restaurants, garages, écoles et services à Kisangani et dans la province de la Tshopo.",
   applicationName: "Boyoma Connect",
   appleWebApp: { capable: true, title: "Boyoma", statusBarStyle: "black-translucent" },
   icons: { apple: "/icons/apple-touch-icon.png" },

@@ -6,6 +6,7 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
     title: "Explorer",
     links: [
       { href: "/categories", label: "Catégories" },
+      { href: "/zones/tshopo", label: "Territoires de la Tshopo" },
       { href: "/carte", label: "Carte" },
       { href: "/proximite", label: "À proximité" },
       { href: "/tourisme", label: "Boyoma Explore" },
@@ -37,7 +38,8 @@ export function SiteFooter() {
         <div className="space-y-3">
           <Logo />
           <p className="text-muted max-w-xs text-sm">
-            L&apos;annuaire des lieux de Kisangani : contacts, position, catalogue et itinéraire.
+            L&apos;annuaire des lieux de Kisangani et de la Tshopo : contacts, position, catalogue et
+            itinéraire.
           </p>
         </div>
         {COLUMNS.map((col) => (
@@ -58,8 +60,8 @@ export function SiteFooter() {
       <div className="border-line text-muted mx-auto flex max-w-6xl flex-wrap justify-between gap-2 border-t px-4 py-5 text-xs">
         <p>© {new Date().getFullYear()} Boyoma Connect · Kisangani, Tshopo, RDC</p>
         <p>
-          Cartes et lieux importés : données © contributeurs OpenStreetMap (ODbL). Distances à vol
-          d&apos;oiseau.
+          Cartes et lieux importés : données © contributeurs OpenStreetMap (ODbL). Limites administratives :
+          RGC RDC (OCHA, 2019), CC BY 3.0 IGO. Distances à vol d&apos;oiseau.
         </p>
       </div>
     </footer>

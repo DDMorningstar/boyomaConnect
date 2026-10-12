@@ -23,6 +23,7 @@ import { OpeningHours } from "@/components/places/opening-hours";
 import { ReportForm } from "@/components/places/report-form";
 import { ViewTracker } from "@/components/places/view-tracker";
 import { getPlaceBySlug, getPublicReviews } from "@/features/places/queries";
+import { localityName, placeLocation } from "@/features/zones/zones";
 import { env } from "@/lib/env";
 import { formatCoordinates, formatDate, formatPrice } from "@/lib/format";
 import { placeMediaUrl } from "@/lib/supabase/storage";
@@ -44,7 +45,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const res = await getPlaceBySlug(slug);
   if (res.kind !== "found") return { title: "Lieu introuvable", robots: { index: false } };
   const p = res.place;
-  const where = [p.unit?.type_key === "commune" ? p.unit.name : null, "Kisangani"].filter(Boolean).join(", ");
+  const where = [p.unit?.type_key === "commune" ? p.unit.name : null, localityName(p.unit)]
+    .filter(Boolean)
+    .join(", ");
   const phone = p.place_contacts.find((c) => c.kind === "phone")?.value;
   const priced = p.catalog_items.filter((i) => i.price != null && i.currency).length;
   const description = [
@@ -63,7 +66,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: `/lieux/${p.slug}` },
     openGraph: {
-      title: `${p.name} — ${p.primary_category?.name ?? "Kisangani"}`,
+      title: `${p.name} — ${p.primary_category?.name ?? localityName(p.unit)}`,
       description,
       url: `/lieux/${p.slug}`,
       siteName: "Boyoma Connect",
@@ -85,7 +88,7 @@ function businessOgTags(p: PlaceDetail): [string, string][] {
   const tags: [string, string | null | undefined][] = [
     ["og:type", "business.business"],
     ["business:contact_data:street_address", p.address_text],
-    ["business:contact_data:locality", "Kisangani"],
+    ["business:contact_data:locality", localityName(p.unit)],
     ["business:contact_data:region", "Tshopo"],
     ["business:contact_data:country_name", "République démocratique du Congo"],
     ["business:contact_data:phone_number", phone],
@@ -122,7 +125,7 @@ function jsonLd(p: PlaceDetail) {
     address: {
       "@type": "PostalAddress",
       streetAddress: p.address_text ?? undefined,
-      addressLocality: "Kisangani",
+      addressLocality: localityName(p.unit),
       addressRegion: "Tshopo",
       addressCountry: "CD",
     },
@@ -238,13 +241,7 @@ export default async function PlacePage({ params }: Props) {
           )}
           <p className="text-muted mt-1 flex items-center gap-1.5 text-sm">
             <MapPin className="size-4 shrink-0" aria-hidden="true" />
-            {[
-              p.address_text,
-              p.unit?.type_key === "commune" ? `Commune de ${p.unit.name}` : null,
-              "Kisangani",
-            ]
-              .filter(Boolean)
-              .join(", ")}
+            {[p.address_text, placeLocation(p.unit)].filter(Boolean).join(", ")}
           </p>
           {p.rating_count > 0 && p.rating_avg && (
             <p className="mt-1 flex items-center gap-1 text-sm font-medium">

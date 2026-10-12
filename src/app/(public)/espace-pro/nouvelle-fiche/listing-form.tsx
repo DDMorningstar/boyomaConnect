@@ -9,7 +9,7 @@ import { createListing, type ActionState } from "@/features/owner/actions";
 
 interface Options {
   groups: { id: string; name: string; children: { id: string; name: string }[] }[];
-  communes: { id: string; name: string }[];
+  areas: { label: string; options: { id: string; name: string }[] }[];
 }
 
 const MAX_PHOTOS = 3;
@@ -113,16 +113,20 @@ export function ListingForm({ options }: { options: Options }) {
           </div>
           <div>
             <label htmlFor="commune_id" className={labelClass}>
-              Commune *
+              Commune ou territoire *
             </label>
             <select id="commune_id" name="commune_id" required defaultValue="" className={inputClass}>
               <option value="" disabled>
                 Choisir…
               </option>
-              {options.communes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
+              {options.areas.map((a) => (
+                <optgroup key={a.label} label={a.label}>
+                  {a.options.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>

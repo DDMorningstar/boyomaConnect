@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { SearchBar } from "@/components/search/search-bar";
 import { SearchFilters, hrefWith } from "@/components/search/search-filters";
 import { ResultsList } from "@/components/places/results-list";
-import { getCityWithCommunes, searchPlaces } from "@/features/places/queries";
+import { searchPlaces } from "@/features/places/queries";
+import { resolveSearchScope } from "@/features/zones/queries";
+import { zoneIn } from "@/features/zones/zones";
 import { parseSearchParams } from "@/lib/search-params";
 import { LogSearch } from "@/components/search/log-search";
 
@@ -13,20 +15,29 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = parseSearchParams(await searchParams);
-  const [{ rows, total }, city] = await Promise.all([searchPlaces(params), getCityWithCommunes()]);
+  const scope = await resolveSearchScope(parseSearchParams(await searchParams));
+  const { params, zone } = scope;
+  const { rows, total } = await searchPlaces({ ...params, unitId: scope.unitId });
+  const where = zone ? ` ${zoneIn(zone)}` : "";
 
   return (
     <div className="space-y-4 pt-5">
-      <h1 className="sr-only">Recherche{params.q ? ` : ${params.q}` : ""}</h1>
+      <h1 className="sr-only">
+        Recherche{params.q ? ` : ${params.q}` : ""}
+        {where}
+      </h1>
       <SearchBar defaultValue={params.q ?? ""} size="md" />
-      <SearchFilters params={params} communes={city?.communes ?? []} />
+      <SearchFilters params={params} communes={scope.communes} zones={scope.zones} activeZone={zone} />
       <ResultsList
         rows={rows}
         total={total}
         page={params.page}
         buildHref={(page) => hrefWith(params, { page: String(page) })}
-        emptyTitle={params.q ? `Aucun résultat pour « ${params.q} »` : "Aucun lieu publié pour ces critères"}
+        emptyTitle={
+          params.q
+            ? `Aucun résultat pour « ${params.q} »${where}`
+            : `Aucun lieu publié${where} pour ces critères`
+        }
       />
       {params.q && params.page === 1 && <LogSearch query={params.q} results={total} />}
     </div>

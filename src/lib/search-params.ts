@@ -18,6 +18,10 @@ export const searchParamsSchema = z.object({
     .refine((v) => !v || /^[a-z0-9-]+$/.test(v), "slug invalide")
     .catch(undefined),
   commune: z.string().uuid().optional().catch(undefined),
+  /** Zone (province, ville ou territoire) : slug ; à défaut, zone mémorisée puis Kisangani. */
+  zone: optionalString(60)
+    .refine((v) => !v || /^[a-z0-9-]+$/.test(v), "slug invalide")
+    .catch(undefined),
   tri: z.enum(SORTS).catch("relevance").default("relevance"),
   page: z.coerce.number().int().min(1).max(200).catch(1).default(1),
   lat: z.coerce.number().min(-90).max(90).optional().catch(undefined),

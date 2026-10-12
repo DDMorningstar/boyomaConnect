@@ -14,6 +14,7 @@ import { CategoryBadge } from "@/components/places/category-icon";
 import { PlaceCard } from "@/components/places/place-card";
 import { Section } from "@/components/ui/section";
 import { ButtonLink } from "@/components/ui/button";
+import { ZoneSelector } from "@/components/zones/zone-selector";
 import {
   getCategoriesWithCounts,
   getCityWithCommunes,
@@ -22,24 +23,36 @@ import {
   getSponsoredPlaces,
   searchPlaces,
 } from "@/features/places/queries";
+import { resolveZone } from "@/features/zones/queries";
+import { zoneIn, zoneLabel, zoneTitle } from "@/features/zones/zones";
 import { searchParamsSchema } from "@/lib/search-params";
 import { pluralize } from "@/lib/format";
-
-export const revalidate = 300;
 
 function settled<T>(r: PromiseSettledResult<T>, fallback: T): T {
   return r.status === "fulfilled" ? r.value : fallback;
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  // Zone : ?zone=…, sinon zone mémorisée, sinon Kisangani. Si le référentiel est indisponible, la page
+  // reste utilisable sans filtre de zone.
+  const zoneR = await Promise.allSettled([resolveZone(typeof sp.zone === "string" ? sp.zone : undefined)]);
+  const { zone, zones } = settled(zoneR[0]!, { zone: null, zones: [] });
+  const unitId = zone?.id;
+  const defaults = searchParamsSchema.parse({});
+
   const [catsR, cityR, recentR, popularR, sponsoredR, tourismR, allR] = await Promise.allSettled([
-    getCategoriesWithCounts(),
-    getCityWithCommunes("kisangani"),
-    getRecentPlaces(8),
-    getPopularPlaces(8),
+    getCategoriesWithCounts(unitId),
+    zone?.type_key === "ville" ? getCityWithCommunes(zone.slug) : Promise.resolve(null),
+    getRecentPlaces(8, unitId),
+    getPopularPlaces(8, unitId),
     getSponsoredPlaces(),
-    searchPlaces({ ...searchParamsSchema.parse({}), categorySlug: "tourisme" }),
-    searchPlaces(searchParamsSchema.parse({})),
+    searchPlaces({ ...defaults, categorySlug: "tourisme", unitId }),
+    searchPlaces({ ...defaults, unitId }),
   ]);
   const categories = settled(catsR, []);
   const city = settled(cityR, null);
@@ -49,18 +62,31 @@ export default async function HomePage() {
   const tourism = settled(tourismR, { rows: [], total: 0 }).rows.slice(0, 6);
   const dataUnavailable = catsR.status === "rejected" && recentR.status === "rejected";
 
+  const where = zone ? zoneIn(zone) : "dans la Tshopo";
   const topCategories = categories.filter((c) => !c.parent_id);
-  // Total réel des lieux publiés (tous rattachements confondus : ville ou commune).
+  // Total réel des lieux publiés dans la zone (descendants compris).
   const totalPlaces = settled(allR, { rows: [], total: 0 }).total;
+  const territories = zones.filter((z) => z.type_key !== "province");
   const stats = [
-    { value: totalPlaces, label: "lieux publiés", Icon: MapPin, tone: "text-cyan" },
+    { value: totalPlaces, label: `lieux publiés ${where}`, Icon: MapPin, tone: "text-cyan" },
     {
       value: topCategories.filter((c) => c.place_count > 0).length,
       label: "catégories actives",
       Icon: Sparkles,
       tone: "text-amber-300",
     },
-    { value: city?.communes.length ?? 6, label: "communes", Icon: MapIcon, tone: "text-emerald-300" },
+    ...(city
+      ? [{ value: city.communes.length, label: "communes", Icon: MapIcon, tone: "text-emerald-300" }]
+      : zone?.type_key === "province"
+        ? [
+            {
+              value: territories.length,
+              label: "ville et territoires",
+              Icon: MapIcon,
+              tone: "text-emerald-300",
+            },
+          ]
+        : []),
   ];
 
   return (
@@ -78,15 +104,15 @@ export default async function HomePage() {
         <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div>
             <Link
-              href="/explorer"
+              href={zone ? `/zones/${zone.slug}` : "/explorer"}
               className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium backdrop-blur"
             >
               <MapPin className="text-cyan size-4" aria-hidden="true" />
-              {city?.city.name ?? "Kisangani"} · Tshopo
+              {zone ? (zone.type_key === "province" ? zoneTitle(zone) : `${zone.name} · Tshopo`) : "Tshopo"}
               <ChevronRight className="size-4 opacity-70" aria-hidden="true" />
             </Link>
             <h1 className="mt-4 max-w-xl text-[1.7rem] leading-tight font-extrabold tracking-tight md:text-4xl">
-              Trouvez le bon lieu à Kisangani, <span className="text-cyan">simplement.</span>
+              Trouvez le bon lieu {where}, <span className="text-cyan">simplement.</span>
             </h1>
             <p className="mt-2 max-w-lg text-sm text-white/70 md:text-base">
               Pharmacies, hôtels, restaurants, garages, écoles, services publics… avec leurs contacts et leur
@@ -95,10 +121,17 @@ export default async function HomePage() {
             <div className="text-ink mt-5">
               <SearchBar />
             </div>
+            <ZoneSelector
+              zones={zones}
+              active={zone?.slug}
+              hrefFor={(slug) => `/?zone=${slug}`}
+              tone="night"
+              className="mt-4"
+            />
             <p className="mt-3 text-xs text-white/60 lg:hidden">
               {totalPlaces > 0
-                ? `${pluralize(totalPlaces, "lieu publié", "lieux publiés")} à Kisangani`
-                : "L'annuaire est en cours de constitution : les premiers lieux vérifiés arrivent."}
+                ? `${pluralize(totalPlaces, "lieu publié", "lieux publiés")} ${where}`
+                : `Aucun lieu publié ${where} pour l'instant : les premiers lieux vérifiés arrivent.`}
             </p>
           </div>
 
@@ -141,7 +174,7 @@ export default async function HomePage() {
       {/* Accès rapides */}
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Link
-          href="/carte"
+          href={zone ? `/carte?zone=${zone.slug}` : "/carte"}
           className="group border-line bg-surface hover:border-brand/30 flex items-center gap-3 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)] active:scale-[0.98]"
         >
           <span className="bg-brand/10 text-brand flex size-11 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
@@ -149,7 +182,13 @@ export default async function HomePage() {
           </span>
           <span>
             <span className="block font-semibold">Carte</span>
-            <span className="text-muted text-xs">Explorer la ville</span>
+            <span className="text-muted text-xs">
+              {zone?.type_key === "province"
+                ? "Explorer la province"
+                : zone?.type_key === "territoire"
+                  ? "Explorer le territoire"
+                  : "Explorer la ville"}
+            </span>
           </span>
         </Link>
         <Link
@@ -241,7 +280,7 @@ export default async function HomePage() {
       )}
 
       {tourism.length > 0 && (
-        <Section title="Boyoma Explore" subtitle="Sites, culture et patrimoine de Kisangani" href="/tourisme">
+        <Section title="Boyoma Explore" subtitle={`Sites, culture et patrimoine ${where}`} href="/tourisme">
           <div className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-4">
             {tourism.map((p, i) => (
               <PlaceCard key={p.id} place={p} variant="tile" index={i} />
@@ -251,7 +290,7 @@ export default async function HomePage() {
       )}
 
       {city && city.communes.length > 0 && (
-        <Section title="Les communes de Kisangani">
+        <Section title={`Les communes de ${city.city.name}`}>
           <ul className="flex flex-wrap gap-2">
             {city.communes.map((c) => (
               <li key={c.unit_id}>
@@ -272,9 +311,32 @@ export default async function HomePage() {
         <Section title="À découvrir bientôt">
           <div className="border-line bg-surface text-muted flex gap-3 rounded-[var(--radius-card)] border border-dashed p-5 text-sm">
             <Sparkles className="text-brand size-5 shrink-0" aria-hidden="true" />
-            Aucun lieu n&apos;est encore publié. Nos agents cartographes collectent et vérifient les
+            Aucun lieu n&apos;est encore publié {where}. Nos agents cartographes collectent et vérifient les
             établissements sur le terrain. Vous connaissez un lieu ? Proposez-le.
           </div>
+        </Section>
+      )}
+
+      {territories.length > 0 && (
+        <Section title="Ville et territoires de la Tshopo" href="/zones/tshopo" hrefLabel="La province">
+          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {territories.map((z) => (
+              <li key={z.id}>
+                <Link
+                  href={`/zones/${z.slug}`}
+                  className={`border-line bg-surface hover:border-brand/40 flex flex-col rounded-2xl border p-4 transition-colors ${
+                    z.slug === zone?.slug ? "border-brand/50" : ""
+                  }`}
+                >
+                  <span className="text-muted text-xs">
+                    {z.type_key === "ville" ? "Ville" : "Territoire"}
+                  </span>
+                  <span className="font-semibold">{zoneLabel(z)}</span>
+                  <span className="text-muted text-xs">{pluralize(z.place_count, "lieu", "lieux")}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </Section>
       )}
 

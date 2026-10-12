@@ -57,7 +57,7 @@ export function PlaceCard({
         <div className="flex flex-1 flex-col gap-1 p-3.5">
           <h3 className="line-clamp-1 font-semibold">{place.name}</h3>
           <p className="text-muted line-clamp-1 text-sm">
-            {[place.category_name, place.unit_name].filter(Boolean).join(" · ") || "Kisangani"}
+            {[place.category_name, place.unit_name].filter(Boolean).join(" · ") || "Tshopo"}
           </p>
         </div>
       </Link>

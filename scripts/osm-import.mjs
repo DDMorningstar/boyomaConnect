@@ -1,21 +1,28 @@
-// Génère le SQL d'import des lieux nommés d'OpenStreetMap pour Kisangani.
+// Génère le SQL d'import des lieux nommés d'OpenStreetMap (Kisangani ou toute la Tshopo).
 //
-//   node scripts/osm-import.mjs > osm-import.sql             (interroge l'API Overpass)
-//   node scripts/osm-import.mjs --input osm.json > osm.sql   (réutilise une réponse enregistrée)
+//   node scripts/osm-import.mjs > osm-import.sql                        (Kisangani, API Overpass)
+//   node scripts/osm-import.mjs --zone tshopo > osm-tshopo.sql          (province entière)
+//   node scripts/osm-import.mjs --input osm.json [--zone …] > osm.sql   (réutilise une réponse enregistrée)
 // Le SQL produit (une seule requête) s'exécute avec un rôle de service (éditeur SQL Supabase).
 //
 // Règles (CLAUDE.md) : aucune donnée inventée. Seuls les champs présents dans OSM sont repris ;
-// les lieux restent « non vérifiés », rattachés à la ville (pas de limites de communes en base),
-// avec leur provenance et la licence ODbL dans place_external_refs. Réimport idempotent.
+// les lieux restent « non vérifiés », rattachés par leur position à la ville ou au territoire qui les
+// contient (public.locate_unit, limites RGC/OCHA) ; un lieu hors des limites connues est ignoré.
+// Provenance et licence ODbL dans place_external_refs. Réimport idempotent.
 import { readFile } from "node:fs/promises";
 
-const BBOX = "0.44,25.10,0.62,25.32"; // agglomération de Kisangani (sud, ouest, nord, est)
+// Emprises (sud, ouest, nord, est). Tshopo : emprise des limites de la province.
+const ZONES = { kisangani: "0.44,25.10,0.62,25.32", tshopo: "-2.12,22.24,2.40,28.16" };
+const zoneArg = process.argv.indexOf("--zone");
+const ZONE = zoneArg > 0 ? process.argv[zoneArg + 1] : "kisangani";
+if (!(ZONE in ZONES)) throw new Error(`Zone inconnue : ${ZONE} (${Object.keys(ZONES).join(", ")})`);
+const BBOX = ZONES[ZONE];
 const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const USER_AGENT = "BoyomaConnect/0.1 (+https://boyoma-connect.vercel.app)";
 const LICENSE = "ODbL-1.0";
 const ATTRIBUTION = "© Contributeurs OpenStreetMap";
 
-const QUERY = `[out:json][timeout:90];
+const QUERY = `[out:json][timeout:180];
 (
 ${["amenity", "shop", "tourism", "healthcare", "office", "leisure", "historic"]
   .map((k) => `  nwr["name"]["${k}"](${BBOX});`)
@@ -143,7 +150,30 @@ const OVERRIDES = {
   "way/196170687": "imprimeurs", // « Imprimerie RENAPI » étiqueté bibliothèque
   "way/953384828": "centres-de-formation", // « Ecole de couture » étiquetée université
   "way/953384829": "centres-de-formation", // association gestionnaire de cette école
+  "node/1042040140": null, // « KM 95 CFL Airport (Not in use) » : piste désaffectée
+  "node/13327499301": null, // « Villages mambo » : office=government sans contenu réel
+  "node/13457424701": null, // « Bokope » : idem
+  "node/13543162401": null, // « As chrtien de B'lia » : idem
+  "node/13602061901": null, // « Mangi » : idem
+  "way/545551966": null, // « Park » : nom générique, lieu non identifiable
 };
+
+/**
+ * Points dont l'e-mail est celui, personnel, d'un contributeur (série de faux « bureaux
+ * administratifs » : noms de villages ou de fruits) : exclus, quel que soit leur identifiant.
+ */
+const BLOCKED_EMAILS = new Set(["shaloomdianadengamo@gmail.com"]);
+
+// --skip-refs fichier : références OSM déjà importées (une par ligne), écartées dès la génération.
+const skipArg = process.argv.indexOf("--skip-refs");
+const SKIP_REFS = new Set(
+  skipArg > 0
+    ? (await readFile(process.argv[skipArg + 1], "utf8"))
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean)
+    : [],
+);
 
 function categoryFor(tags) {
   if (tags.amenity === "place_of_worship") {
@@ -236,7 +266,7 @@ const elements = (await loadElements()).sort(
 );
 const rows = [];
 const kept = [];
-const skipped = { categorie: 0, nom: 0, coordonnees: 0, inactif: 0, doublon: 0 };
+const skipped = { categorie: 0, nom: 0, coordonnees: 0, inactif: 0, doublon: 0, deja_importe: 0, exclu: 0 };
 
 for (const el of elements) {
   const tags = el.tags ?? {};
@@ -245,6 +275,20 @@ for (const el of elements) {
   const lon = el.lon ?? el.center?.lon;
   const osmRef = `${el.type}/${el.id}`;
   const category = osmRef in OVERRIDES ? OVERRIDES[osmRef] : categoryFor(tags);
+  if (SKIP_REFS.has(osmRef)) {
+    // Déjà en base : sert encore au dédoublonnage des nouveaux lieux voisins homonymes.
+    const n = clean(tags.name, 140);
+    const la = el.lat ?? el.center?.lat;
+    const lo = el.lon ?? el.center?.lon;
+    if (n && typeof la === "number" && typeof lo === "number")
+      kept.push({ key: dedupeKey(n), lat: la, lon: lo });
+    skipped.deja_importe++;
+    continue;
+  }
+  if ([tags.email, tags["contact:email"]].some((e) => e && BLOCKED_EMAILS.has(e.trim().toLowerCase()))) {
+    skipped.exclu++;
+    continue;
+  }
   if (isInactive(tags)) {
     skipped.inactif++;
     continue;
@@ -291,14 +335,18 @@ if (json.includes("$osm$")) throw new Error("Délimiteur $osm$ présent dans les
 
 // Requête unique et ensembliste ; les identifiants sont générés avant l'insertion pour relier
 // lieux, provenance et contacts. Les lieux déjà importés (même ref OSM) sont ignorés.
-console.log(`-- Import OpenStreetMap (Kisangani, bbox ${BBOX}) — ${new Date().toISOString()}
+console.log(`-- Import OpenStreetMap (${ZONE}, bbox ${BBOX}) — ${new Date().toISOString()}
 -- ${rows.length} lieux ; ignorés : ${JSON.stringify(skipped)}
 -- Données ${ATTRIBUTION}, licence ${LICENSE} (https://www.openstreetmap.org/copyright)
-with raw as (
-  select d.*, row_number() over (partition by public.slugify(d.n) order by d.r) as homonym
+with located as (
+  select d.*, public.locate_unit(d.y, d.x) as unit_id
   from jsonb_to_recordset($osm$${json}$osm$::jsonb)
     as d(r text, n text, o text, d text, c text, a text, y float8, x float8, p text, k jsonb)
   where not exists (select 1 from public.place_external_refs e where e.source = 'osm' and e.external_id = d.r)
+), raw as (
+  -- Lieux hors des limites connues (emprise rectangulaire plus large que la province) : ignorés.
+  select l.*, row_number() over (partition by public.slugify(l.n) order by l.r) as homonym
+  from located l where l.unit_id is not null
 ), src as materialized (
   -- Le trigger de slug ne voit pas les lignes de la même requête : suffixe explicite pour les homonymes.
   select gen_random_uuid() as id,
@@ -308,9 +356,7 @@ with raw as (
   insert into public.places (id, slug, name, official_name, short_description, primary_category_id,
     administrative_unit_id, address_text, latitude, longitude, geographic_precision, coordinates_source,
     verification_status, publication_status, activity_status)
-  select s.id, s.slug, s.n, s.o, s.d, cat.id,
-    (select id from public.geographic_units where slug = 'kisangani' and type_key = 'ville'),
-    s.a, s.y, s.x, s.p::public.geographic_precision, 'imported', 'unverified', 'published', 'unknown'
+  select s.id, s.slug, s.n, s.o, s.d, cat.id, s.unit_id, s.a, s.y, s.x, s.p::public.geographic_precision, 'imported', 'unverified', 'published', 'unknown'
   from src s join public.categories cat on cat.slug = s.c
   returning id
 ), refs as (

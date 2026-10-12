@@ -14,7 +14,7 @@ export const PUBLIC_NAV: NavItem[] = [
     label: "Explorer",
     icon: Compass,
     match: (p) =>
-      ["/explorer", "/recherche", "/categories", "/carte", "/communes", "/lieux"].some((x) =>
+      ["/explorer", "/recherche", "/categories", "/carte", "/communes", "/zones", "/lieux"].some((x) =>
         p.startsWith(x),
       ),
   },

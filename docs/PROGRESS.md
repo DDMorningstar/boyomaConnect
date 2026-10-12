@@ -52,7 +52,21 @@
   super-admin (transaction annulée), refus anonyme, 12 requêtes PostgREST valides, typecheck/lint/tests/build.
   Non vérifié visuellement connecté (nécessite la session de l'utilisateur).
 
+- 12/10/2026 : élargissement à la province de la Tshopo (D29). Base : 7 territoires, limites RGC/OCHA (Kisangani,
+  territoires, province = union, 200 443 km²), `locate_unit` + rattachement automatique des lieux, centres et zooms
+  calculés ; vérifié (chaque territoire se localise sur lui-même, point de Kinshasa → null, 168 lieux restés à
+  Kisangani). Import OSM provincial : 65 nouveaux lieux (Bafwasende 33, Basoko 10, Ubundu 10, Banalia 5, Isangi 5,
+  Opala 1, Yahuma 1), 65 hors province écartés, faux « bureaux administratifs » portant un e-mail personnel exclus.
+  Interface : sélecteur de zone (accueil, recherche, catégories, carte, tourisme, explorer) mémorisé par cookie,
+  zone par défaut Kisangani ; pages `/zones/<slug>` ; carte cadrée par zone ; localité réelle sur les fiches, l'OG
+  et le JSON-LD ; formulaire pro « commune ou territoire » validé côté serveur ; suggestions de territoires.
+  Migrations `zones`, `zone_suggestions`, `zone_category_counts` (comptages sans zone identiques avant/après).
+  Vérifié : typecheck, lint, 22 tests, build, pages en local (voir ci-dessous).
+
 ## Problèmes connus
+
+- Limite d'Isangi : enclave autour de Yangambi dans le RGC (contour simplifié) ; les points situés dans cette
+  enclave ne sont rattachés à aucun territoire (ex. « Notre Dame de Yangambi » non importé).
 
 - `/lieux/<slug inexistant>` affiche la page « introuvable » mais avec le code HTTP 200 (streaming dû à
   `loading.tsx`) ; à corriger pour le SEO.

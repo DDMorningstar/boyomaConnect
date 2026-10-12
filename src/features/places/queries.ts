@@ -23,8 +23,11 @@ export class DataError extends Error {
 
 const CATEGORY_FIELDS = "id, parent_id, name, slug, description, icon, color, sort_order, is_featured";
 
-/** Catégories actives + nombre réel de lieux publiés (les parentes cumulent leurs enfants). */
-export const getCategoriesWithCounts = cache(async (): Promise<CategoryWithCount[]> => {
+/**
+ * Catégories actives + nombre réel de lieux publiés (les parentes cumulent leurs enfants),
+ * dans une zone si `unitId` est fourni (descendants compris).
+ */
+export const getCategoriesWithCounts = cache(async (unitId?: string): Promise<CategoryWithCount[]> => {
   const supabase = await createSupabaseServerClient();
   const [cats, counts] = await Promise.all([
     supabase
@@ -32,7 +35,7 @@ export const getCategoriesWithCounts = cache(async (): Promise<CategoryWithCount
       .select(CATEGORY_FIELDS)
       .order("sort_order")
       .overrideTypes<Category[], { merge: false }>(),
-    supabase.rpc("category_place_counts"),
+    supabase.rpc("category_place_counts", { p_unit_id: unitId ?? null }),
   ]);
   if (cats.error) throw new DataError("Impossible de charger les catégories", cats.error);
   if (counts.error) throw new DataError("Impossible de compter les lieux", counts.error);
@@ -41,8 +44,8 @@ export const getCategoriesWithCounts = cache(async (): Promise<CategoryWithCount
   return (cats.data ?? []).map((c) => ({ ...c, place_count: byId.get(c.id) ?? 0 }));
 });
 
-export const getCategoryBySlug = cache(async (slug: string) => {
-  const all = await getCategoriesWithCounts();
+export const getCategoryBySlug = cache(async (slug: string, unitId?: string) => {
+  const all = await getCategoriesWithCounts(unitId);
   const category = all.find((c) => c.slug === slug) ?? null;
   if (!category) return null;
   const children = all.filter((c) => c.parent_id === category.id);
@@ -96,9 +99,13 @@ export async function searchPlaces(params: ParsedSearch & { categorySlug?: strin
   return { rows, total: rows[0] ? Number(rows[0].total_count) : 0 };
 }
 
-export const getRecentPlaces = cache(async (limit = 8): Promise<PlaceSearchRow[]> => {
+export const getRecentPlaces = cache(async (limit = 8, unitId?: string): Promise<PlaceSearchRow[]> => {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("search_places", { p_sort: "recent", p_limit: limit });
+  const { data, error } = await supabase.rpc("search_places", {
+    p_sort: "recent",
+    p_limit: limit,
+    p_unit_id: unitId ?? null,
+  });
   if (error) throw new DataError("Impossible de charger les lieux récents", error);
   return data ?? [];
 });
@@ -117,9 +124,13 @@ export interface PopularPlace {
   score: number;
 }
 
-export const getPopularPlaces = cache(async (limit = 8): Promise<PopularPlace[]> => {
+export const getPopularPlaces = cache(async (limit = 8, unitId?: string): Promise<PopularPlace[]> => {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("popular_places", { p_days: 30, p_limit: limit });
+  const { data, error } = await supabase.rpc("popular_places", {
+    p_days: 30,
+    p_limit: limit,
+    p_unit_id: unitId ?? null,
+  });
   if (error) throw new DataError("Impossible de charger les lieux populaires", error);
   return data ?? [];
 });
@@ -149,7 +160,8 @@ const PLACE_DETAIL_SELECT = `
   price_range, currency, payment_methods, wheelchair_accessible, accessibility_notes, hours_verified_at,
   cover_path, logo_path, rating_avg, rating_count, published_at, last_verified_at, updated_at,
   primary_category:categories!places_primary_category_id_fkey (id, name, slug, icon, color),
-  unit:geographic_units!places_administrative_unit_id_fkey (id, name, slug, type_key),
+  unit:geographic_units!places_administrative_unit_id_fkey (id, name, slug, type_key,
+    parent:geographic_units!geographic_units_parent_id_fkey (name, slug, type_key)),
   place_categories (category:categories (id, name, slug, icon, color)),
   place_contacts (id, kind, value, label, is_primary, verified_at, sort_order),
   place_hours (day_of_week, opens_at, closes_at, is_closed),
@@ -200,7 +212,7 @@ export interface ShareCardData {
   cover_path: string | null;
   ownership_status: string;
   primary_category: { name: string; color: string } | null;
-  unit: { name: string; type_key: string } | null;
+  unit: { name: string; type_key: string; parent: { name: string; type_key: string } | null } | null;
   place_contacts: { kind: string; value: string; is_primary: boolean }[];
   place_media: { storage_path: string; kind: string }[];
   catalog_items: { price: number | null; currency: string | null }[];
@@ -215,7 +227,8 @@ export async function getShareCardData(slug: string): Promise<ShareCardData | nu
     .select(
       `name, logo_path, cover_path, ownership_status,
        primary_category:categories!places_primary_category_id_fkey (name, color),
-       unit:geographic_units!places_administrative_unit_id_fkey (name, type_key),
+       unit:geographic_units!places_administrative_unit_id_fkey (name, type_key,
+         parent:geographic_units!geographic_units_parent_id_fkey (name, type_key)),
        place_contacts (kind, value, is_primary),
        place_media (storage_path, kind),
        catalog_items (price, currency)`,

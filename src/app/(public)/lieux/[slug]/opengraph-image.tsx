@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import sharp from "sharp";
 import { getShareCardData } from "@/features/places/queries";
+import { placeLocation } from "@/features/zones/zones";
 import { formatPrice } from "@/lib/format";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 
@@ -52,10 +53,8 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
       ? formatPrice(Math.min(...cdf), "CDF")
       : null;
   const accent = p?.primary_category?.color ?? "#2563EB";
-  // Commune affichée seulement si le lieu y est rattaché (les lieux importés le sont à la ville).
-  const where = [p?.unit?.type_key === "commune" ? `Commune de ${p.unit.name}` : null, "Kisangani"]
-    .filter(Boolean)
-    .join(" · ");
+  // Commune (si connue) + ville ou territoire, d'après le rattachement réel du lieu.
+  const where = p?.unit ? `${placeLocation(p.unit).replace(", ", " · ")} · Tshopo` : "Tshopo";
   const items = p?.catalog_items.length ?? 0;
 
   return new ImageResponse(
@@ -115,7 +114,7 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
               </div>
               <div style={{ display: "flex", fontSize: 30, marginTop: 12, opacity: 0.9 }}>
                 <span style={{ color: accent === "#2563EB" ? "#93C5FD" : accent, fontWeight: 700 }}>
-                  {p?.primary_category?.name ?? "Kisangani"}
+                  {p?.primary_category?.name ?? "Lieu"}
                 </span>
                 <span style={{ margin: "0 14px" }}>·</span>
                 <span>{where}</span>

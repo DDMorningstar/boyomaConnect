@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ParsedSearch } from "@/lib/search-params";
+import { ZoneSelector } from "@/components/zones/zone-selector";
+import type { Zone } from "@/features/zones/zones";
 
 type Commune = { unit_id: string; name: string };
 
@@ -12,6 +14,7 @@ function hrefWith(
   const merged: Record<string, string | undefined> = {
     q: base.q,
     categorie: base.categorie,
+    zone: base.zone,
     commune: base.commune,
     tri: base.tri !== "relevance" ? base.tri : undefined,
     ouvert: base.ouvert ? "1" : undefined,
@@ -31,10 +34,15 @@ export { hrefWith };
 export function SearchFilters({
   params,
   communes,
+  zones = [],
+  activeZone,
   path = "/recherche",
 }: {
   params: ParsedSearch;
+  /** Communes de la zone active (seule la ville en a). */
   communes: Commune[];
+  zones?: Zone[];
+  activeZone?: Zone | null;
   path?: string;
 }) {
   const chip = (active: boolean) =>
@@ -43,23 +51,34 @@ export function SearchFilters({
     }`;
   return (
     <div className="space-y-2">
-      <div className="-mx-4 flex scrollbar-none gap-2 overflow-x-auto px-4" role="group" aria-label="Commune">
-        <Link
-          href={hrefWith(params, { commune: undefined, page: undefined }, path)}
-          className={chip(!params.commune)}
+      <ZoneSelector
+        zones={zones}
+        active={activeZone?.slug}
+        hrefFor={(slug) => hrefWith(params, { zone: slug, commune: undefined, page: undefined }, path)}
+      />
+      {communes.length > 0 && (
+        <div
+          className="-mx-4 flex scrollbar-none gap-2 overflow-x-auto px-4"
+          role="group"
+          aria-label="Commune"
         >
-          Toutes les communes
-        </Link>
-        {communes.map((c) => (
           <Link
-            key={c.unit_id}
-            href={hrefWith(params, { commune: c.unit_id }, path)}
-            className={chip(params.commune === c.unit_id)}
+            href={hrefWith(params, { commune: undefined, page: undefined }, path)}
+            className={chip(!params.commune)}
           >
-            {c.name}
+            Toutes les communes
           </Link>
-        ))}
-      </div>
+          {communes.map((c) => (
+            <Link
+              key={c.unit_id}
+              href={hrefWith(params, { commune: c.unit_id }, path)}
+              className={chip(params.commune === c.unit_id)}
+            >
+              {c.name}
+            </Link>
+          ))}
+        </div>
+      )}
       <div
         className="-mx-4 flex scrollbar-none gap-2 overflow-x-auto px-4"
         role="group"

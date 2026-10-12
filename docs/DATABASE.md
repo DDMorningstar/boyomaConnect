@@ -70,6 +70,10 @@ Tshopo, Kabondo, Kisangani, Lubunga) sans coordonnées inventées. 12 catégorie
 - `refresh_unit_centers()` : centre (point intérieur) et zoom de chaque unité à partir de sa limite, si absents.
 - Vérifié le 12/10/2026 : chaque territoire se localise sur lui-même, un point de Kinshasa → null, les 168 lieux
   géolocalisés restent rattachés à Kisangani.
+- Import OSM provincial (`node scripts/osm-import.mjs --zone tshopo --skip-refs refs.txt`) : rattachement par
+  `locate_unit`, lieux hors limites ignorés, e-mails personnels bloqués (`BLOCKED_EMAILS`).
+- Migrations `20261012090000_zones` (emprise carte ≤ 12°, `popular_places` par zone),
+  `20261012091000_zone_suggestions` (kind `zone`), `20261012092000_zone_category_counts`.
 
 ## Fonctions RPC
 

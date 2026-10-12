@@ -1,6 +1,8 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategoriesWithCounts, getCityWithCommunes } from "@/features/places/queries";
+import { getZones } from "@/features/zones/queries";
+import { zoneTitle } from "@/features/zones/zones";
 
 export interface CatalogItem {
   id: string;
@@ -131,9 +133,16 @@ export async function getManagedPlace(placeId: string, userId: string): Promise<
   return data;
 }
 
-/** Catégories (sous-catégories groupées) et communes pour les formulaires. */
+/**
+ * Catégories (sous-catégories groupées) et rattachements possibles pour les formulaires :
+ * communes de chaque ville de la province, puis territoires (décision D29).
+ */
 export async function getListingFormOptions() {
-  const [categories, city] = await Promise.all([getCategoriesWithCounts(), getCityWithCommunes()]);
+  const [categories, zones] = await Promise.all([getCategoriesWithCounts(), getZones()]);
+  const cities = await Promise.all(
+    zones.filter((z) => z.type_key === "ville").map((z) => getCityWithCommunes(z.slug)),
+  );
+  const territories = zones.filter((z) => z.type_key === "territoire");
   const parents = categories.filter((c) => !c.parent_id);
   return {
     groups: parents.map((p) => ({
@@ -141,7 +150,24 @@ export async function getListingFormOptions() {
       name: p.name,
       children: categories.filter((c) => c.parent_id === p.id).map((c) => ({ id: c.id, name: c.name })),
     })),
-    communes: (city?.communes ?? []).map((c) => ({ id: c.unit_id, name: c.name })),
-    cityId: city?.city.id ?? null,
+    areas: [
+      ...cities
+        .filter((c): c is NonNullable<typeof c> => Boolean(c && c.communes.length))
+        .map((c) => ({
+          label: `${c.city.name} — communes`,
+          /** Ville de ces communes (sert à la détection des doublons importés, rattachés à la ville). */
+          cityId: c.city.id,
+          options: c.communes.map((m) => ({ id: m.unit_id, name: m.name })),
+        })),
+      ...(territories.length
+        ? [
+            {
+              label: "Territoires de la Tshopo",
+              cityId: null,
+              options: territories.map((t) => ({ id: t.id, name: zoneTitle(t) })),
+            },
+          ]
+        : []),
+    ],
   };
 }

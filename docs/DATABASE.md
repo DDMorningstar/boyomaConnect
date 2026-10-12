@@ -83,3 +83,9 @@ Voir `API.md`.
 
 `supabase/tests/rls_and_search_smoke.sql` — exécuté le 11/10/2026, résultat :
 `texte=2 typo=2 cat+ville=2 rayon1km=1 dist_lointaine_m=8220 bbox=1 suggestions=3 anon_voit=2 anon_profiles=0 anon_insert=refusé anon_paiement=refusé`.
+
+## Module d'importation (migrations `20261012100000`, `20261012101000`, décision D30)
+
+`import_sources`, `osm_category_mappings`, `import_batches` (journal), `import_items` (prévisualisation),
+`import_schedules` ; `place_external_refs` + `collected_at`, `last_synced_at`, `batch_id`, `extra`, sources
+autres qu'OSM (clé étrangère vers `import_sources`). Détails : `IMPORTS.md`.

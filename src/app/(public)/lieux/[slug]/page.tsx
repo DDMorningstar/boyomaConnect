@@ -505,14 +505,20 @@ export default async function PlacePage({ params }: Props) {
                   ref.attribution
                 )}{" "}
                 (
-                <a
-                  href="https://www.openstreetmap.org/copyright"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline"
-                >
-                  {ref.license}
-                </a>
+                {ref.source === "osm" ? (
+                  <a
+                    href="https://www.openstreetmap.org/copyright"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    {ref.license}
+                  </a>
+                ) : (
+                  <Link href="/sources" className="underline">
+                    {ref.license}
+                  </Link>
+                )}
                 ). Informations importées, à confirmer sur place.
               </p>
             ))}

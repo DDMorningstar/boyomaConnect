@@ -9,7 +9,7 @@ Appel : `supabase.rpc(nom, params)`. Toutes paramétrées (aucun SQL dynamique).
 | `search_places(p_query, p_category_slug, p_unit_id, p_latitude, p_longitude, p_radius_m, p_price_max, p_open_now, p_verified_only, p_sort, p_limit≤50, p_offset)` | Recherche plein texte + trigrammes (fautes de frappe, accents), filtres cumulables, tri relevance/distance/recent/rating/name, `total_count` |
 | `places_in_bbox(min_lng, min_lat, max_lng, max_lat, p_category_slug, p_query, p_limit≤1000)`                                                                      | Points de la zone visible de la carte (emprise ≤ 12°, pour afficher toute la province)                                                       |
 | `search_suggestions(p_query, p_limit)`                                                                                                                            | Suggestions lieux / catégories / communes (`unit`) / province, ville, territoires (`zone`)                                                   |
-| `category_place_counts(p_unit_id?)`, `unit_place_counts(parent_id)`                                                                                              | Comptages réels (dans une zone si `p_unit_id`, descendants compris)                                                                         |
+| `category_place_counts(p_unit_id?)`, `unit_place_counts(parent_id)`                                                                                               | Comptages réels (dans une zone si `p_unit_id`, descendants compris)                                                                          |
 | `popular_places(p_days, p_limit, p_unit_id?)`                                                                                                                     | Classement transparent : vues + 2×(appels+WhatsApp) + 3×itinéraires, filtrable par zone                                                      |
 | `locate_unit(lat, lng)`                                                                                                                                           | Unité la plus précise contenant un point (limites RGC/OCHA)                                                                                  |
 | `resolve_place_slug(slug)`                                                                                                                                        | Redirection d'anciens slugs                                                                                                                  |
@@ -34,3 +34,17 @@ Appel : `supabase.rpc(nom, params)`. Toutes paramétrées (aucun SQL dynamique).
 | `confirm_manual_payment(payment_id, reference, note)`                        | `billing.manage`, pas l'initiateur                        |
 | `simulate_payment_confirmation(payment_id)`                                  | uniquement si `billing.simulated_payments_enabled = true` |
 | `current_user_permissions()`, `current_user_roles()`                         | soi-même                                                  |
+
+## Importations (authenticated + permission `imports.manage`, SECURITY DEFINER, audit)
+
+| Fonction                                                                    | Rôle                                                                   |
+| --------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `import_reserve_request(source)`                                            | Créneau d'appel à une API publique (1 / min par défaut, partagé)       |
+| `import_analyze_batch(batch)`                                               | Rattachement, zone, doublons, statuts (décisions manuelles conservées) |
+| `import_decide_item(item, decision, category?, note?)`                      | accept / reject / skip / merge                                         |
+| `import_commit_batch(batch, limit)`                                         | Import d'une tranche (création, actualisation, provenance) ; reprise   |
+| `import_mark_failed`, `import_cancel_batch`                                 | Échec consigné / annulation                                            |
+| `import_save_schedule`, `import_toggle_schedule`, `import_schedule_started` | Synchronisations (intervalle ≥ minimum de la source)                   |
+| `import_save_mapping`, `import_toggle_mapping`                              | Correspondances OSM → catégories                                       |
+| `unit_bbox(unit)`                                                           | Emprise d'une unité (limite, sinon centre ± 0,2°)                      |
+| `osm_derived_places()` (anon)                                               | Extrait ODbL de la base dérivée d'OSM (`/api/exports/osm`)             |

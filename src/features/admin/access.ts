@@ -22,6 +22,7 @@ const ADMIN_PERMISSIONS = [
   "audit.read",
   "settings.manage",
   "analytics.read",
+  "imports.view",
 ];
 
 export interface AdminContext {

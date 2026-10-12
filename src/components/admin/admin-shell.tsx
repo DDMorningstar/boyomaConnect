@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ClipboardCheck,
+  DatabaseZap,
   ExternalLink,
   FileClock,
   Flag,
@@ -80,6 +81,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/lieux", label: "Lieux", icon: MapPinned, permission: "places.read_all" },
       { href: "/admin/categories", label: "Catégories", icon: FolderTree, permission: "categories.manage" },
+      { href: "/admin/importations", label: "Importations", icon: DatabaseZap, permission: "imports.view" },
     ],
   },
   {

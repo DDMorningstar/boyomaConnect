@@ -63,6 +63,14 @@
   Migrations `zones`, `zone_suggestions`, `zone_category_counts` (comptages sans zone identiques avant/après).
   Vérifié : typecheck, lint, 22 tests, build, pages en local (voir ci-dessous).
 
+- 12/10/2026 : module d'importation (D30, docs/IMPORTS.md) : migrations `import_module` et `import_mappings`
+  (sources, 98 correspondances OSM, lots, éléments, synchronisations, provenance étendue), console
+  `/admin/importations` (recherche OSM, fichiers OSM/GeoJSON/JSON/CSV, prévisualisation, décisions, import par
+  tranches avec reprise, journal, synchronisations, correspondances), page `/sources`, extrait ODbL
+  `/api/exports/osm`. Vérifié : test SQL `supabase/tests/imports_smoke.sql` (transaction annulée, base intacte),
+  14 tests unitaires du module, typecheck, lint, build. Non vérifié : parcours dans le navigateur connecté
+  (session administrateur requise), appel Overpass depuis Vercel.
+
 ## Problèmes connus
 
 - Limite d'Isangi : enclave autour de Yangambi dans le RGC (contour simplifié) ; les points situés dans cette

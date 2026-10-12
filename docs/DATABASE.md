@@ -58,6 +58,19 @@ Tshopo, Kabondo, Kisangani, Lubunga) sans coordonnées inventées. 12 catégorie
 - Licence ODbL 1.0 : attribution « © Contributeurs OpenStreetMap » obligatoire ; une base dérivée diffusée
   publiquement doit rester sous ODbL (voir DECISIONS.md D17).
 
+## Province de la Tshopo (migration `20261011210000`, décision D29)
+
+- 7 territoires (Bafwasende, Banalia, Basoko, Isangi, Opala, Ubundu, Yahuma) sous la province, à côté de la
+  ville de Kisangani. Les slugs `tshopo` et `kisangani` existent aussi comme communes : toujours filtrer par `type_key`.
+- `geographic_boundaries` : limites de Kisangani et des 7 territoires (RGC OCHA 2019 via geoBoundaries, CC BY 3.0 IGO,
+  simplifiées ~450 m) + province = union (200 443 km²). Chargées par `supabase/seeds/limites-tshopo.sql`
+  (régénérable : `node scripts/boundaries-import.mjs <geoBoundaries-COD-ADM2_simplified.geojson> <dossier>`).
+- `locate_unit(lat, lng)` : unité la plus profonde contenant le point. Trigger `places_zz_assign_unit` : complète ou
+  précise le rattachement d'un lieu d'après sa position, sans jamais contredire une commune choisie.
+- `refresh_unit_centers()` : centre (point intérieur) et zoom de chaque unité à partir de sa limite, si absents.
+- Vérifié le 12/10/2026 : chaque territoire se localise sur lui-même, un point de Kinshasa → null, les 168 lieux
+  géolocalisés restent rattachés à Kisangani.
+
 ## Fonctions RPC
 
 Voir `API.md`.

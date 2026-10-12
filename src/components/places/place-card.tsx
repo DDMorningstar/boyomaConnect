@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { MapPin, Star } from "lucide-react";
 import { PlaceThumb } from "@/components/places/place-visual";
 import { VerificationBadge } from "@/components/places/verification-badge";
-import { formatDistance } from "@/lib/format";
+import { DistanceBadge, PlaceLink } from "@/components/places/place-card-client";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 import type { VerificationStatus } from "@/types/places";
 
@@ -20,7 +19,29 @@ export interface PlaceCardData {
   rating_avg?: number | null;
   rating_count?: number | null;
   distance_m?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  /** Ouvert maintenant (horaires connus seulement). */
+  is_open?: boolean | null;
   verification_status?: VerificationStatus;
+}
+
+/** « Ouvert » / « Fermé » d'après les horaires déclarés ; rien si inconnus (jamais supposé). */
+function OpenBadge({ open }: { open: boolean | null | undefined }) {
+  if (open == null) return null;
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+        open ? "bg-success/12 text-success" : "bg-surface-2 text-muted"
+      }`}
+    >
+      <span
+        className={`size-1.5 rounded-full ${open ? "bg-success motion-safe:animate-pulse" : "bg-muted"}`}
+        aria-hidden="true"
+      />
+      {open ? "Ouvert" : "Fermé"}
+    </span>
+  );
 }
 
 export function PlaceCard({
@@ -41,47 +62,57 @@ export function PlaceCard({
     icon: place.category_icon,
     color: place.category_color,
   };
-  const distance = formatDistance(place.distance_m);
   const delay = { animationDelay: `${Math.min(index, 8) * 40}ms` };
 
   if (variant === "tile") {
     return (
-      <Link
+      <PlaceLink
         href={`/lieux/${place.slug}`}
         style={delay}
         className="group animate-fade-up border-line bg-surface hover:border-brand/30 flex w-64 shrink-0 snap-start flex-col overflow-hidden rounded-[var(--radius-card)] border shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-float)] active:scale-[0.98] md:w-auto"
       >
-        <div className="bg-surface-2 relative aspect-[16/10] overflow-hidden">
+        <div data-vt-thumb className="bg-surface-2 relative aspect-[16/10] overflow-hidden">
           <PlaceThumb {...visual} variant="tile" />
+          <DistanceBadge
+            latitude={place.latitude}
+            longitude={place.longitude}
+            serverMeters={place.distance_m}
+            className="bg-surface/90 text-ink absolute top-2 right-2 rounded-full px-2 py-0.5 text-[11px] font-semibold shadow-sm backdrop-blur"
+          />
         </div>
         <div className="flex flex-1 flex-col gap-1 p-3.5">
           <h3 className="line-clamp-1 font-semibold">{place.name}</h3>
           <p className="text-muted line-clamp-1 text-sm">
             {[place.category_name, place.unit_name].filter(Boolean).join(" · ") || "Tshopo"}
           </p>
+          {place.is_open != null && (
+            <div className="mt-auto pt-1">
+              <OpenBadge open={place.is_open} />
+            </div>
+          )}
         </div>
-      </Link>
+      </PlaceLink>
     );
   }
 
   return (
-    <Link
+    <PlaceLink
       href={`/lieux/${place.slug}`}
       style={delay}
       className="group animate-fade-up border-line bg-surface hover:border-brand/30 flex gap-3.5 rounded-[var(--radius-card)] border p-3.5 shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)] active:scale-[0.99]"
     >
-      <PlaceThumb {...visual} variant="row" />
+      <div data-vt-thumb className="shrink-0 self-start overflow-hidden rounded-2xl">
+        <PlaceThumb {...visual} variant="row" />
+      </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <h3 className="line-clamp-2 leading-snug font-semibold">{place.name}</h3>
-          {distance && (
-            <span
-              className="bg-surface-2 text-muted shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
-              title="Distance à vol d'oiseau"
-            >
-              {distance}
-            </span>
-          )}
+          <DistanceBadge
+            latitude={place.latitude}
+            longitude={place.longitude}
+            serverMeters={place.distance_m}
+            className="bg-surface-2 text-muted shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
+          />
         </div>
         <p className="text-muted mt-0.5 line-clamp-1 text-sm">
           {[place.category_name, place.unit_name].filter(Boolean).join(" · ")}
@@ -93,6 +124,7 @@ export function PlaceCard({
           </p>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
+          <OpenBadge open={place.is_open} />
           {place.verification_status && <VerificationBadge status={place.verification_status} />}
           {place.rating_count && place.rating_avg ? (
             <span className="inline-flex items-center gap-1 text-xs font-medium">
@@ -103,7 +135,7 @@ export function PlaceCard({
           ) : null}
         </div>
       </div>
-    </Link>
+    </PlaceLink>
   );
 }
 

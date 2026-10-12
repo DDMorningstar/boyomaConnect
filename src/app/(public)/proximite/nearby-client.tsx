@@ -1,4 +1,5 @@
 "use client";
+import { rememberPosition } from "@/lib/use-user-position";
 import { useState } from "react";
 import { LocateFixed, Loader2, MapPinOff } from "lucide-react";
 import { PlaceCard, PlaceCardSkeleton } from "@/components/places/place-card";
@@ -35,6 +36,7 @@ export function NearbyClient() {
     navigator.geolocation.getCurrentPosition(
       (g) => {
         const p = { lat: g.coords.latitude, lng: g.coords.longitude };
+        rememberPosition(p.lat, p.lng);
         setPos(p);
         void load(p, radius);
       },

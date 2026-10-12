@@ -71,6 +71,13 @@
   14 tests unitaires du module, typecheck, lint, build. Non vérifié : parcours dans le navigateur connecté
   (session administrateur requise), appel Overpass depuis Vercel.
 
+- 12/10/2026 : UI / motion : titre d'accueil qui débordait sur mobile et puce de zone active illisible
+  (thème sombre) corrigés ; adresse sans répétition de la commune ; badge « Ouvert / Fermé » (horaires connus
+  uniquement, `places_open_status`) ; distance à vol d'oiseau sur les cartes si la position est déjà autorisée
+  (jamais de demande) ; barre d'actions fixe sur mobile (Appeler, WhatsApp, Itinéraire) ; transition carte → fiche
+  (View Transitions, ≤ 900 ms d'attente, désactivée si « réduire les animations »). Vérifié : build, 36 tests,
+  contrôle Playwright mobile local (aucun débordement, transition, barre fixe, 0 erreur JS).
+
 ## Problèmes connus
 
 - Limite d'Isangi : enclave autour de Yangambi dans le RGC (contour simplifié) ; les points situés dans cette

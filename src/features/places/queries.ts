@@ -96,7 +96,26 @@ export async function searchPlaces(params: ParsedSearch & { categorySlug?: strin
   });
   if (error) throw new DataError("La recherche a échoué", error);
   const rows: PlaceSearchRow[] = data ?? [];
-  return { rows, total: rows[0] ? Number(rows[0].total_count) : 0 };
+  return { rows: await withOpenStatus(rows), total: rows[0] ? Number(rows[0].total_count) : 0 };
+}
+
+/**
+ * Ajoute « ouvert / fermé » aux lieux dont les horaires sont connus (heure de Kisangani).
+ * Non bloquant : sans réponse, les cartes s'affichent simplement sans ce badge.
+ */
+async function withOpenStatus<T extends { id: string }>(
+  rows: T[],
+): Promise<(T & { is_open?: boolean | null })[]> {
+  if (!rows.length) return rows;
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("places_open_status", { p_place_ids: rows.map((r) => r.id) });
+  const byId = new Map(
+    ((data as { place_id: string; is_open: boolean | null }[] | null) ?? []).map((r) => [
+      r.place_id,
+      r.is_open,
+    ]),
+  );
+  return rows.map((r) => (byId.has(r.id) ? { ...r, is_open: byId.get(r.id) } : r));
 }
 
 export const getRecentPlaces = cache(async (limit = 8, unitId?: string): Promise<PlaceSearchRow[]> => {
@@ -107,7 +126,7 @@ export const getRecentPlaces = cache(async (limit = 8, unitId?: string): Promise
     p_unit_id: unitId ?? null,
   });
   if (error) throw new DataError("Impossible de charger les lieux récents", error);
-  return data ?? [];
+  return withOpenStatus((data as PlaceSearchRow[] | null) ?? []);
 });
 
 export interface PopularPlace {
@@ -122,6 +141,7 @@ export interface PopularPlace {
   category_color: string | null;
   unit_name: string | null;
   score: number;
+  is_open?: boolean | null;
 }
 
 export const getPopularPlaces = cache(async (limit = 8, unitId?: string): Promise<PopularPlace[]> => {
@@ -132,7 +152,7 @@ export const getPopularPlaces = cache(async (limit = 8, unitId?: string): Promis
     p_unit_id: unitId ?? null,
   });
   if (error) throw new DataError("Impossible de charger les lieux populaires", error);
-  return data ?? [];
+  return withOpenStatus((data as PopularPlace[] | null) ?? []);
 });
 
 export interface SponsoredPlace {

@@ -101,8 +101,8 @@ export default async function HomePage({
           aria-hidden="true"
           className="bg-cyan/25 motion-safe:animate-drift pointer-events-none absolute -bottom-24 left-10 size-56 rounded-full blur-3xl [animation-delay:-7s]"
         />
-        <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <div>
+        <div className="relative grid grid-cols-[minmax(0,1fr)] items-center gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0">
             <Link
               href={zone ? `/zones/${zone.slug}` : "/explorer"}
               className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-medium backdrop-blur"

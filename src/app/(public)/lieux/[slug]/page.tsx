@@ -18,7 +18,7 @@ import { CategoryBadge, CategoryIcon } from "@/components/places/category-icon";
 import { IconCover, LogoCover } from "@/components/places/place-visual";
 import { CoverPhotoButton, PhotoStrip, type ViewerPhoto } from "@/components/places/photo-viewer";
 import { VerificationBadge } from "@/components/places/verification-badge";
-import { PlaceActions } from "@/components/places/place-actions";
+import { PlaceActions, StickyPlaceActions } from "@/components/places/place-actions";
 import { OpeningHours } from "@/components/places/opening-hours";
 import { ReportForm } from "@/components/places/report-form";
 import { ViewTracker } from "@/components/places/view-tracker";
@@ -102,6 +102,16 @@ function businessOgTags(p: PlaceDetail): [string, string][] {
   return tags.filter((t): t is [string, string] => Boolean(t[1]));
 }
 
+/** Adresse + localisation, sans répéter un nom déjà présent (ex. adresse « Tshopo » en commune de Tshopo). */
+function fullLocation(p: PlaceDetail) {
+  const location = placeLocation(p.unit);
+  const address = p.address_text?.trim();
+  const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const names = [p.unit?.name, p.unit?.parent?.name].filter((n): n is string => Boolean(n)).map(norm);
+  const redundant = address && names.includes(norm(address));
+  return [redundant ? null : address, location].filter(Boolean).join(", ");
+}
+
 function jsonLd(p: PlaceDetail) {
   const phone = p.place_contacts.find((c) => c.kind === "phone")?.value;
   const site = p.place_contacts.find((c) => c.kind === "website")?.value;
@@ -180,7 +190,10 @@ export default async function PlacePage({ params }: Props) {
       />
       <ViewTracker placeId={p.id} />
 
-      <div className="bg-surface-2 relative -mx-4 aspect-[16/9] max-h-96 overflow-hidden md:mx-0 md:aspect-auto md:h-80 md:max-h-none md:rounded-[var(--radius-card)] lg:h-96">
+      <div
+        data-place-cover
+        className="bg-surface-2 relative -mx-4 aspect-[16/9] max-h-96 overflow-hidden md:mx-0 md:aspect-auto md:h-80 md:max-h-none md:rounded-[var(--radius-card)] lg:h-96"
+      >
         {logo ? (
           <LogoCover logo={logo} name={p.name} size="lg" priority />
         ) : heroPhoto ? (
@@ -241,7 +254,7 @@ export default async function PlacePage({ params }: Props) {
           )}
           <p className="text-muted mt-1 flex items-center gap-1.5 text-sm">
             <MapPin className="size-4 shrink-0" aria-hidden="true" />
-            {[p.address_text, placeLocation(p.unit)].filter(Boolean).join(", ")}
+            {fullLocation(p)}
           </p>
           {p.rating_count > 0 && p.rating_avg && (
             <p className="mt-1 flex items-center gap-1 text-sm font-medium">
@@ -252,7 +265,7 @@ export default async function PlacePage({ params }: Props) {
           )}
         </header>
 
-        <div>
+        <div id="actions-principales">
           <PlaceActions
             place={{
               id: p.id,
@@ -270,6 +283,15 @@ export default async function PlacePage({ params }: Props) {
             longitude={p.longitude}
           />
         </div>
+        <StickyPlaceActions
+          placeId={p.id}
+          name={p.name}
+          phone={phone}
+          whatsapp={whatsapp}
+          latitude={p.latitude}
+          longitude={p.longitude}
+          watchId="actions-principales"
+        />
       </div>
 
       {/* min-w-0 : une colonne de grille ne rétrécit pas sous la largeur de son contenu

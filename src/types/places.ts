@@ -35,6 +35,8 @@ export interface PlaceSearchRow {
   distance_m: number | null;
   relevance: number;
   total_count: number;
+  /** Ouvert maintenant (horaires connus seulement) ; absent sinon. */
+  is_open?: boolean | null;
 }
 
 export interface Category {

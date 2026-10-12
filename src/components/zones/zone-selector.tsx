@@ -23,14 +23,14 @@ export function ZoneSelector({
   const chip = (on: boolean) =>
     tone === "night"
       ? `inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition-colors ${
-          on ? "bg-white text-ink" : "bg-white/10 text-white hover:bg-white/20"
+          on ? "bg-white text-slate-900" : "bg-white/10 text-white hover:bg-white/20"
         }`
       : `inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors ${
           on ? "border-brand bg-brand text-white" : "border-line bg-surface hover:border-brand/40"
         }`;
   const count = (on: boolean) =>
     tone === "night"
-      ? `rounded-full px-1.5 text-xs ${on ? "bg-ink/10" : "bg-white/10 text-white/70"}`
+      ? `rounded-full px-1.5 text-xs ${on ? "bg-slate-900/10 text-slate-700" : "bg-white/10 text-white/70"}`
       : `rounded-full px-1.5 text-xs ${on ? "bg-white/20" : "bg-surface-2 text-muted"}`;
 
   return (

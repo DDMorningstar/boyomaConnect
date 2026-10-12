@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Heart, MessageCircle, Navigation, Phone, Share2 } from "lucide-react";
 import { recordPlaceEvent } from "@/features/places/events";
 import { useFavorites, type FavoriteSnapshot } from "@/features/favorites/store";
@@ -132,6 +132,91 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude }: Pr
         </span>
         {fav ? "Enregistré" : "Favori"}
       </button>
+    </div>
+  );
+}
+
+/**
+ * Mobile : barre d'actions fixe (Appeler, WhatsApp, Itinéraire) qui apparaît quand les actions
+ * principales de la fiche sont sorties de l'écran par le haut. Masquée sur grand écran.
+ */
+export function StickyPlaceActions({
+  placeId,
+  name,
+  phone,
+  whatsapp,
+  latitude,
+  longitude,
+  watchId,
+}: {
+  placeId: string;
+  name: string;
+  phone: string | null;
+  whatsapp: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  watchId: string;
+}) {
+  const [visible, setVisible] = useState(false);
+  const wa = whatsapp ? toWhatsAppNumber(whatsapp) : null;
+  const hasCoords = latitude != null && longitude != null;
+
+  useEffect(() => {
+    const target = document.getElementById(watchId);
+    if (!target) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry) setVisible(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+    });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [watchId]);
+
+  if (!phone && !wa && !hasCoords) return null;
+  const btn =
+    "flex size-11 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90";
+  return (
+    <div
+      aria-hidden={!visible}
+      inert={!visible}
+      className={`border-line bg-surface/95 fixed inset-x-3 z-30 flex items-center gap-2 rounded-2xl border p-2 pl-4 shadow-[var(--shadow-float)] backdrop-blur-lg transition-[transform,opacity] duration-300 ease-out md:hidden ${
+        visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-[130%] opacity-0"
+      }`}
+      style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
+    >
+      <p className="min-w-0 flex-1 truncate text-sm font-semibold">{name}</p>
+      {hasCoords && (
+        <a
+          href={`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => recordPlaceEvent(placeId, "directions_request")}
+          aria-label="Itinéraire"
+          className={`${btn} bg-night dark:bg-surface-2 text-white`}
+        >
+          <Navigation className="size-5" aria-hidden="true" />
+        </a>
+      )}
+      {wa && (
+        <a
+          href={`https://wa.me/${wa}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => recordPlaceEvent(placeId, "whatsapp_click")}
+          aria-label="WhatsApp"
+          className={`${btn} bg-[#25D366] text-white`}
+        >
+          <MessageCircle className="size-5" aria-hidden="true" />
+        </a>
+      )}
+      {phone && (
+        <a
+          href={`tel:${phone.replace(/\s/g, "")}`}
+          onClick={() => recordPlaceEvent(placeId, "phone_click")}
+          className="bg-brand inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold text-white transition-transform active:scale-95"
+        >
+          <Phone className="size-4" aria-hidden="true" /> Appeler
+        </a>
+      )}
     </div>
   );
 }

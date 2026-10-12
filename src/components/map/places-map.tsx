@@ -7,6 +7,7 @@ import { AlertTriangle, LocateFixed, Loader2, Search, X } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { env } from "@/lib/env";
 import { currentTheme, THEME_EVENT, type Theme } from "@/lib/theme";
+import { rememberPosition } from "@/lib/use-user-position";
 
 const styleFor = (theme: Theme) =>
   theme === "dark" ? env.NEXT_PUBLIC_MAP_STYLE_DARK_URL : env.NEXT_PUBLIC_MAP_STYLE_URL;
@@ -223,7 +224,10 @@ export function PlacesMap({ view, focusSlug }: { view?: MapViewport; focusSlug?:
   function locate() {
     if (!navigator.geolocation) return setNotice("La géolocalisation n'est pas disponible sur cet appareil.");
     navigator.geolocation.getCurrentPosition(
-      (pos) => mapRef.current?.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 15 }),
+      (pos) => {
+        rememberPosition(pos.coords.latitude, pos.coords.longitude);
+        mapRef.current?.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 15 });
+      },
       () => setNotice("Position refusée ou indisponible."),
       { enableHighAccuracy: true, timeout: 10000 },
     );

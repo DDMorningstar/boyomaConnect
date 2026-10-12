@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Check, Heart, MessageCircle, Navigation, Phone, Share2 } from "lucide-react";
 import { recordPlaceEvent } from "@/features/places/events";
 import { useFavorites, type FavoriteSnapshot } from "@/features/favorites/store";
@@ -158,8 +159,11 @@ export function StickyPlaceActions({
   watchId: string;
 }) {
   const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const wa = whatsapp ? toWhatsAppNumber(whatsapp) : null;
   const hasCoords = latitude != null && longitude != null;
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const target = document.getElementById(watchId);
@@ -171,10 +175,12 @@ export function StickyPlaceActions({
     return () => observer.disconnect();
   }, [watchId]);
 
-  if (!phone && !wa && !hasCoords) return null;
+  if (!mounted || (!phone && !wa && !hasCoords)) return null;
   const btn =
     "flex size-11 shrink-0 items-center justify-center rounded-full transition-transform active:scale-90";
-  return (
+  // Rendue dans <body> : l'animation d'entrée de page (transform) ferait sinon de son conteneur la
+  // référence du « position: fixed », et la barre sortirait de l'écran.
+  return createPortal(
     <div
       aria-hidden={!visible}
       inert={!visible}
@@ -217,6 +223,7 @@ export function StickyPlaceActions({
           <Phone className="size-4" aria-hidden="true" /> Appeler
         </a>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }

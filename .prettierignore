@@ -3,3 +3,5 @@ node_modules
 supabase/migrations
 pnpm-lock.yaml
 package-lock.json
+video/node_modules
+video/out

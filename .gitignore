@@ -12,3 +12,5 @@ next-env.d.ts
 .vercel
 .DS_Store
 supabase/.temp/
+video/out/
+video/public/screens/

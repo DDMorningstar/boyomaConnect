@@ -236,7 +236,7 @@ export async function getImportFormOptions() {
       .order("sort_order"),
     supabase
       .from("geographic_units")
-      .select("id, name, type_key, depth, parent:geographic_units!geographic_units_parent_id_fkey (name)")
+      .select("id, name, type_key, depth, parent:parent_id (name)")
       .in("type_key", ["province", "ville", "territoire"])
       .eq("is_active", true)
       .order("depth")

@@ -122,7 +122,7 @@ async function overpassFor(
   const [sources, rules, cats] = await Promise.all([
     getImportSources(),
     getMappingRules(),
-    supabase.from("categories").select("slug, parent:categories!categories_parent_id_fkey (slug)"),
+    supabase.from("categories").select("slug, parent:parent_id (slug)"),
   ]);
   const osm = sources.find((s) => s.key === "osm");
   if (!osm?.is_active || !osm.api_url) throw new Error("Source OpenStreetMap désactivée.");

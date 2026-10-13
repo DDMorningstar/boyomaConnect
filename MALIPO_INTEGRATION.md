@@ -52,10 +52,13 @@ Encaissement des abonnements par **Vodacom M-Pesa**, **Orange Money** et **Airte
 
 ### Montants et devises
 
-- Les montants sont calculés en entiers (centimes), jamais en virgule flottante.
-- L'API attend un entier ; la documentation « Charges » indique la **plus petite unité** (« 1000 = 10,00 CDF »).
-  C'est la valeur par défaut (`MALIPO_AMOUNT_UNIT=minor` : 3,00 USD → `300`). **À confirmer au premier test
-  Sandbox** (voir § 4) ; si Malipo attend l'unité principale, passer `MALIPO_AMOUNT_UNIT=major`.
+- Les montants sont calculés de façon exacte (décimales fixes), jamais en virgule flottante.
+- **Unité vérifiée en Sandbox le 13/10/2026** : `amount` est en **unité principale** (3 USD → `3`, 300 CDF → `300`),
+  décimales acceptées (`3.5`) ; frais et net sont décimaux (3 USD → frais `0.11`, net `2.89` ; 300 CDF → `10.5` /
+  `289.5`). La phrase « 1000 = 10,00 CDF » de la page Charges ne correspond pas au comportement observé.
+  Valeur par défaut : `MALIPO_AMOUNT_UNIT=major` (l'option `minor` reste disponible si Malipo change de convention).
+- Idempotence vérifiée : même clé + même corps → même transaction ; même clé + corps différent → HTTP 409
+  `idempotency_conflict` (traité comme issue inconnue puis rapproché).
 - Les plans sont en USD. En **live**, Malipo encaisse en USD : un plan en CDF est refusé en live tant
   qu'aucune politique de conversion n'est décidée (aucun taux de change n'est inventé).
 - Frais : la commission (3,5 % annoncés pour le plan Starter) **n'est jamais ajoutée au prix**. Les frais et
@@ -81,7 +84,7 @@ Encaissement des abonnements par **Vodacom M-Pesa**, **Orange Money** et **Airte
 | `MALIPO_MODE`           | `sandbox`                                                                             | Production                       |
 | `MALIPO_API_KEY`        | votre clé `sk_test_…`                                                                 | Production                       |
 | `MALIPO_WEBHOOK_SECRET` | secret de l'endpoint (voir § 3 bis)                                                   | Production                       |
-| `MALIPO_AMOUNT_UNIT`    | `minor` (à confirmer, § 4)                                                            | Production                       |
+| `MALIPO_AMOUNT_UNIT`    | `major` (vérifié en Sandbox)                                                          | Production                       |
 | `CRON_SECRET`           | chaîne aléatoire d'au moins 32 caractères                                             | Production                       |
 | `MALIPO_API_BASE_URL`   | facultatif (défaut `https://api.malipo.dev/v1`)                                       | —                                |
 | `MALIPO_LIVE_CONFIRMED` | **laisser vide** tant que vous n'avez pas décidé du passage en live                   | —                                |
@@ -116,7 +119,7 @@ Le script refuse toute clé autre que `sk_test_`. Il crée les transactions spé
 (100 succès ~90 %, 200 fonds insuffisants, 300 refus, 400 délai, 500 réseau indisponible, 600 PIN invalide,
 en CDF), affiche leur statut final, et vérifie les refus « clé invalide » et « numéro invalide ».
 **Contrôlez ensuite dans Sandbox → Payments comment s'affiche la transaction « 100 »** : 1,00 CDF ⇒ garder
-`MALIPO_AMOUNT_UNIT=minor` ; 100 CDF ⇒ passer à `major`.
+`MALIPO_AMOUNT_UNIT=minor` ; 100 CDF ⇒ `major` (constaté le 13/10/2026 : **100 CDF**, donc `major`).
 
 ### b) Parcours complet dans l'application
 
@@ -155,7 +158,33 @@ en CDF), affiche leur statut final, et vérifie les refus « clé invalide » et
 - [ ] Faire un paiement test dans l'application et vérifier l'admin (§ 4 b, § 5).
 - [ ] Plus tard, sur décision : KYC, clé live, passage en live (§ 6).
 
-## 8. Limites connues
+## 8. Résultats des tests Sandbox (13/10/2026)
+
+Script `scripts/malipo-sandbox-test.mjs` (Orange Money, numéro fictif de la documentation) :
+
+| Montant | Annoncé par la documentation | Observé                     |
+| ------- | ---------------------------- | --------------------------- |
+| 100 CDF | succès (~90 %)               | `failed` (`random_failure`) |
+| 200 CDF | fonds insuffisants           | `failed` (`random_failure`) |
+| 300 CDF | refus du client              | `succeeded`                 |
+| 400 CDF | délai dépassé                | `succeeded`                 |
+| 500 CDF | réseau indisponible          | `failed` (`random_failure`) |
+| 600 CDF | PIN invalide                 | `succeeded`                 |
+
+Les montants spéciaux **ne déclenchent pas** les scénarios annoncés : la Sandbox applique un résultat aléatoire
+(`random_failure`). Les cas « fonds insuffisants », « refus », « PIN invalide »… sont donc couverts par les tests
+automatisés et la base (messages dédiés dans `status.ts`), pas par la Sandbox. Clé invalide → 401 ; numéro
+invalide → 400 `invalid_phone` ; transaction inconnue → 404 ; GET `/v1/charges` (liste) → 405.
+
+Test d'intégration du module (`tests/unit/malipo-sandbox.test.ts`, lancé avec `MALIPO_INTEGRATION=1`) : création
+3 USD, rejeu idempotent (même transaction), suivi jusqu'à l'état final via l'API avec contrôle montant / devise /
+métadonnées, refus `invalid_phone`, clé invalide, transaction inconnue : **4/4 réussis**.
+
+```bash
+MALIPO_INTEGRATION=1 node --env-file=.env.local ./node_modules/vitest/vitest.mjs run tests/unit/malipo-sandbox.test.ts
+```
+
+## 9. Limites connues
 
 - Le rapprochement planifié est **quotidien** (limite du plan Vercel Hobby) ; en complément, l'écran d'attente
   actualise le statut et l'admin dispose d'un rapprochement manuel.

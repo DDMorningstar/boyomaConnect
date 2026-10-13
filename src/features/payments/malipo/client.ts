@@ -1,4 +1,4 @@
-import { parseApiInteger } from "./money";
+import { parseApiNumber } from "./money";
 
 /**
  * Client HTTP Malipo (documentation « Charges », « Idempotence », « Erreurs ») :
@@ -60,11 +60,11 @@ export function parseCharge(json: unknown): MalipoCharge | null {
   return {
     id,
     status,
-    amount: parseApiInteger(o.amount),
+    amount: parseApiNumber(o.amount),
     currency: str(o.currency)?.toUpperCase() ?? null,
     failureReason: str(o.failure_reason) ?? str(o.failure_code) ?? null,
-    feeAmount: parseApiInteger(o.fee_amount),
-    netAmount: parseApiInteger(o.net_amount),
+    feeAmount: parseApiNumber(o.fee_amount),
+    netAmount: parseApiNumber(o.net_amount),
     metadataPaymentId: meta ? str(meta.payment_id) : null,
   };
 }

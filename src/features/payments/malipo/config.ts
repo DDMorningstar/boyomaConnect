@@ -29,8 +29,8 @@ export function parseMalipoConfig(e: Env): MalipoConfig {
   const baseUrl = (e.MALIPO_API_BASE_URL ?? "").trim() || DEFAULT_BASE_URL;
   const apiKey = (e.MALIPO_API_KEY ?? "").trim() || null;
   const secret = (e.MALIPO_WEBHOOK_SECRET ?? "").trim() || null;
-  const unitRaw = (e.MALIPO_AMOUNT_UNIT ?? "minor").trim();
-  const amountUnit: AmountUnit = unitRaw === "major" ? "major" : "minor";
+  const unitRaw = (e.MALIPO_AMOUNT_UNIT ?? "major").trim();
+  const amountUnit: AmountUnit = unitRaw === "minor" ? "minor" : "major";
 
   let reason: string | null = null;
   if (rawMode !== "sandbox" && rawMode !== "live")

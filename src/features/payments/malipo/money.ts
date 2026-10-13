@@ -1,7 +1,8 @@
 /**
- * Montants : calcul entier sur chaînes décimales (jamais de virgule flottante).
- * L'API Malipo attend un entier ; par défaut dans la plus petite unité de la devise
- * (« 1000 = 10,00 CDF », documentation Charges). L'unité est configurable (MALIPO_AMOUNT_UNIT).
+ * Montants : calcul exact sur chaînes décimales (jamais de virgule flottante pour les calculs).
+ * Constaté en Sandbox (13/10/2026) : l'API Malipo exprime « amount » en unité principale
+ * (3 USD → 3, 300 CDF → 300), décimales acceptées ; frais et net sont décimaux. Unité configurable
+ * (MALIPO_AMOUNT_UNIT, « major » par défaut) au cas où Malipo changerait de convention.
  */
 export type AmountUnit = "minor" | "major";
 export type Currency = "USD" | "CDF";
@@ -16,32 +17,29 @@ export function decimalToMinor(value: string | number): bigint {
   return units * 100n + cents;
 }
 
-/** Montant envoyé à l'API selon l'unité configurée. */
-export function toApiAmount(value: string | number, unit: AmountUnit): bigint {
+/** Montant envoyé à l'API selon l'unité configurée (chaîne décimale exacte : « 3.50 » ou « 350 »). */
+export function toApiAmount(value: string | number, unit: AmountUnit): string {
   const minor = decimalToMinor(value);
-  if (unit === "minor") return minor;
-  if (minor % 100n !== 0n) throw new Error("Montant non entier incompatible avec l'unité « major ».");
-  return minor / 100n;
+  if (unit === "minor") return minor.toString();
+  return `${minor / 100n}.${(minor % 100n).toString().padStart(2, "0")}`;
 }
 
-/** Montant API → texte lisible (« 3,00 USD »), pour l'administration (frais, net). */
+/** Montant API (montant, frais, net) → texte lisible (« 0,11 USD »), pour l'administration. */
 export function formatApiAmount(
-  amount: number | bigint | null | undefined,
+  amount: number | string | null | undefined,
   currency: string,
   unit: AmountUnit,
 ) {
-  if (amount == null) return "—";
-  const minor = unit === "minor" ? BigInt(amount) : BigInt(amount) * 100n;
-  const neg = minor < 0n;
-  const abs = neg ? -minor : minor;
-  const units = (abs / 100n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  const cents = (abs % 100n).toString().padStart(2, "0");
-  return `${neg ? "-" : ""}${units},${cents} ${currency}`;
+  if (amount == null || amount === "") return "—";
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return "—";
+  const major = unit === "minor" ? n / 100 : n;
+  return `${new Intl.NumberFormat("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(major)} ${currency}`;
 }
 
-/** Entier sûr reçu de l'API (nombre ou chaîne entière) ; null sinon. */
-export function parseApiInteger(v: unknown): number | null {
-  if (typeof v === "number" && Number.isSafeInteger(v)) return v;
-  if (typeof v === "string" && /^-?\d{1,15}$/.test(v)) return Number(v);
+/** Nombre reçu de l'API (nombre fini ou chaîne décimale) ; null sinon. */
+export function parseApiNumber(v: unknown): number | null {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && /^-?\d{1,12}(\.\d{1,6})?$/.test(v.trim())) return Number(v);
   return null;
 }

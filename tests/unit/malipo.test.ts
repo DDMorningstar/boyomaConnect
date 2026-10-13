@@ -45,17 +45,20 @@ describe("montants (sans virgule flottante)", () => {
     expect(decimalToMinor("10")).toBe(1000n);
     expect(decimalToMinor("0.1")).toBe(10n);
     expect(decimalToMinor(25)).toBe(2500n);
-    expect(toApiAmount("10.00", "minor")).toBe(1000n);
-    expect(toApiAmount("10.00", "major")).toBe(10n);
+    expect(toApiAmount("10.00", "minor")).toBe("1000");
+    // Unité principale (constaté en Sandbox : 3 USD → 3, décimales acceptées).
+    expect(toApiAmount("3", "major")).toBe("3.00");
+    expect(toApiAmount("3.5", "major")).toBe("3.50");
   });
   it("refuse les formats ambigus", () => {
     expect(() => decimalToMinor("3.001")).toThrow();
     expect(() => decimalToMinor("-3")).toThrow();
     expect(() => decimalToMinor("3,5")).toThrow();
-    expect(() => toApiAmount("3.50", "major")).toThrow();
   });
   it("affiche un montant API", () => {
     expect(formatApiAmount(1000, "CDF", "minor")).toBe("10,00 CDF");
+    expect(formatApiAmount(0.11, "USD", "major")).toBe("0,11 USD");
+    expect(formatApiAmount(10.5, "CDF", "major")).toBe("10,50 CDF");
     expect(formatApiAmount(null, "USD", "minor")).toBe("—");
   });
 });
@@ -102,6 +105,12 @@ describe("signature des webhooks", () => {
 });
 
 describe("configuration", () => {
+  it("unité principale par défaut (constat Sandbox)", () => {
+    expect(parseMalipoConfig({ MALIPO_API_KEY: "sk_test_x" }).amountUnit).toBe("major");
+    expect(parseMalipoConfig({ MALIPO_API_KEY: "sk_test_x", MALIPO_AMOUNT_UNIT: "minor" }).amountUnit).toBe(
+      "minor",
+    );
+  });
   it("sandbox avec clé de test", () => {
     const c = parseMalipoConfig({
       MALIPO_MODE: "sandbox",
@@ -214,6 +223,21 @@ describe("client HTTP", () => {
       currency: "USD",
     });
     expect(parseCharge({ status: "pending" })).toBeNull();
+    // Réponse Sandbox réelle : frais et net décimaux.
+    expect(
+      parseCharge({
+        id: "ch",
+        status: "succeeded",
+        amount: 3,
+        currency: "USD",
+        fee_amount: 0.11,
+        net_amount: 2.89,
+      }),
+    ).toMatchObject({
+      amount: 3,
+      feeAmount: 0.11,
+      netAmount: 2.89,
+    });
   });
 });
 

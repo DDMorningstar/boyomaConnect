@@ -114,8 +114,10 @@
   succès via API seulement, erreur API, plan inconnu, charge inconnue) ; 45 tests unitaires (signature, montants,
   numéros, configuration, client HTTP, webhooks, création, rapprochement) ; 88 tests au total, lint, build ;
   routes locales (webhook 503 sans configuration / 405 en GET, cron et export 401, redirections sans session).
-  Bloqué : aucun test réel Sandbox (clé `sk_test_`, secret webhook et `SUPABASE_SECRET_KEY` non fournis) ;
-  unité des montants à confirmer au premier test ; interface de paiement non vue en session connectée.
+  Sandbox réelle (clé fournie) : passerelle et module testés (création, idempotence, 409 sur corps différent,
+  suivi, refus, 401, 404) ; unité principale constatée (migration `malipo_major_units`) ; montants spéciaux non
+  déterministes (`random_failure`). Bloqué : webhook réel et parcours complet dans l'application (variables Vercel
+  `SUPABASE_SECRET_KEY`, `MALIPO_API_KEY`, `MALIPO_WEBHOOK_SECRET`, `CRON_SECRET` à saisir par le propriétaire).
 
 ## Problèmes connus
 

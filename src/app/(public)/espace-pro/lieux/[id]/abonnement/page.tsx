@@ -18,6 +18,7 @@ import {
   networkLabel,
   type ChargeStatus,
 } from "@/features/payments/malipo/status";
+import { getCurrentPermissions } from "@/features/auth/session";
 import { formatPrice } from "@/lib/format";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ActionButton, BizForm } from "@/components/forms/action-forms";
@@ -73,7 +74,10 @@ export default async function BillingPage({ params, searchParams }: Props) {
       .then((r) => r.data ?? []),
   ]);
   const malipo = getMalipoRuntime();
-  const mobileMoney = malipo.available;
+  // En Sandbox (aucun argent réel), le paiement n'est proposé qu'à l'équipe facturation (tests).
+  const mobileMoney =
+    malipo.available &&
+    (malipo.config.mode === "live" || (await getCurrentPermissions()).has("billing.manage"));
   const hidden = { place_id: place.id };
   const pending = subscriptions.find((s) => s.status === "pending_payment");
   const current = subscriptions.find(

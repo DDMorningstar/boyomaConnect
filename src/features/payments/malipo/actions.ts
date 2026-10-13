@@ -1,7 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getCurrentUser } from "@/features/auth/session";
+import { getCurrentPermissions, getCurrentUser } from "@/features/auth/session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { maskPhone, normalizeCdPhone } from "./phone";
 import { getChargeRow, getMalipoRuntime } from "./server";
@@ -61,6 +61,10 @@ export async function startMobileMoneyPayment(_: PayState, form: FormData): Prom
   if (!user) return { error: "Session expirée : reconnectez-vous." };
   const runtime = getMalipoRuntime();
   if (!runtime.available || !runtime.admin || !runtime.deps) {
+    return { error: "Le paiement Mobile Money n'est pas encore disponible." };
+  }
+  // Sandbox : aucun argent réel, donc réservé à l'équipe (sinon un plan payant s'obtiendrait gratuitement).
+  if (runtime.config.mode === "sandbox" && !(await getCurrentPermissions()).has("billing.manage")) {
     return { error: "Le paiement Mobile Money n'est pas encore disponible." };
   }
   const parsed = startSchema.safeParse({

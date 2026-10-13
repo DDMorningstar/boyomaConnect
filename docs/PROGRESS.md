@@ -116,8 +116,9 @@
   routes locales (webhook 503 sans configuration / 405 en GET, cron et export 401, redirections sans session).
   Sandbox réelle (clé fournie) : passerelle et module testés (création, idempotence, 409 sur corps différent,
   suivi, refus, 401, 404) ; unité principale constatée (migration `malipo_major_units`) ; montants spéciaux non
-  déterministes (`random_failure`). Bloqué : webhook réel et parcours complet dans l'application (variables Vercel
-  `SUPABASE_SECRET_KEY`, `MALIPO_API_KEY`, `MALIPO_WEBHOOK_SECRET`, `CRON_SECRET` à saisir par le propriétaire).
+  déterministes (`random_failure`). Variables Vercel renseignées par le propriétaire ; test de bout en bout en production réussi
+  (plan Business 3 USD : webhook signé `charge.succeeded`, relecture API, abonnement actif, notification, frais 0,11 USD).
+  Paiement Sandbox réservé à `billing.manage` (évite l'obtention gratuite d'un plan).
 
 ## Problèmes connus
 

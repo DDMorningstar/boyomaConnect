@@ -184,6 +184,26 @@ métadonnées, refus `invalid_phone`, clé invalide, transaction inconnue : **4/
 MALIPO_INTEGRATION=1 node --env-file=.env.local ./node_modules/vitest/vitest.mjs run tests/unit/malipo-sandbox.test.ts
 ```
 
+### Test de bout en bout en production (Sandbox, 13/10/2026)
+
+Paiement du plan Business (3 USD, Vodacom M-Pesa) depuis l'espace pro de Rex Transit :
+
+| Heure (UTC) | Étape                                                                                                                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 14:31:42    | tentative créée (`payment.malipo_initiated`), montant serveur 3.00 USD, clé d'idempotence                                                                                                 |
+| 14:31:47    | webhook signé `charge.pending` reçu et journalisé (événement non documenté, ignoré sans erreur)                                                                                           |
+| 14:31:48    | réponse de création enregistrée : `ch_…`, statut `pending`                                                                                                                                |
+| 14:31:50    | webhook signé `charge.succeeded` reçu                                                                                                                                                     |
+| 14:31:51    | état relu via l'API (source `api`), montant/devise/métadonnées conformes → paiement confirmé, facture payée, abonnement **actif jusqu'au 13/11/2026**, notification « Paiement confirmé » |
+| 14:31:52    | événement marqué traité, sans erreur                                                                                                                                                      |
+
+Frais enregistrés : 0,11 USD, net 2,89 USD. Aucune anomalie. Les requêtes à signature invalide (tests)
+ont été refusées (400) sans rien écrire en base.
+
+**Garde-fou ajouté** : en mode Sandbox (aucun argent réel), le paiement Mobile Money n'est proposé qu'aux
+comptes ayant la permission `billing.manage` ; les autres propriétaires voient « bientôt disponible » jusqu'au
+passage en live (sinon un plan payant s'obtiendrait gratuitement).
+
 ## 9. Limites connues
 
 - Le rapprochement planifié est **quotidien** (limite du plan Vercel Hobby) ; en complément, l'écran d'attente

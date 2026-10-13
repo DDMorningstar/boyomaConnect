@@ -18,7 +18,6 @@ export const metadata: Metadata = {
     "Trouvez, contactez et localisez pharmacies, hôtels, restaurants, garages, écoles et services à Kisangani et dans la province de la Tshopo.",
   applicationName: "Boyoma Connect",
   appleWebApp: { capable: true, title: "Boyoma", statusBarStyle: "black-translucent" },
-  icons: { apple: "/icons/apple-touch-icon.png" },
   openGraph: { type: "website", locale: "fr_CD", siteName: "Boyoma Connect" },
   twitter: { card: "summary_large_image" },
   formatDetection: { telephone: false },

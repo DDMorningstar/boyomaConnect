@@ -5,7 +5,7 @@
  *  - Images Supabase publiques : cache limité (60 entrées).
  *  - JAMAIS de cache pour l'API Supabase (données à jour, données privées), l'auth ou les requêtes non-GET.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = `boyoma-static-${VERSION}`;
 const PAGES_CACHE = `boyoma-pages-${VERSION}`;
 const IMAGES_CACHE = `boyoma-images-${VERSION}`;

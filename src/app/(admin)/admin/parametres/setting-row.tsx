@@ -54,6 +54,16 @@ export function SettingRow({
             <option value="true">Activé</option>
             <option value="false">Désactivé</option>
           </select>
+        ) : setting.key === "billing.manual_instructions" ? (
+          <textarea
+            name="value"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            rows={5}
+            maxLength={2000}
+            placeholder="Ex. : numéros Mobile Money officiels, nom du bénéficiaire, mention à indiquer… (vide = paiements fermés)"
+            className={`${fieldCls} w-full`}
+          />
         ) : type === "json" ? (
           <textarea
             name="value"

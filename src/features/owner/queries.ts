@@ -95,6 +95,26 @@ export interface ManagedPlace {
     sort_order: number;
   }[];
   catalog_items: CatalogItem[];
+  verification_status: string;
+  last_verified_at: string | null;
+  hours_verified_at: string | null;
+  place_hours: {
+    id: string;
+    day_of_week: number;
+    opens_at: string | null;
+    closes_at: string | null;
+    is_closed: boolean;
+  }[];
+  place_special_hours: {
+    id: string;
+    date: string;
+    opens_at: string | null;
+    closes_at: string | null;
+    is_closed: boolean;
+    note: string | null;
+  }[];
+  /** Rôle de l'utilisateur courant sur la fiche. */
+  my_role: "owner" | "manager";
 }
 
 /** Fiche gérée par l'utilisateur courant (null s'il n'en est pas gestionnaire). */
@@ -103,10 +123,10 @@ export async function getManagedPlace(placeId: string, userId: string): Promise<
   const supabase = await createSupabaseServerClient();
   const { data: link } = await supabase
     .from("place_owners")
-    .select("place_id")
+    .select("place_id, role")
     .eq("place_id", placeId)
     .eq("user_id", userId)
-    .maybeSingle();
+    .maybeSingle<{ place_id: string; role: "owner" | "manager" }>();
   if (!link) return null;
   const { data } = await supabase
     .from("places")
@@ -116,13 +136,17 @@ export async function getManagedPlace(placeId: string, userId: string): Promise<
        primary_category:categories!places_primary_category_id_fkey (name),
        place_contacts (id, kind, value),
        place_media (id, storage_path, kind, moderation_status, sort_order),
-       catalog_items (id, kind, name, description, category_label, price, currency, price_type, price_unit, availability, photo_paths, is_featured, sort_order, is_published)`,
+       catalog_items (id, kind, name, description, category_label, price, currency, price_type, price_unit, availability, photo_paths, is_featured, sort_order, is_published),
+       verification_status, last_verified_at, hours_verified_at,
+       place_hours (id, day_of_week, opens_at, closes_at, is_closed),
+       place_special_hours (id, date, opens_at, closes_at, is_closed, note)`,
     )
     .eq("id", placeId)
     .order("sort_order", { referencedTable: "place_media" })
     .order("sort_order", { referencedTable: "catalog_items" })
-    .maybeSingle<ManagedPlace>();
-  return data;
+    .order("date", { referencedTable: "place_special_hours" })
+    .maybeSingle<Omit<ManagedPlace, "my_role">>();
+  return data ? { ...data, my_role: link.role } : null;
 }
 
 /**

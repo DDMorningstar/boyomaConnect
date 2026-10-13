@@ -1,8 +1,8 @@
 import { ImageResponse } from "next/og";
-import sharp from "sharp";
 import { getShareCardData } from "@/features/places/queries";
 import { placeLocation } from "@/features/zones/zones";
 import { formatPrice } from "@/lib/format";
+import { toDataUri } from "@/lib/og-image";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 
 // Image de partage (WhatsApp, Facebook, X…) : nom, logo, catégorie, téléphone et prix de la fiche.
@@ -11,20 +11,6 @@ export const alt = "Fiche Boyoma Connect";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const revalidate = 3600;
-
-/** Satori ne lit pas le WebP : conversion en JPEG/PNG (data URI). Image absente si indisponible. */
-async function toDataUri(url: string | null, width: number, height: number, format: "jpeg" | "png") {
-  if (!url) return null;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return null;
-    const img = sharp(Buffer.from(await res.arrayBuffer())).resize(width, height, { fit: "cover" });
-    const out = format === "jpeg" ? await img.jpeg({ quality: 78 }).toBuffer() : await img.png().toBuffer();
-    return `data:image/${format};base64,${out.toString("base64")}`;
-  } catch {
-    return null;
-  }
-}
 
 export default async function OgImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

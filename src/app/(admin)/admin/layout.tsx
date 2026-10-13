@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireAdmin } from "@/features/admin/access";
 import { getQueueCounts } from "@/features/admin/queries";
+import { getBusinessQueueCounts } from "@/features/admin/business";
 import { getCurrentPermissions } from "@/features/auth/session";
 
 export const metadata: Metadata = {
@@ -18,7 +19,12 @@ const ROLE_LABEL: Record<string, string> = {
 /** Console d'administration : mise en page indépendante du site public. */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const ctx = await requireAdmin("/admin");
-  const [perms, counts] = await Promise.all([getCurrentPermissions(), getQueueCounts()]);
+  const [perms, queue, business] = await Promise.all([
+    getCurrentPermissions(),
+    getQueueCounts(),
+    getBusinessQueueCounts(),
+  ]);
+  const counts = { ...queue, ...business };
   const role = ["super_admin", "admin", "moderator"].find((r) => ctx.roles.has(r));
   return (
     <AdminShell

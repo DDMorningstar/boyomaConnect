@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogIn, Plus } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { PUBLIC_NAV } from "@/components/layout/nav-items";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Avatar } from "@/components/ui/avatar";
@@ -62,6 +63,7 @@ export function SiteHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          {account && <NotificationBell />}
           {account ? (
             <Link
               href="/profil"

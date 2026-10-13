@@ -288,7 +288,7 @@ function fail(e: unknown): ActionState {
 }
 
 function done(placeId: string, message: string): ActionState {
-  revalidatePath(`/espace-pro/lieux/${placeId}`);
+  revalidatePath(`/espace-pro/lieux/${placeId}`, "layout");
   revalidatePath("/lieux/[slug]", "page");
   return { ok: message };
 }

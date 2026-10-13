@@ -11,7 +11,9 @@ import {
   Map as MapIcon,
   MapPin,
   Route,
+  Send,
   Star,
+  Tag,
 } from "lucide-react";
 import { CategoryBadge, CategoryIcon } from "@/components/places/category-icon";
 import { IconCover, LogoCover } from "@/components/places/place-visual";
@@ -22,6 +24,9 @@ import { OpeningHours } from "@/components/places/opening-hours";
 import { CatalogSection } from "@/components/places/catalog-section";
 import { ReportForm } from "@/components/places/report-form";
 import { ViewTracker } from "@/components/places/view-tracker";
+import { InquiryForm } from "@/components/places/inquiry-form";
+import { ReviewForm } from "@/components/places/review-form";
+import { getMyReviewState, getPlaceLiveInfo, kisanganiToday } from "@/features/places/engagement";
 import { getPlaceBySlug, getPublicReviews } from "@/features/places/queries";
 import { localityName, placeLocation } from "@/features/zones/zones";
 import { env } from "@/lib/env";
@@ -158,7 +163,12 @@ export default async function PlacePage({ params }: Props) {
   if (res.kind === "redirect") permanentRedirect(`/lieux/${res.slug}`);
   if (res.kind === "not_found") notFound();
   const p = res.place;
-  const reviews = await getPublicReviews(p.id, 5);
+  const [reviews, live, myReview] = await Promise.all([
+    getPublicReviews(p.id, 5),
+    getPlaceLiveInfo(p.id),
+    getMyReviewState(p.id),
+  ]);
+  const today = kisanganiToday();
 
   // Photos : couverture dédiée d'abord, puis la galerie. Le logo, s'il existe, sert de couverture
   // (toutes les photos restent visibles dans la rangée et la visionneuse).
@@ -300,6 +310,30 @@ export default async function PlacePage({ params }: Props) {
           (rangée de photos) sans cela, ce qui faisait défiler la page horizontalement. */}
       <div className="mt-6 grid gap-6 md:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-6">
+          {live.promotions.length > 0 && (
+            <section aria-labelledby="offres-titre" className="space-y-2">
+              <h2 id="offres-titre" className="flex items-center gap-2 text-lg font-bold">
+                <Tag className="text-brand size-5" aria-hidden="true" /> Offres en cours
+              </h2>
+              <ul className="grid gap-2">
+                {live.promotions.map((o) => (
+                  <li
+                    key={o.id}
+                    className="border-brand/30 from-brand/10 to-cyan/10 rounded-[var(--radius-card)] border bg-gradient-to-br p-4"
+                  >
+                    <p className="font-bold">{o.title}</p>
+                    {o.description && (
+                      <p className="text-muted mt-1 text-sm whitespace-pre-line">{o.description}</p>
+                    )}
+                    <p className="text-muted mt-2 text-xs">
+                      Jusqu&apos;au {formatDate(o.ends_at)} · offre publiée par l&apos;établissement
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           {(p.short_description || p.full_description) && (
             <section>
               <h2 className="mb-2 text-lg font-bold">Présentation</h2>
@@ -354,6 +388,20 @@ export default async function PlacePage({ params }: Props) {
             email={p.place_contacts.find((c) => c.kind === "email")?.value ?? null}
           />
 
+          <section
+            id="message"
+            className="border-line bg-surface scroll-mt-24 rounded-[var(--radius-card)] border p-4"
+          >
+            <h2 className="mb-1 flex items-center gap-2 text-lg font-bold">
+              <Send className="text-brand size-5" aria-hidden="true" /> Envoyer un message
+            </h2>
+            <p className="text-muted mb-3 text-sm">
+              Une question, un devis, une disponibilité ? {p.name} reçoit votre message et vous recontacte
+              directement.
+            </p>
+            <InquiryForm placeId={p.id} placeName={p.name} />
+          </section>
+
           {p.place_services.length > 0 && (
             <section>
               <h2 className="mb-2 text-lg font-bold">Services proposés</h2>
@@ -374,8 +422,9 @@ export default async function PlacePage({ params }: Props) {
             title={<h2 className="mb-2 text-lg font-bold">Photos ({photos.length})</h2>}
           />
 
-          <section>
-            <h2 className="mb-2 text-lg font-bold">Avis</h2>
+          <section id="avis" className="scroll-mt-24 space-y-3">
+            <h2 className="text-lg font-bold">Avis</h2>
+            <ReviewForm placeId={p.id} slug={p.slug} {...myReview} />
             {reviews.length === 0 ? (
               <p className="text-muted text-sm">Aucun avis publié pour l&apos;instant.</p>
             ) : (
@@ -393,8 +442,17 @@ export default async function PlacePage({ params }: Props) {
                     {r.body && <p className="text-muted mt-1 text-sm">{r.body}</p>}
                     {r.owner_response && (
                       <p className="bg-surface-2 mt-2 rounded-xl p-3 text-sm">
-                        <span className="font-semibold">Réponse de l&apos;établissement : </span>
-                        {r.owner_response}
+                        <span className="font-semibold">
+                          Réponse de l&apos;établissement
+                          {r.owner_response_at && (
+                            <span className="text-muted font-normal">
+                              {" "}
+                              · {formatDate(r.owner_response_at)}
+                            </span>
+                          )}{" "}
+                          :{" "}
+                        </span>
+                        <span className="whitespace-pre-line">{r.owner_response}</span>
                       </p>
                     )}
                   </li>
@@ -407,7 +465,12 @@ export default async function PlacePage({ params }: Props) {
         <aside className="min-w-0 space-y-4">
           <section className="border-line bg-surface rounded-[var(--radius-card)] border p-4">
             <h2 className="mb-2 font-bold">Horaires</h2>
-            <OpeningHours hours={p.place_hours} verifiedAt={p.hours_verified_at} />
+            <OpeningHours
+              hours={p.place_hours}
+              verifiedAt={p.hours_verified_at}
+              special={live.specialHours}
+              today={today}
+            />
           </section>
 
           {otherContacts.length > 0 && (

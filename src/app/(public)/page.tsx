@@ -8,6 +8,7 @@ import {
   Megaphone,
   Plus,
   Sparkles,
+  Tag,
 } from "lucide-react";
 import { SearchBar } from "@/components/search/search-bar";
 import { CategoryBadge } from "@/components/places/category-icon";
@@ -24,9 +25,10 @@ import {
   searchPlaces,
 } from "@/features/places/queries";
 import { resolveZone } from "@/features/zones/queries";
+import { getActivePromotions } from "@/features/places/engagement";
 import { zoneIn, zoneLabel, zoneTitle } from "@/features/zones/zones";
 import { searchParamsSchema } from "@/lib/search-params";
-import { pluralize } from "@/lib/format";
+import { formatDate, pluralize } from "@/lib/format";
 
 function settled<T>(r: PromiseSettledResult<T>, fallback: T): T {
   return r.status === "fulfilled" ? r.value : fallback;
@@ -45,7 +47,7 @@ export default async function HomePage({
   const unitId = zone?.id;
   const defaults = searchParamsSchema.parse({});
 
-  const [catsR, cityR, recentR, popularR, sponsoredR, tourismR, allR] = await Promise.allSettled([
+  const [catsR, cityR, recentR, popularR, sponsoredR, tourismR, allR, offersR] = await Promise.allSettled([
     getCategoriesWithCounts(unitId),
     zone?.type_key === "ville" ? getCityWithCommunes(zone.slug) : Promise.resolve(null),
     getRecentPlaces(8, unitId),
@@ -53,7 +55,9 @@ export default async function HomePage({
     getSponsoredPlaces(),
     searchPlaces({ ...defaults, categorySlug: "tourisme", unitId }),
     searchPlaces({ ...defaults, unitId }),
+    getActivePromotions(6, unitId),
   ]);
+  const offers = settled(offersR, []);
   const categories = settled(catsR, []);
   const city = settled(cityR, null);
   const recent = settled(recentR, []);
@@ -247,6 +251,35 @@ export default async function HomePage({
                   {s.short_description && (
                     <span className="text-muted line-clamp-2 text-sm">{s.short_description}</span>
                   )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Offres datées des établissements : section distincte, jamais mêlée aux résultats */}
+      {offers.length > 0 && (
+        <Section
+          title="Offres du moment"
+          subtitle="Publiées par les établissements et vérifiées par l’équipe ; triées par date de fin, sans effet sur les résultats de recherche."
+        >
+          <ul className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
+            {offers.map((o) => (
+              <li key={o.id} className="w-72 shrink-0 snap-start md:w-auto">
+                <Link
+                  href={`/lieux/${o.place_slug}`}
+                  className="border-line bg-surface hover:border-brand/40 flex h-full flex-col gap-1.5 rounded-[var(--radius-card)] border p-4 shadow-[var(--shadow-card)] transition-colors"
+                >
+                  <span className="bg-brand/10 text-brand inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase">
+                    <Tag className="size-3" aria-hidden="true" /> Offre
+                  </span>
+                  <span className="font-semibold">{o.title}</span>
+                  {o.description && <span className="text-muted line-clamp-2 text-sm">{o.description}</span>}
+                  <span className="text-muted mt-auto pt-1 text-xs">
+                    {o.place_name}
+                    {o.unit_name && ` · ${o.unit_name}`} · jusqu’au {formatDate(o.ends_at)}
+                  </span>
                 </Link>
               </li>
             ))}

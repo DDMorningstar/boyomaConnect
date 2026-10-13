@@ -23,6 +23,9 @@ const ADMIN_PERMISSIONS = [
   "settings.manage",
   "analytics.read",
   "imports.view",
+  "campaigns.manage",
+  "billing.read",
+  "places.publish",
 ];
 
 export interface AdminContext {

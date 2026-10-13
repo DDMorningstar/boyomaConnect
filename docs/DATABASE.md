@@ -89,3 +89,15 @@ Voir `API.md`.
 `import_sources`, `osm_category_mappings`, `import_batches` (journal), `import_items` (prévisualisation),
 `import_schedules` ; `place_external_refs` + `collected_at`, `last_synced_at`, `batch_id`, `extra`, sources
 autres qu'OSM (clé étrangère vers `import_sources`). Détails : `IMPORTS.md`.
+
+## Console business (migration `20261013120000_business_suite`, décision D32)
+
+- Tables : `catalog_item_events`, `catalog_item_metrics_daily`, `place_invitations` (14 jours, 5 gestionnaires
+  max), `verification_requests` ; colonnes `business_inquiries.sender_fingerprint` et `handled_at`.
+- L'insertion directe dans `business_inquiries` est fermée (politique « demandes: envoi » retirée) : envoi par
+  `send_business_inquiry` uniquement.
+- Notifications écrites par `notify_user` / `notify_place_managers` (non exposées) et par les déclencheurs
+  `place_owners_notify`, `reviews_notify`, `payments_notify`.
+- Paramètre `billing.manual_instructions` (null = paiements fermés) ; plan gratuit : `statistics` ;
+  `features.owner_review_responses` activé.
+- Test : `supabase/tests/business_suite_smoke.sql` (bloc DO annulé).

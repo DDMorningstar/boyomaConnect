@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { createSupabasePublicClient, createSupabaseServerClient } from "@/lib/supabase/server";
 import { PAGE_SIZE, type ParsedSearch } from "@/lib/search-params";
+import type { CatalogEntry } from "@/features/catalog/format";
 import type {
   Category,
   CategoryWithCount,
@@ -260,6 +261,45 @@ export async function getShareCardData(slug: string): Promise<ShareCardData | nu
     .eq("publication_status", "published")
     .eq("catalog_items.is_published", true)
     .maybeSingle<ShareCardData>();
+  return data;
+}
+
+export interface StatusCardData extends Omit<ShareCardData, "catalog_items"> {
+  slug: string;
+  catalog_items: Pick<
+    CatalogEntry,
+    | "id"
+    | "name"
+    | "price"
+    | "currency"
+    | "price_type"
+    | "price_unit"
+    | "photo_paths"
+    | "is_featured"
+    | "sort_order"
+    | "is_published"
+  >[];
+}
+
+/** Données publiques des visuels « statut WhatsApp » (lieu publié, articles publiés). */
+export async function getStatusCardData(slug: string): Promise<StatusCardData | null> {
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length > 120) return null;
+  const supabase = createSupabasePublicClient();
+  const { data } = await supabase
+    .from("places")
+    .select(
+      `slug, name, logo_path, cover_path, ownership_status,
+       primary_category:categories!places_primary_category_id_fkey (name, color),
+       unit:geographic_units!places_administrative_unit_id_fkey (name, type_key,
+         parent:parent_id (name, type_key)),
+       place_contacts (kind, value, is_primary),
+       place_media (storage_path, kind),
+       catalog_items (id, name, price, currency, price_type, price_unit, photo_paths, is_featured, sort_order, is_published)`,
+    )
+    .eq("slug", slug)
+    .eq("publication_status", "published")
+    .eq("catalog_items.is_published", true)
+    .maybeSingle<StatusCardData>();
   return data;
 }
 

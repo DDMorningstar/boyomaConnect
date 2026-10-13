@@ -86,6 +86,23 @@
   Playwright mobile local (fiche article dans l'écran, liens d'appel et WhatsApp, Échap, lien direct, 0 erreur JS).
   Non vérifié : formulaires de l'espace pro en session connectée.
 
+- 13/10/2026 : console « gérer son business » (D32, migration `business_suite`) : tableau de bord (vues, appels,
+  WhatsApp, itinéraires, partages, favoris vs période précédente, graphique quotidien, articles les plus vus),
+  score de complétude, horaires (semaine type à 2 créneaux, exceptionnels, « Fermé aujourd'hui »), boîte des
+  demandes (filtres, réponse par téléphone / WhatsApp / e-mail, statuts), offres datées (Premium/Sponsor, modération,
+  « Offres en cours » sur la fiche et « Offres du moment » à l'accueil), réponses aux avis + formulaire d'avis public,
+  kit de visibilité (QR SVG, affiche A5 `/affiche/<slug>`, visuels 1080×1920 `/api/statut/<slug>`), équipe
+  (invitations par e-mail, retrait), vérification sur place, abonnement (plans, demande, référence de paiement,
+  factures), notifications (cloche + `/notifications`), invitations sur l'accueil de l'espace pro. Admin : modules
+  Offres, Vérifications, Facturation (validation avec référence + justification). Statistiques par article
+  (`record_catalog_event`), formulaire « Envoyer un message » sur la fiche et dans la fiche article.
+  Vérifié : test SQL de la suite (transaction annulée : limites, plan, auto-validation refusée, propriétaire protégé,
+  insertion directe refusée), lectures en rôle gestionnaire, relations PostgREST sans ambiguïté, 43 tests, lint,
+  build, contrôle Playwright local (fiche : formulaire et validation, avis ; affiche ; visuel statut 200/404 et
+  téléchargement ; redirections sans session ; accueil sans débordement ; 0 erreur JS).
+  Non vérifié : écrans de la console et de l'admin en session connectée (aucun compte de test utilisable),
+  envoi réel d'une demande et d'un avis en production.
+
 ## Problèmes connus
 
 - Limite d'Isangi : enclave autour de Yangambi dans le RGC (contour simplifié) ; les points situés dans cette
@@ -103,6 +120,10 @@
   dépend de l'activation du fournisseur Google dans Supabase (voir DEPLOYMENT.md).
 
 ## Blocages / actions humaines
+
+- Paiement des abonnements fermé : renseigner `billing.manual_instructions` (Admin → Paramètres) avec les vrais
+  moyens de paiement (numéros Mobile Money officiels, bénéficiaire). Aucun numéro n'est inventé par l'application.
+- Prix des plans (3 / 10 / 25 USD par mois) issus de l'amorçage initial : à confirmer avant ouverture.
 
 - Lieux importés d'OSM à vérifier sur le terrain (catégorie, activité, commune) ; aucun horaire ni commune
   renseignés. Limites des communes à obtenir (source et licence compatibles) pour les rattacher.

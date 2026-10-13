@@ -5,6 +5,9 @@ import { Avatar } from "@/components/ui/avatar";
 import { ButtonLink } from "@/components/ui/button";
 import { requireUser } from "@/features/auth/session";
 import { getOwnerDashboard } from "@/features/owner/queries";
+import { getMyInvitations } from "@/features/owner/business";
+import { respondInvitation } from "@/features/owner/business-actions";
+import { ActionButton } from "@/components/forms/action-forms";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 import { formatDate } from "@/lib/format";
 
@@ -27,14 +30,18 @@ type Props = { searchParams: Promise<{ envoye?: string }> };
 export default async function OwnerHome({ searchParams }: Props) {
   const user = await requireUser("/espace-pro");
   const { envoye } = await searchParams;
-  const { places, submissions, claims } = await getOwnerDashboard(user.id);
+  const [{ places, submissions, claims }, invitations] = await Promise.all([
+    getOwnerDashboard(user.id),
+    getMyInvitations(),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 pt-6">
       <header>
         <h1 className="text-2xl font-extrabold tracking-tight">Espace professionnel</h1>
         <p className="text-muted mt-1">
-          Gérez la fiche de votre établissement : téléphone, photos, logo, catalogue et prix.
+          Gérez votre établissement en ligne : statistiques, fiche, catalogue, horaires, demandes des clients,
+          offres et avis.
         </p>
       </header>
 
@@ -44,6 +51,39 @@ export default async function OwnerHome({ searchParams }: Props) {
             ? "Demande envoyée. Notre équipe vérifie que vous gérez bien cet établissement, puis vous donne accès à la fiche."
             : "Fiche envoyée. Elle sera publiée après vérification par notre équipe."}
         </p>
+      )}
+
+      {invitations.length > 0 && (
+        <section className="space-y-2" aria-labelledby="invitations-titre">
+          <h2 id="invitations-titre" className="text-lg font-bold">
+            Invitations à gérer une fiche
+          </h2>
+          <ul className="space-y-2">
+            {invitations.map((inv) => (
+              <li
+                key={inv.id}
+                className="border-brand/40 bg-brand/5 flex flex-wrap items-center gap-3 rounded-2xl border p-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold">{inv.place_name}</p>
+                  <p className="text-muted text-xs">
+                    Invitation valable jusqu&apos;au {formatDate(inv.expires_at)}
+                  </p>
+                </div>
+                <ActionButton
+                  action={respondInvitation}
+                  hidden={{ id: inv.id, decision: "accept" }}
+                  variant="primary"
+                >
+                  Accepter
+                </ActionButton>
+                <ActionButton action={respondInvitation} hidden={{ id: inv.id, decision: "decline" }}>
+                  Refuser
+                </ActionButton>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <section className="space-y-2">

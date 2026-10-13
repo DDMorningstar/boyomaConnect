@@ -10,12 +10,14 @@ import {
   Package,
   Phone,
   Search,
+  Send,
   ShoppingBag,
   Star,
   Wrench,
   X,
 } from "lucide-react";
-import { recordPlaceEvent } from "@/features/places/events";
+import { recordCatalogEvent, recordPlaceEvent } from "@/features/places/events";
+import { InquiryForm } from "@/components/places/inquiry-form";
 import {
   AVAILABILITY,
   catalogPrice,
@@ -273,11 +275,17 @@ function ItemSheet({
 }) {
   const closeBtn = useRef<HTMLButtonElement>(null);
   const [copied, setCopied] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
   const photo = placeMediaUrl(item.photo_paths[0]);
   const price = catalogPrice(item);
   const url = `${typeof window !== "undefined" ? window.location.origin : ""}/lieux/${placeSlug}${HASH}${item.id}`;
   const message = inquiryMessage(placeName, { name: item.name, priceLabel: price }, url);
   const wa = whatsapp ? toWhatsAppNumber(whatsapp) : null;
+
+  useEffect(() => {
+    recordCatalogEvent(item.id, "view");
+  }, [item.id]);
 
   useEffect(() => {
     closeBtn.current?.focus();
@@ -380,6 +388,18 @@ function ItemSheet({
             <p className="text-muted text-xs">
               Proposé par {placeName}. Prix indiqués par l&apos;établissement.
             </p>
+            {asking && (
+              <div ref={formRef} className="border-line scroll-mt-4 border-t pt-4">
+                <h4 className="mb-3 font-bold">Demander un devis ou une information</h4>
+                <InquiryForm
+                  placeId={placeId}
+                  placeName={placeName}
+                  item={{ id: item.id, name: item.name }}
+                  onSent={() => recordCatalogEvent(item.id, "contact")}
+                  compact
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -391,7 +411,10 @@ function ItemSheet({
             {phone ? (
               <a
                 href={`tel:${phone.replace(/\s/g, "")}`}
-                onClick={() => recordPlaceEvent(placeId, "phone_click")}
+                onClick={() => {
+                  recordPlaceEvent(placeId, "phone_click");
+                  recordCatalogEvent(item.id, "contact");
+                }}
                 className={`${action} bg-brand text-white`}
               >
                 <Phone className="size-4" aria-hidden="true" /> Appeler
@@ -406,7 +429,10 @@ function ItemSheet({
                 href={`https://wa.me/${wa}?text=${encodeURIComponent(message)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => recordPlaceEvent(placeId, "whatsapp_click")}
+                onClick={() => {
+                  recordPlaceEvent(placeId, "whatsapp_click");
+                  recordCatalogEvent(item.id, "contact");
+                }}
                 className={`${action} bg-[#25D366] text-white`}
               >
                 <MessageCircle className="size-4" aria-hidden="true" /> WhatsApp
@@ -421,6 +447,7 @@ function ItemSheet({
             {email ? (
               <a
                 href={`mailto:${email}?subject=${encodeURIComponent(`Demande : ${item.name}`)}&body=${encodeURIComponent(message)}`}
+                onClick={() => recordCatalogEvent(item.id, "contact")}
                 className={`${action} border-line bg-surface border`}
               >
                 <Mail className="size-4" aria-hidden="true" /> E-mail
@@ -439,6 +466,20 @@ function ItemSheet({
               {copied ? "Lien copié" : "Partager"}
             </button>
           </div>
+          {!asking && (
+            <button
+              type="button"
+              onClick={() => {
+                setAsking(true);
+                requestAnimationFrame(() =>
+                  formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+                );
+              }}
+              className="text-brand flex min-h-10 w-full items-center justify-center gap-2 text-sm font-semibold"
+            >
+              <Send className="size-4" aria-hidden="true" /> Envoyer un message à l&apos;établissement
+            </button>
+          )}
           {wa && (
             <p className="text-muted text-center text-[11px]">
               Le message WhatsApp cite l&apos;article et son prix.

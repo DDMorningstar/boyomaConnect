@@ -3,7 +3,10 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BadgeCheck,
   ClipboardCheck,
+  CreditCard,
+  Tag,
   DatabaseZap,
   ExternalLink,
   FileClock,
@@ -28,6 +31,9 @@ export interface AdminNavCounts {
   reports: number;
   reviews: number;
   media: number;
+  promotions: number;
+  verifications: number;
+  payments: number;
 }
 
 interface NavItem {
@@ -73,6 +79,32 @@ const NAV: { title: string; items: NavItem[] }[] = [
         icon: ImageIcon,
         permission: "media.moderate",
         badge: "media",
+      },
+    ],
+  },
+  {
+    title: "Établissements",
+    items: [
+      {
+        href: "/admin/offres",
+        label: "Offres",
+        icon: Tag,
+        permission: "campaigns.manage",
+        badge: "promotions",
+      },
+      {
+        href: "/admin/verifications",
+        label: "Vérifications",
+        icon: BadgeCheck,
+        permission: "places.publish",
+        badge: "verifications",
+      },
+      {
+        href: "/admin/facturation",
+        label: "Facturation",
+        icon: CreditCard,
+        permission: "billing.read",
+        badge: "payments",
       },
     ],
   },

@@ -131,7 +131,7 @@ export function ContactsForm({ place }: { place: ManagedPlace }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(saveContacts, null);
   const get = (kind: string) => place.place_contacts.find((c) => c.kind === kind)?.value ?? "";
   return (
-    <form action={action} className={card}>
+    <form action={action} className={`${card} scroll-mt-24`} id="contacts">
       <h2 className="font-bold">Contacts publics</h2>
       <input type="hidden" name="place_id" value={place.id} />
       <div className="grid gap-4 sm:grid-cols-2">
@@ -193,7 +193,7 @@ export function ContactsForm({ place }: { place: ManagedPlace }) {
 export function InfoForm({ place }: { place: ManagedPlace }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(updatePlaceInfo, null);
   return (
-    <form action={action} className={card}>
+    <form action={action} className={`${card} scroll-mt-24`} id="informations">
       <h2 className="font-bold">Présentation et informations pratiques</h2>
       <input type="hidden" name="place_id" value={place.id} />
       <div>

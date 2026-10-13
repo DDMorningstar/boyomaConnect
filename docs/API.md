@@ -48,3 +48,16 @@ Appel : `supabase.rpc(nom, params)`. Toutes paramétrées (aucun SQL dynamique).
 | `import_save_mapping`, `import_toggle_mapping`                              | Correspondances OSM → catégories                                       |
 | `unit_bbox(unit)`                                                           | Emprise d'une unité (limite, sinon centre ± 0,2°)                      |
 | `osm_derived_places()` (anon)                                               | Extrait ODbL de la base dérivée d'OSM (`/api/exports/osm`)             |
+
+## Console business (décision D32, migration `20261013120000_business_suite`)
+
+- Public : `send_business_inquiry` (via action serveur, empreinte SHA-256 IP + navigateur, 3/h, 10/j, 2/j par
+  fiche), `record_catalog_event(item, view|contact, session)`, `active_promotions(unit, place, limit)`.
+- Gestionnaire : `owner_place_stats(place, 7|30|90)`, `set_inquiry_status`, `submit_promotion`,
+  `invite_place_member`, `manage_place_member`, `place_members`, `my_place_invitations`,
+  `respond_place_invitation`, `request_place_verification`, `submit_payment_reference`,
+  `cancel_pending_subscription`, `billing_instructions`, `mark_notifications_read`.
+- Équipe : `moderate_promotion` (campaigns.manage), `handle_verification_request` (places.publish),
+  `confirm_manual_payment` / `reject_manual_payment` / `admin_grant_plan` (billing.manage).
+- Routes : `GET /api/statut/<slug>[?article=<id>][&telecharger=1]` (PNG 1080×1920, données publiques),
+  `/affiche/<slug>` (affiche A5 imprimable).

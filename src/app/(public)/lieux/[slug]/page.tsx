@@ -11,7 +11,6 @@ import {
   Map as MapIcon,
   MapPin,
   Route,
-  ShoppingBag,
   Star,
 } from "lucide-react";
 import { CategoryBadge, CategoryIcon } from "@/components/places/category-icon";
@@ -20,12 +19,13 @@ import { CoverPhotoButton, PhotoStrip, type ViewerPhoto } from "@/components/pla
 import { VerificationBadge } from "@/components/places/verification-badge";
 import { PlaceActions, StickyPlaceActions } from "@/components/places/place-actions";
 import { OpeningHours } from "@/components/places/opening-hours";
+import { CatalogSection } from "@/components/places/catalog-section";
 import { ReportForm } from "@/components/places/report-form";
 import { ViewTracker } from "@/components/places/view-tracker";
 import { getPlaceBySlug, getPublicReviews } from "@/features/places/queries";
 import { localityName, placeLocation } from "@/features/zones/zones";
 import { env } from "@/lib/env";
-import { formatCoordinates, formatDate, formatPrice } from "@/lib/format";
+import { formatCoordinates, formatDate } from "@/lib/format";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 import type { PlaceDetail } from "@/types/places";
 
@@ -129,7 +129,9 @@ function jsonLd(p: PlaceDetail) {
       ? p.catalog_items.map((i) => ({
           "@type": "Offer",
           itemOffered: { "@type": i.kind === "service" ? "Service" : "Product", name: i.name },
-          ...(i.price != null && i.currency ? { price: Number(i.price), priceCurrency: i.currency } : {}),
+          ...(i.price_type === "fixed" && i.price != null && i.currency
+            ? { price: Number(i.price), priceCurrency: i.currency }
+            : {}),
         }))
       : undefined,
     address: {
@@ -342,37 +344,15 @@ export default async function PlacePage({ params }: Props) {
             </div>
           </section>
 
-          {p.catalog_items.length > 0 && (
-            <section>
-              <h2 className="mb-2 flex items-center gap-2 text-lg font-bold">
-                <ShoppingBag className="text-brand size-5" aria-hidden="true" /> Catalogue
-              </h2>
-              <ul className="border-line bg-surface divide-line divide-y rounded-[var(--radius-card)] border">
-                {p.catalog_items.map((it) => (
-                  <li key={it.id} className="flex items-start justify-between gap-3 p-3">
-                    <div className="min-w-0">
-                      <p className="font-semibold">{it.name}</p>
-                      {it.description && (
-                        <p className="text-muted text-sm whitespace-pre-line">{it.description}</p>
-                      )}
-                      {it.availability === "unavailable" && (
-                        <p className="text-warning text-xs font-medium">Actuellement indisponible</p>
-                      )}
-                      {it.availability === "on_request" && (
-                        <p className="text-muted text-xs font-medium">Sur demande</p>
-                      )}
-                    </div>
-                    <p className="shrink-0 text-right font-bold whitespace-nowrap">
-                      {formatPrice(it.price, it.currency)}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-muted mt-1 text-xs">
-                Prix indiqués par l&apos;établissement, susceptibles d&apos;évoluer.
-              </p>
-            </section>
-          )}
+          <CatalogSection
+            placeId={p.id}
+            placeName={p.name}
+            placeSlug={p.slug}
+            items={p.catalog_items}
+            phone={phone}
+            whatsapp={whatsapp}
+            email={p.place_contacts.find((c) => c.kind === "email")?.value ?? null}
+          />
 
           {p.place_services.length > 0 && (
             <section>

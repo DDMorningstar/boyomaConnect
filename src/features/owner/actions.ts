@@ -464,22 +464,43 @@ export async function deletePhoto(_: ActionState, form: FormData): Promise<Actio
 }
 
 // ------------------------------------------------------------- catalogue
+// Vitrine de l'établissement (décision D31) : aucune commande ni paiement dans l'application.
+const CATALOG_MAX = 100;
 const catalogSchema = z
   .object({
     id: uuid.nullable().catch(null),
     kind: z.enum(["product", "service"]),
     name: z.string().trim().min(2, "Nom de l'article trop court.").max(120, "120 caractères maximum."),
     description: optionalText(2000),
+    category_label: optionalText(60),
+    price_type: z.enum(["fixed", "from", "on_quote", "free"]),
     price: z
       .string()
       .trim()
-      .transform((v) => v.replace(/\s/g, "").replace(",", "."))
-      .refine((v) => v === "" || (/^\d{1,10}(\.\d{1,2})?$/.test(v) && Number(v) >= 0), "Prix invalide.")
+      .transform((v) => v.replace(/s/g, "").replace(",", "."))
+      .refine((v) => v === "" || (/^d{1,10}(.d{1,2})?$/.test(v) && Number(v) >= 0), "Prix invalide.")
       .transform((v) => (v === "" ? null : Number(v))),
     currency: z.enum(["USD", "CDF"]),
+    price_unit: optionalText(30),
     availability: z.enum(["available", "on_request", "unavailable", "unknown"]),
+    is_featured: z.boolean(),
+    is_published: z.boolean(),
   })
-  .transform((v) => ({ ...v, currency: v.price == null ? null : v.currency }));
+  .transform((v) => {
+    // Sur devis / gratuit : aucun montant ; sans montant, ni devise ni unité.
+    const price = v.price_type === "fixed" || v.price_type === "from" ? v.price : null;
+    return {
+      ...v,
+      price,
+      currency: price == null ? null : v.currency,
+      price_unit: price == null ? null : v.price_unit,
+    };
+  })
+  .refine((v) => v.price_type !== "from" || v.price != null, {
+    message: "Indiquez le montant de départ pour « À partir de ».",
+  });
+
+const catalogFolder = (placeId: string) => `places/${placeId}/catalog`;
 
 export async function saveCatalogItem(_: ActionState, form: FormData): Promise<ActionState> {
   try {
@@ -489,31 +510,60 @@ export async function saveCatalogItem(_: ActionState, form: FormData): Promise<A
       kind: text(form, "kind"),
       name: text(form, "name"),
       description: text(form, "description"),
+      category_label: text(form, "category_label"),
+      price_type: text(form, "price_type") || "fixed",
       price: text(form, "price"),
       currency: text(form, "currency") || "USD",
+      price_unit: text(form, "price_unit"),
       availability: text(form, "availability") || "available",
+      is_featured: form.get("is_featured") === "on",
+      is_published: form.get("is_published") === "on",
     });
     if (!parsed.success) return { error: firstError(parsed.error) };
     const { id, ...item } = parsed.data;
+
+    let previous: string[] = [];
+    let nextOrder = 0;
     if (id) {
-      const { error } = await supabase
+      const { data: current } = await supabase
         .from("catalog_items")
-        .update(item)
+        .select("photo_paths")
         .eq("id", id)
+        .eq("place_id", placeId)
+        .maybeSingle<{ photo_paths: string[] }>();
+      if (!current) return { error: "Article introuvable." };
+      previous = current.photo_paths;
+    } else {
+      const { count } = await supabase
+        .from("catalog_items")
+        .select("id", { count: "exact", head: true })
         .eq("place_id", placeId);
-      if (error) throw error;
-      return done(placeId, "Article mis à jour.");
+      if ((count ?? 0) >= CATALOG_MAX) return { error: `${CATALOG_MAX} articles maximum par catalogue.` };
+      nextOrder = count ?? 0;
     }
-    const { count } = await supabase
-      .from("catalog_items")
-      .select("id", { count: "exact", head: true })
-      .eq("place_id", placeId);
-    if ((count ?? 0) >= 100) return { error: "100 articles maximum par catalogue." };
-    const { error } = await supabase
-      .from("catalog_items")
-      .insert({ ...item, place_id: placeId, sort_order: count ?? 0 });
-    if (error) throw error;
-    return done(placeId, "Article ajouté au catalogue.");
+
+    // Photo : nouvelle image (optimisée, sans EXIF/GPS), suppression, ou inchangée.
+    const photo = files(form, "photo")[0];
+    let photoPaths = previous;
+    let uploaded: string | null = null;
+    if (photo) {
+      uploaded = (await uploadOptimized(supabase, catalogFolder(placeId), photo, "photo")).path;
+      photoPaths = [uploaded];
+    } else if (form.get("remove_photo") === "on") {
+      photoPaths = [];
+    }
+
+    const row = { ...item, photo_paths: photoPaths };
+    const { error } = id
+      ? await supabase.from("catalog_items").update(row).eq("id", id).eq("place_id", placeId)
+      : await supabase.from("catalog_items").insert({ ...row, place_id: placeId, sort_order: nextOrder });
+    if (error) {
+      if (uploaded) await supabase.storage.from(BUCKET).remove([uploaded]);
+      throw error;
+    }
+    const orphans = previous.filter((p) => !photoPaths.includes(p));
+    if (orphans.length) await supabase.storage.from(BUCKET).remove(orphans);
+    return done(placeId, id ? "Article mis à jour." : "Article ajouté au catalogue.");
   } catch (e) {
     return fail(e);
   }
@@ -523,9 +573,72 @@ export async function deleteCatalogItem(_: ActionState, form: FormData): Promise
   try {
     const { supabase, placeId } = await managerSession(form);
     const id = uuid.parse(text(form, "id"));
-    const { error } = await supabase.from("catalog_items").delete().eq("id", id).eq("place_id", placeId);
-    if (error) throw error;
+    const { data } = await supabase
+      .from("catalog_items")
+      .delete()
+      .eq("id", id)
+      .eq("place_id", placeId)
+      .select("photo_paths")
+      .maybeSingle<{ photo_paths: string[] }>();
+    if (!data) return { error: "Article introuvable." };
+    if (data.photo_paths.length) await supabase.storage.from(BUCKET).remove(data.photo_paths);
     return done(placeId, "Article supprimé.");
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Visibilité et mise en avant (un clic). */
+export async function toggleCatalogFlag(_: ActionState, form: FormData): Promise<ActionState> {
+  try {
+    const { supabase, placeId } = await managerSession(form);
+    const id = uuid.parse(text(form, "id"));
+    const field = text(form, "field");
+    if (field !== "is_published" && field !== "is_featured") return { error: "Action inconnue." };
+    const value = text(form, "value") === "on";
+    const { error } = await supabase
+      .from("catalog_items")
+      .update({ [field]: value })
+      .eq("id", id)
+      .eq("place_id", placeId);
+    if (error) throw error;
+    const messages = {
+      is_published: value
+        ? "Article visible sur votre fiche."
+        : "Article masqué (conservé dans votre catalogue).",
+      is_featured: value ? "Article mis en avant." : "Article retiré de la mise en avant.",
+    };
+    return done(placeId, messages[field]);
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Déplace un article d'un cran (l'ordre est renuméroté proprement). */
+export async function moveCatalogItem(_: ActionState, form: FormData): Promise<ActionState> {
+  try {
+    const { supabase, placeId } = await managerSession(form);
+    const id = uuid.parse(text(form, "id"));
+    const dir = text(form, "direction") === "up" ? -1 : 1;
+    const { data } = await supabase
+      .from("catalog_items")
+      .select("id")
+      .eq("place_id", placeId)
+      .order("sort_order")
+      .order("created_at");
+    const ids = ((data as { id: string }[] | null) ?? []).map((r) => r.id);
+    const i = ids.indexOf(id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= ids.length) return { ok: "" };
+    [ids[i], ids[j]] = [ids[j]!, ids[i]!];
+    const results = await Promise.all(
+      ids.map((itemId, index) =>
+        supabase.from("catalog_items").update({ sort_order: index }).eq("id", itemId).eq("place_id", placeId),
+      ),
+    );
+    const failed = results.find((r) => r.error);
+    if (failed?.error) throw failed.error;
+    return done(placeId, "Ordre mis à jour.");
   } catch (e) {
     return fail(e);
   }

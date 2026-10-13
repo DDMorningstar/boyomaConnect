@@ -1,3 +1,4 @@
+import type { CatalogEntry } from "@/features/catalog/format";
 export type VerificationStatus =
   "unverified" | "community_reported" | "agent_verified" | "owner_verified" | "admin_verified";
 
@@ -146,15 +147,8 @@ export interface PlaceDetail {
   /** Provenance d'un lieu importé (ex. OpenStreetMap) : attribution obligatoire. */
   place_external_refs: { source: string; license: string; attribution: string; source_url: string | null }[];
   /** Catalogue publié par l'établissement (prix facultatifs, jamais inventés). */
-  catalog_items: {
-    id: string;
-    kind: "product" | "service";
-    name: string;
-    description: string | null;
-    price: number | null;
-    currency: "USD" | "CDF" | null;
-    availability: "available" | "on_request" | "unavailable" | "unknown";
-  }[];
+  /** Articles publiés du catalogue (voir src/features/catalog/format.ts). */
+  catalog_items: CatalogEntry[];
 }
 
 export interface PublicReview {

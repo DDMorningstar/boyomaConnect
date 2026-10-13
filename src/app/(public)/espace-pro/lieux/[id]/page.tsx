@@ -10,7 +10,8 @@ import { getManagedPlace } from "@/features/owner/queries";
 import { addPhoto, uploadLogo } from "@/features/owner/actions";
 import { env } from "@/lib/env";
 import { placeMediaUrl } from "@/lib/supabase/storage";
-import { CatalogManager, ContactsForm, InfoForm, PhotoGrid, ShareBox } from "./manage-forms";
+import { ContactsForm, InfoForm, PhotoGrid, ShareBox } from "./manage-forms";
+import { CatalogManager } from "./catalog-manager";
 
 export const metadata: Metadata = { title: "Gérer ma fiche", robots: { index: false } };
 

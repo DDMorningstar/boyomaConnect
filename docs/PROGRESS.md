@@ -78,6 +78,14 @@
   (View Transitions, ≤ 900 ms d'attente, désactivée si « réduire les animations »). Vérifié : build, 36 tests,
   contrôle Playwright mobile local (aucun débordement, transition, barre fixe, 0 erreur JS).
 
+- 13/10/2026 : catalogue enrichi (D31, migration `catalog_v2`) : espace pro (rubriques, photo par article, types de
+  prix et unité, mise en avant, masquage, réordonnancement, suppression confirmée) ; fiche publique en vitrine
+  (grille, filtres Produits / Services / rubriques, recherche au-delà de 8 articles, fiche article avec Appeler,
+  WhatsApp et e-mail pré-remplis, lien direct `#article-<id>`). Articles masqués jamais publics (filtre de requête).
+  Vérifié : garde-fous SQL (transaction annulée), requêtes validées contre l'API, 40 tests, build, contrôle
+  Playwright mobile local (fiche article dans l'écran, liens d'appel et WhatsApp, Échap, lien direct, 0 erreur JS).
+  Non vérifié : formulaires de l'espace pro en session connectée.
+
 ## Problèmes connus
 
 - Limite d'Isangi : enclave autour de Yangambi dans le RGC (contour simplifié) ; les points situés dans cette

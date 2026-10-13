@@ -1,20 +1,12 @@
 import "server-only";
+import type { CatalogEntry } from "@/features/catalog/format";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategoriesWithCounts, getCityWithCommunes } from "@/features/places/queries";
 import { getZones } from "@/features/zones/queries";
 import { zoneTitle } from "@/features/zones/zones";
 
-export interface CatalogItem {
-  id: string;
-  kind: "product" | "service";
-  name: string;
-  description: string | null;
-  price: number | null;
-  currency: "USD" | "CDF" | null;
-  availability: "available" | "on_request" | "unavailable" | "unknown";
-  sort_order: number;
-  is_published: boolean;
-}
+/** Article du catalogue (voir src/features/catalog/format.ts). */
+export type CatalogItem = CatalogEntry;
 
 export interface OwnedPlaceSummary {
   role: "owner" | "manager";
@@ -124,7 +116,7 @@ export async function getManagedPlace(placeId: string, userId: string): Promise<
        primary_category:categories!places_primary_category_id_fkey (name),
        place_contacts (id, kind, value),
        place_media (id, storage_path, kind, moderation_status, sort_order),
-       catalog_items (id, kind, name, description, price, currency, availability, sort_order, is_published)`,
+       catalog_items (id, kind, name, description, category_label, price, currency, price_type, price_unit, availability, photo_paths, is_featured, sort_order, is_published)`,
     )
     .eq("id", placeId)
     .order("sort_order", { referencedTable: "place_media" })

@@ -189,7 +189,8 @@ const PLACE_DETAIL_SELECT = `
   place_media (id, storage_path, kind, caption, width, height, sort_order),
   place_amenity_links (amenity:place_amenities (key, name, icon)),
   place_external_refs (source, license, attribution, source_url),
-  catalog_items (id, kind, name, description, price, currency, availability, sort_order)
+  catalog_items (id, kind, name, description, category_label, price, currency, price_type, price_unit, availability,
+    photo_paths, is_featured, is_published, sort_order)
 `;
 
 export type PlaceLookup =
@@ -206,6 +207,8 @@ export const getPlaceBySlug = cache(async (slug: string): Promise<PlaceLookup> =
     .order("sort_order", { referencedTable: "place_services" })
     .order("sort_order", { referencedTable: "place_media" })
     .order("sort_order", { referencedTable: "catalog_items" })
+    // Articles masqués par l'établissement : jamais sur la fiche publique (même pour son gestionnaire).
+    .eq("catalog_items.is_published", true)
     .maybeSingle<PlaceDetail>();
   if (error) throw new DataError("Impossible de charger la fiche", error);
   if (data) return { kind: "found", place: data };
@@ -255,6 +258,7 @@ export async function getShareCardData(slug: string): Promise<ShareCardData | nu
     )
     .eq("slug", slug)
     .eq("publication_status", "published")
+    .eq("catalog_items.is_published", true)
     .maybeSingle<ShareCardData>();
   return data;
 }

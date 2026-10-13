@@ -1,0 +1,19 @@
+{
+  "name": "boyoma-connect-videos",
+  "private": true,
+  "description": "Publicités vidéo de Boyoma Connect (Remotion). Rendu : npm run render",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Demo30 out/boyoma-connect-demo-30s.mp4 --codec h264 --crf 18",
+    "still": "remotion still src/index.ts Demo30 out/apercu.png --frame 450"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.535",
+    "@remotion/google-fonts": "^4.0.535",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "^4.0.535",
+    "typescript": "^7.0.2"
+  }
+}

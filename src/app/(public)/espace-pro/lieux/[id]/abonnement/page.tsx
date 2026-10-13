@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Check, Info, Lock, Receipt } from "lucide-react";
+import { Check, Info, Lock, Receipt, Smartphone } from "lucide-react";
 import { inputClass, labelClass } from "@/components/forms/form-message";
 import { getBilling, getConsolePlace, type Invoice, type Plan } from "@/features/owner/business";
 import {
@@ -7,11 +8,23 @@ import {
   startPlanRequest,
   submitPaymentReference,
 } from "@/features/owner/business-actions";
+import type { PaymentView } from "@/features/payments/malipo/actions";
+import { getMalipoRuntime } from "@/features/payments/malipo/server";
+import {
+  STATUS_LABEL,
+  failureMessage,
+  isFailure,
+  isInFlight,
+  networkLabel,
+  type ChargeStatus,
+} from "@/features/payments/malipo/status";
 import { formatPrice } from "@/lib/format";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ActionButton, BizForm } from "@/components/forms/action-forms";
 import { Panel, shortDate } from "../ui";
+import { MobileMoneyCheckout } from "./mobile-money-checkout";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ payer?: string }> };
 
 const INVOICE_STATUS: Record<string, string> = {
   draft: "Brouillon",
@@ -21,16 +34,46 @@ const INVOICE_STATUS: Record<string, string> = {
   uncollectible: "Irrécouvrable",
 };
 
+interface ChargeListRow {
+  id: string;
+  payment_id: string;
+  status: string;
+  network: string;
+  phone_masked: string;
+  amount: number;
+  currency: string;
+  environment: "sandbox" | "live";
+  charge_id: string | null;
+  failure_reason: string | null;
+  created_at: string;
+}
+
 /**
- * Abonnement (décision D32) : paiement manuel (Mobile Money, virement…) selon les instructions
- * publiées par l'équipe. L'établissement indique sa référence ; seule l'équipe valide le paiement,
- * après vérification, et l'opération est journalisée. Aucun paiement n'est confirmé par un clic ici.
+ * Abonnement : paiement Mobile Money via Malipo (D33, confirmé par webhook signé ou lecture de
+ * l'API) et, si l'équipe a publié des instructions, paiement manuel validé par l'équipe (D32).
+ * Aucun paiement n'est confirmé par un clic ou par le navigateur.
  */
-export default async function BillingPage({ params }: Props) {
+export default async function BillingPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const { payer } = await searchParams;
   const place = await getConsolePlace(id);
   if (!place) notFound();
-  const { plans, subscriptions, invoices, activePlan, instructions } = await getBilling(place.id);
+  const supabase = await createSupabaseServerClient();
+  const [{ plans, subscriptions, invoices, activePlan, instructions }, charges] = await Promise.all([
+    getBilling(place.id),
+    supabase
+      .from("malipo_charges")
+      .select(
+        "id, payment_id, status, network, phone_masked, amount, currency, environment, charge_id, failure_reason, created_at",
+      )
+      .eq("place_id", place.id)
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .overrideTypes<ChargeListRow[], { merge: false }>()
+      .then((r) => r.data ?? []),
+  ]);
+  const malipo = getMalipoRuntime();
+  const mobileMoney = malipo.available;
   const hidden = { place_id: place.id };
   const pending = subscriptions.find((s) => s.status === "pending_payment");
   const current = subscriptions.find(
@@ -39,15 +82,44 @@ export default async function BillingPage({ params }: Props) {
   const pendingInvoice = pending
     ? invoices.find((i) => i.subscription_id === pending.id && i.status === "open")
     : undefined;
-  const pendingPayment = pendingInvoice?.payments.find((p) => p.status === "pending");
-  const failedPayment = pendingInvoice?.payments.find((p) => p.status === "failed");
-  const blocked = !instructions
-    ? "Le paiement des abonnements n'est pas encore ouvert : l'équipe Boyoma Connect publiera bientôt les moyens de paiement."
+  const pendingPayment = pendingInvoice?.payments.find(
+    (p) => p.status === "pending" && p.provider !== "malipo",
+  );
+  const failedPayment = pendingInvoice?.payments.find(
+    (p) => p.status === "failed" && p.provider !== "malipo",
+  );
+  const blocked = current
+    ? `Votre abonnement ${current.plan?.name ?? ""} est actif jusqu'au ${shortDate(current.current_period_end)} : un changement de plan sera possible à son échéance.`
     : pending
       ? "Une demande d'abonnement est déjà en cours (voir ci-dessous)."
-      : current
-        ? `Votre abonnement ${current.plan?.name ?? ""} est actif jusqu'au ${shortDate(current.current_period_end)} : un changement de plan sera possible à son échéance.`
+      : !instructions && !mobileMoney
+        ? "Le paiement des abonnements n'est pas encore ouvert : l'équipe Boyoma Connect publiera bientôt les moyens de paiement."
         : null;
+
+  // Plan à régler par Mobile Money : la demande en cours, sinon le plan choisi (?payer=…).
+  const checkoutPlan = pending
+    ? plans.find((p) => p.key === pending.plan?.key)
+    : !current
+      ? plans.find((p) => p.key === payer && Number(p.price_monthly) > 0)
+      : undefined;
+  const pendingPaymentIds = new Set(pendingInvoice?.payments.map((p) => p.id) ?? []);
+  const lastRow =
+    charges.find((c) => isInFlight(c.status) && Date.now() - Date.parse(c.created_at) < 30 * 60 * 1000) ??
+    charges.find((c) => pendingPaymentIds.has(c.payment_id));
+  const initialView: PaymentView | null = lastRow
+    ? {
+        rowId: lastRow.id,
+        paymentId: lastRow.payment_id,
+        status: lastRow.status,
+        network: lastRow.network,
+        phoneMasked: lastRow.phone_masked,
+        amount: Number(lastRow.amount).toFixed(2),
+        currency: lastRow.currency,
+        environment: lastRow.environment,
+        reference: lastRow.charge_id,
+        message: isFailure(lastRow.status) ? failureMessage(lastRow.status, lastRow.failure_reason) : null,
+      }
+    : null;
 
   return (
     <div className="space-y-5">
@@ -68,6 +140,8 @@ export default async function BillingPage({ params }: Props) {
               active={plan.key === activePlan}
               placeId={place.id}
               blocked={blocked}
+              manual={Boolean(instructions)}
+              mobileMoney={mobileMoney}
             />
           ))}
         </ul>
@@ -76,22 +150,44 @@ export default async function BillingPage({ params }: Props) {
             <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" /> {blocked}
           </p>
         )}
+        {!mobileMoney && (
+          <p className="text-muted flex items-start gap-2 text-sm">
+            <Smartphone className="mt-0.5 size-4 shrink-0" aria-hidden="true" /> Paiement Mobile Money
+            (M-Pesa, Orange Money, Airtel Money) bientôt disponible.
+          </p>
+        )}
       </Panel>
+
+      {mobileMoney && checkoutPlan && (
+        <Panel
+          id="paiement"
+          title={`Payer par Mobile Money : ${checkoutPlan.name}`}
+          description="Vodacom M-Pesa, Orange Money ou Airtel Money. Vous validez la demande sur votre téléphone avec votre code PIN."
+        >
+          <MobileMoneyCheckout
+            key={checkoutPlan.key}
+            placeId={place.id}
+            plan={{ key: checkoutPlan.key, name: checkoutPlan.name }}
+            amountLabel={formatPrice(
+              pendingInvoice?.amount ?? checkoutPlan.price_monthly,
+              pendingInvoice?.currency ?? checkoutPlan.currency,
+            )}
+            environment={malipo.config.mode}
+            initial={initialView}
+          />
+        </Panel>
+      )}
 
       {pending && pendingInvoice && (
         <Panel
           title={`Demande en cours : ${pending.plan?.name ?? "abonnement"}`}
           description={`Montant : ${formatPrice(pendingInvoice.amount, pendingInvoice.currency)} · à régler avant le ${shortDate(pendingInvoice.due_at)}`}
         >
-          {instructions ? (
+          {instructions && (
             <div className="bg-surface-2 rounded-2xl p-4 text-sm">
-              <p className="mb-1 font-semibold">Comment payer</p>
+              <p className="mb-1 font-semibold">Autre moyen de paiement</p>
               <p className="whitespace-pre-line">{instructions}</p>
             </div>
-          ) : (
-            <p className="text-muted text-sm">
-              Les instructions de paiement ne sont pas disponibles pour le moment.
-            </p>
           )}
           {pendingPayment?.provider_reference ? (
             <p className="flex items-start gap-2 text-sm">
@@ -99,7 +195,7 @@ export default async function BillingPage({ params }: Props) {
               Référence « {pendingPayment.provider_reference} » envoyée : l&apos;équipe vérifie la transaction
               puis active votre plan. Vous serez notifié.
             </p>
-          ) : pendingPayment ? (
+          ) : pendingPayment && instructions ? (
             <BizForm
               action={submitPaymentReference}
               hidden={{ ...hidden, id: pendingPayment.id }}
@@ -107,7 +203,7 @@ export default async function BillingPage({ params }: Props) {
             >
               <div>
                 <label htmlFor="pay-ref" className={labelClass}>
-                  Référence de la transaction (après paiement)
+                  Référence de la transaction (après paiement manuel)
                 </label>
                 <input
                   id="pay-ref"
@@ -125,7 +221,6 @@ export default async function BillingPage({ params }: Props) {
             failedPayment && (
               <p className="text-danger text-sm">
                 Paiement non validé{failedPayment.failure_reason ? ` : ${failedPayment.failure_reason}` : ""}.
-                Annulez cette demande puis recommencez.
               </p>
             )
           )}
@@ -137,6 +232,42 @@ export default async function BillingPage({ params }: Props) {
           >
             Annuler la demande
           </ActionButton>
+        </Panel>
+      )}
+
+      {charges.length > 0 && (
+        <Panel title="Paiements Mobile Money">
+          <ul className="divide-line divide-y text-sm">
+            {charges.map((c) => (
+              <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
+                <span className="min-w-0 flex-1">
+                  <span className="font-semibold">{shortDate(c.created_at)}</span> · {networkLabel(c.network)}{" "}
+                  · {c.phone_masked}
+                  {c.environment === "sandbox" && <span className="text-warning"> · test</span>}
+                </span>
+                <span className="tabular-nums">{formatPrice(c.amount, c.currency)}</span>
+                <span
+                  className={`w-40 text-right text-xs font-semibold ${
+                    c.status === "succeeded"
+                      ? "text-success"
+                      : isFailure(c.status)
+                        ? "text-danger"
+                        : "text-muted"
+                  }`}
+                >
+                  {STATUS_LABEL[c.status as ChargeStatus] ?? c.status}
+                </span>
+                {c.status === "succeeded" && (
+                  <Link
+                    href={`/espace-pro/lieux/${place.id}/abonnement/recu/${c.payment_id}`}
+                    className="text-brand w-full text-right text-xs font-semibold sm:w-auto"
+                  >
+                    Preuve de paiement
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
         </Panel>
       )}
 
@@ -162,11 +293,15 @@ function PlanCard({
   active,
   placeId,
   blocked,
+  manual,
+  mobileMoney,
 }: {
   plan: Plan;
   active: boolean;
   placeId: string;
   blocked: string | null;
+  manual: boolean;
+  mobileMoney: boolean;
 }) {
   const features = plan.plan_features.filter((f) => f.label && f.value !== false && f.value !== "false");
   return (
@@ -207,13 +342,26 @@ function PlanCard({
             <Lock className="size-3.5" aria-hidden="true" /> Indisponible
           </button>
         ) : (
-          <ActionButton
-            action={startPlanRequest}
-            hidden={{ place_id: placeId, decision: plan.key }}
-            variant="primary"
-          >
-            Choisir {plan.name}
-          </ActionButton>
+          <div className="flex flex-col gap-2">
+            {mobileMoney && (
+              <Link
+                href={`/espace-pro/lieux/${placeId}/abonnement?payer=${plan.key}#paiement`}
+                scroll={false}
+                className="bg-brand hover:bg-brand-strong inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-semibold text-white"
+              >
+                <Smartphone className="size-4" aria-hidden="true" /> Payer par Mobile Money
+              </Link>
+            )}
+            {manual && (
+              <ActionButton
+                action={startPlanRequest}
+                hidden={{ place_id: placeId, decision: plan.key }}
+                variant={mobileMoney ? "secondary" : "primary"}
+              >
+                {mobileMoney ? "Autre moyen de paiement" : `Choisir ${plan.name}`}
+              </ActionButton>
+            )}
+          </div>
         ))}
     </li>
   );

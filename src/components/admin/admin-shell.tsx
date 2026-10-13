@@ -18,6 +18,7 @@ import {
   MapPinned,
   MessageSquareText,
   Settings,
+  Smartphone,
   Users,
   X,
   type LucideIcon,
@@ -106,6 +107,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
         permission: "billing.read",
         badge: "payments",
       },
+      { href: "/admin/paiements", label: "Mobile Money", icon: Smartphone, permission: "billing.read" },
     ],
   },
   {

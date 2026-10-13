@@ -36,6 +36,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   // Pages uniquement : ni fichiers statiques, ni images, ni service worker.
   matcher: [
-    "/((?!_next/static|_next/image|icons/|sw\\.js|manifest\\.webmanifest|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|webp|avif|ico)$).*)",
+    "/((?!api/webhooks/|api/cron/|_next/static|_next/image|icons/|sw\\.js|manifest\\.webmanifest|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|webp|avif|ico)$).*)",
   ],
 };

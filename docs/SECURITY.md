@@ -39,3 +39,13 @@
   Évolution prévue : bucket privé + déplacement à la validation.
 - Limitation de fréquence applicative (middleware) à ajouter en phase 4 ; les RPC sensibles ont déjà des quotas SQL.
 - Politique de confidentialité et CGU : brouillons à faire valider juridiquement.
+
+## Paiements Mobile Money (Malipo, D33)
+
+- `MALIPO_API_KEY`, `MALIPO_WEBHOOK_SECRET`, `SUPABASE_SECRET_KEY`, `CRON_SECRET` : serveur uniquement (Vercel),
+  jamais `NEXT_PUBLIC_`, jamais commités ; la clé n'apparaît dans aucun journal ni message d'erreur.
+- Mode et préfixe de clé contrôlés (sandbox ⇔ `sk_test_`, live ⇔ `sk_live_` + `MALIPO_LIVE_CONFIRMED=oui`).
+- Webhook : corps brut, HMAC-SHA256 de `timestamp.corps`, comparaison à temps constant, fenêtre de 5 minutes ;
+  les requêtes invalides ne sont pas stockées (impossible de « réserver » un identifiant d'événement).
+- Écritures financières par fonctions `SECURITY DEFINER` accordées au seul rôle `service_role` ; lecture RLS
+  (gestionnaires de la fiche, permission `billing.read`) ; export CSV protégé contre l'injection de formules.

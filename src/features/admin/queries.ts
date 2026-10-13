@@ -205,7 +205,7 @@ export async function getGeoOptions() {
   };
 }
 
-async function profileNames(ids: (string | null)[]) {
+export async function profileNames(ids: (string | null)[]) {
   const unique = [...new Set(ids.filter((x): x is string => Boolean(x)))];
   if (!unique.length) return new Map<string, string | null>();
   const supabase = await createSupabaseServerClient();

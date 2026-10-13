@@ -103,6 +103,20 @@
   Non vérifié : écrans de la console et de l'admin en session connectée (aucun compte de test utilisable),
   envoi réel d'une demande et d'un avis en production.
 
+- 13/10/2026 : Mobile Money via Malipo (D33, migrations `malipo_provider`, `malipo_payments`, `malipo_bind`) :
+  paiement d'abonnement (opérateur, numéro +243, résumé, attente avec actualisation serveur, succès, échec expliqué,
+  nouvelle tentative), preuve de paiement, historique ; webhook `/api/webhooks/malipo` (HMAC-SHA256 + horodatage
+  5 min, journal dédoublonné, lecture canonique de l'API) ; rapprochement (écran, admin, cron quotidien) ; admin
+  « Paiements Mobile Money » (indicateurs, opérateurs, filtres, recherche, export CSV). Guide : `MALIPO_INTEGRATION.md`.
+  Vérifié : 18 contrôles SQL en transaction annulée (non-gestionnaire, numéro invalide, montant serveur, double clic,
+  autre plan, annulation pendant validation, fonctions serveur interdites aux clients, écart montant/devise,
+  activation, doublon, événement ancien, dédoublonnage, remboursement, refus puis nouvelle tentative, expiré puis
+  succès via API seulement, erreur API, plan inconnu, charge inconnue) ; 45 tests unitaires (signature, montants,
+  numéros, configuration, client HTTP, webhooks, création, rapprochement) ; 88 tests au total, lint, build ;
+  routes locales (webhook 503 sans configuration / 405 en GET, cron et export 401, redirections sans session).
+  Bloqué : aucun test réel Sandbox (clé `sk_test_`, secret webhook et `SUPABASE_SECRET_KEY` non fournis) ;
+  unité des montants à confirmer au premier test ; interface de paiement non vue en session connectée.
+
 ## Problèmes connus
 
 - Limite d'Isangi : enclave autour de Yangambi dans le RGC (contour simplifié) ; les points situés dans cette
@@ -120,6 +134,9 @@
   dépend de l'activation du fournisseur Google dans Supabase (voir DEPLOYMENT.md).
 
 ## Blocages / actions humaines
+
+- Malipo : renseigner sur Vercel `SUPABASE_SECRET_KEY`, `MALIPO_API_KEY` (sk_test_), `MALIPO_WEBHOOK_SECRET`,
+  `CRON_SECRET`, déclarer l'URL du webhook, lancer `scripts/malipo-sandbox-test.mjs` (voir MALIPO_INTEGRATION.md).
 
 - Paiement des abonnements fermé : renseigner `billing.manual_instructions` (Admin → Paramètres) avec les vrais
   moyens de paiement (numéros Mobile Money officiels, bénéficiaire). Aucun numéro n'est inventé par l'application.

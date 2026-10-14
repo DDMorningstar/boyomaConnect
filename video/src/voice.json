@@ -1,0 +1,270 @@
+[
+    {
+        "id":  "l1",
+        "words":  [
+                      {
+                          "text":  "Trouver",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "une",
+                          "ms":  671
+                      },
+                      {
+                          "text":  "adresse",
+                          "ms":  840
+                      },
+                      {
+                          "text":  "à",
+                          "ms":  1336
+                      },
+                      {
+                          "text":  "Kisangani",
+                          "ms":  1434
+                      },
+                      {
+                          "text":  "ça",
+                          "ms":  2900
+                      },
+                      {
+                          "text":  "coûte",
+                          "ms":  3187
+                      },
+                      {
+                          "text":  "combien",
+                          "ms":  3554
+                      }
+                  ],
+        "say":  "Trouver une adresse à Kisangani, ça coûte combien ?",
+        "show":  "Trouver une adresse à Kisangani, ça coûte combien ?",
+        "durationMs":  3804,
+        "file":  "voice/l1.wav"
+    },
+    {
+        "id":  "l2",
+        "words":  [
+                      {
+                          "text":  "Rien",
+                          "ms":  112
+                      }
+                  ],
+        "say":  "Rien.",
+        "show":  "Rien.",
+        "durationMs":  1207,
+        "file":  "voice/l2.wav"
+    },
+    {
+        "id":  "l3",
+        "words":  [
+                      {
+                          "text":  "Avec",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "Boyoma",
+                          "ms":  485
+                      },
+                      {
+                          "text":  "Connect",
+                          "ms":  1129
+                      },
+                      {
+                          "text":  "c\u0027est",
+                          "ms":  2125
+                      },
+                      {
+                          "text":  "gratuit",
+                          "ms":  2375
+                      }
+                  ],
+        "say":  "Avec Boyoma Connect, c\u0027est gratuit.",
+        "show":  "Avec Boyoma Connect, c\u0027est gratuit.",
+        "durationMs":  2986,
+        "file":  "voice/l3.wav"
+    },
+    {
+        "id":  "l4",
+        "words":  [
+                      {
+                          "text":  "Pharmacies",
+                          "ms":  114
+                      },
+                      {
+                          "text":  "hôtels",
+                          "ms":  1315
+                      },
+                      {
+                          "text":  "restaurants",
+                          "ms":  2224
+                      },
+                      {
+                          "text":  "garages",
+                          "ms":  3326
+                      }
+                  ],
+        "say":  "Pharmacies, hôtels, restaurants, garages...",
+        "show":  "Pharmacies, hôtels, restaurants, garages…",
+        "durationMs":  3727,
+        "file":  "voice/l4.wav"
+    },
+    {
+        "id":  "l5",
+        "words":  [
+                      {
+                          "text":  "Cherchez",
+                          "ms":  114
+                      },
+                      {
+                          "text":  "trouvez",
+                          "ms":  1114
+                      },
+                      {
+                          "text":  "appelez",
+                          "ms":  1961
+                      },
+                      {
+                          "text":  "directement",
+                          "ms":  2487
+                      }
+                  ],
+        "say":  "Cherchez, trouvez, appelez directement.",
+        "show":  "Cherchez, trouvez, appelez directement.",
+        "durationMs":  3183,
+        "file":  "voice/l5.wav"
+    },
+    {
+        "id":  "l6",
+        "words":  [
+                      {
+                          "text":  "Plus",
+                          "ms":  114
+                      },
+                      {
+                          "text":  "de",
+                          "ms":  447
+                      },
+                      {
+                          "text":  "deux",
+                          "ms":  607
+                      },
+                      {
+                          "text":  "cents",
+                          "ms":  822
+                      },
+                      {
+                          "text":  "lieux",
+                          "ms":  1129
+                      },
+                      {
+                          "text":  "dans",
+                          "ms":  1789
+                      },
+                      {
+                          "text":  "toute",
+                          "ms":  2011
+                      },
+                      {
+                          "text":  "la",
+                          "ms":  2323
+                      },
+                      {
+                          "text":  "Tchopo",
+                          "ms":  2472
+                      }
+                  ],
+        "say":  "Plus de deux cents lieux, dans toute la Tchopo.",
+        "show":  "Plus de 200 lieux, dans toute la Tshopo.",
+        "durationMs":  3004,
+        "file":  "voice/l6.wav"
+    },
+    {
+        "id":  "l7",
+        "words":  [
+                      {
+                          "text":  "Vous",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "avez",
+                          "ms":  341
+                      },
+                      {
+                          "text":  "un",
+                          "ms":  720
+                      },
+                      {
+                          "text":  "établissement",
+                          "ms":  932
+                      },
+                      {
+                          "text":  "Votre",
+                          "ms":  3178
+                      },
+                      {
+                          "text":  "fiche",
+                          "ms":  3646
+                      },
+                      {
+                          "text":  "aussi",
+                          "ms":  4136
+                      },
+                      {
+                          "text":  "est",
+                          "ms":  4660
+                      },
+                      {
+                          "text":  "gratuite",
+                          "ms":  4797
+                      }
+                  ],
+        "say":  "Vous avez un établissement ? Votre fiche aussi est gratuite.",
+        "show":  "Vous avez un établissement ? Votre fiche aussi est gratuite.",
+        "durationMs":  4834,
+        "file":  "voice/l7.wav"
+    },
+    {
+        "id":  "l8",
+        "words":  [
+                      {
+                          "text":  "Boyoma",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "Connect",
+                          "ms":  786
+                      },
+                      {
+                          "text":  "Toute",
+                          "ms":  2715
+                      },
+                      {
+                          "text":  "la",
+                          "ms":  3098
+                      },
+                      {
+                          "text":  "Tchopo",
+                          "ms":  3247
+                      },
+                      {
+                          "text":  "à",
+                          "ms":  4138
+                      },
+                      {
+                          "text":  "portée",
+                          "ms":  4255
+                      },
+                      {
+                          "text":  "de",
+                          "ms":  4777
+                      },
+                      {
+                          "text":  "main",
+                          "ms":  4934
+                      }
+                  ],
+        "say":  "Boyoma Connect. Toute la Tchopo, à portée de main.",
+        "show":  "Boyoma Connect. Toute la Tshopo, à portée de main.",
+        "durationMs":  4542,
+        "file":  "voice/l8.wav"
+    }
+]

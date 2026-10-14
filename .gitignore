@@ -14,3 +14,7 @@ next-env.d.ts
 supabase/.temp/
 video/out/
 video/public/screens/
+
+# Vidéos : voix et sons générés par scripts (video/scripts/voice.ps1, sfx.mjs)
+video/public/voice/
+video/public/sfx/

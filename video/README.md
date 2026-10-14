@@ -20,6 +20,43 @@ Règles : uniquement de vraies captures de l'application en production et de vra
 carte (OpenFreeMap, OpenMapTiles, OpenStreetMap) affichée. Pas de musique fournie : vidéo pensée pour une
 lecture sans son ; ajouter une piste libre de droits au montage si besoin.
 
+## « C'est gratuit » 30 s (9:16, 1:1, 16:9)
+
+Même montage décliné en trois formats (`src/Gratuit30.tsx`, mise en page adaptée à chaque format).
+Aucune mention de paiement ni de Mobile Money.
+
+| Temps   | Scène                                                                                |
+| ------- | ------------------------------------------------------------------------------------ |
+| 0–3 s   | « Trouver une adresse à Kisangani, ça coûte combien ? » → compteur jusqu'à **0 FC**  |
+| 3–7 s   | « Rien. » + tampon GRATUIT + nouveau logo et slogan                                  |
+| 7–13 s  | Visiteurs : recherche, appel et WhatsApp, itinéraire, sans inscription (capture)     |
+| 13–18 s | Chiffres réels : 200+ lieux, 44 catégories, Kisangani + 7 territoires (capture zone) |
+| 18–24 s | Établissements : « Votre fiche est gratuite » (photos, contacts, catalogue, horaires) |
+| 24–30 s | Logo, « 100 % gratuit », boyoma-connect.vercel.app                                   |
+
+Chiffres au 14/10/2026 (233 lieux publiés, 44 catégories). Fichiers produits : `out/boyoma-connect-gratuit-9x16.mp4`
+(statuts WhatsApp, Reels, TikTok, Shorts), `-1x1.mp4` (fil Facebook / Instagram), `-16x9.mp4` (YouTube, site).
+
+```bash
+node scripts/stills-gratuit.mjs   # images de contrôle des 3 formats (out/stills)
+npm run render:gratuit            # les 3 vidéos
+```
+
+## Voix 33 s (vertical 9:16, avec voix off)
+
+`src/Voix33.tsx` : voix Windows « Microsoft Hortense » (une piste par phrase, horodatage de chaque mot),
+sous-titres karaoké, lettres animées en 3D, impacts avec secousse, flashs, traînées lumineuses, particules,
+zoom caméra jusqu'au bouton Appeler réel. Son 100 % synthétisé (nappe 100 BPM, souffles, impacts) : aucun droit
+à acquérir. Aucune mention de paiement.
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/voice.ps1   # voix + src/voice.json (fichier en UTF-8 avec BOM)
+node scripts/sfx.mjs                                         # effets et nappe (public/sfx)
+npm run render:voix                                          # out/boyoma-connect-voix-9x16.mp4
+```
+
+Machine à 2 cœurs : les rendus utilisent `--gl=angle` (carte graphique), environ 2 fois plus rapide.
+
 ## Commandes
 
 ```bash

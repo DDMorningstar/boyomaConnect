@@ -12,8 +12,10 @@ import {
   MapPin,
   Route,
   Send,
+  Sparkles,
   Star,
   Tag,
+  Zap,
 } from "lucide-react";
 import { CategoryBadge, CategoryIcon } from "@/components/places/category-icon";
 import { IconCover, LogoCover } from "@/components/places/place-visual";
@@ -252,6 +254,14 @@ export default async function PlacePage({ params }: Props) {
               </Link>
             )}
             <VerificationBadge status={p.verification_status} />
+            {live.respondsFast && (
+              <span
+                className="bg-warning/15 text-warning inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
+                title={`Délai médian de réponse aux demandes : ${live.respondsFast.medianMinutes} min`}
+              >
+                <Zap className="size-3.5" aria-hidden="true" /> Répond vite
+              </span>
+            )}
             {p.activity_status === "temporarily_closed" && (
               <span className="bg-warning/15 text-warning rounded-full px-2 py-0.5 text-xs font-medium">
                 Fermé temporairement
@@ -312,6 +322,37 @@ export default async function PlacePage({ params }: Props) {
             locality={p.unit ? placeLocation(p.unit) : null}
           />
         </div>
+        {live.stories.length > 0 && (
+          <section aria-labelledby="aujourdhui" className="mt-4 space-y-2">
+            <h2
+              id="aujourdhui"
+              className="text-brand flex items-center gap-1.5 text-sm font-bold tracking-wide uppercase"
+            >
+              <Sparkles className="size-4" aria-hidden="true" /> Aujourd&apos;hui chez {p.name}
+            </h2>
+            <ul className="flex snap-x scrollbar-none gap-3 overflow-x-auto pb-1">
+              {live.stories.map((st) => (
+                <li
+                  key={st.id}
+                  className="border-brand/30 from-brand/10 to-cyan/10 w-72 shrink-0 snap-start overflow-hidden rounded-[var(--radius-card)] border bg-gradient-to-br"
+                >
+                  {st.photo_path && (
+                    <div className="bg-surface-2 relative aspect-[16/9]">
+                      <Image
+                        src={placeMediaUrl(st.photo_path)!}
+                        alt=""
+                        fill
+                        sizes="288px"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <p className="p-3 text-[15px] font-medium">{st.body}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         <StickyPlaceActions
           placeId={p.id}
           name={p.name}

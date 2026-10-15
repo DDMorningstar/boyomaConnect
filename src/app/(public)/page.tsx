@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronRight,
@@ -25,7 +26,9 @@ import {
   searchPlaces,
 } from "@/features/places/queries";
 import { resolveZone } from "@/features/zones/queries";
-import { getActivePromotions } from "@/features/places/engagement";
+import { getActivePromotions, getActiveStories } from "@/features/places/engagement";
+import { VerifiedMark, isBoyomaVerified } from "@/components/places/verification-badge";
+import { placeMediaUrl } from "@/lib/supabase/storage";
 import { zoneIn, zoneLabel, zoneTitle } from "@/features/zones/zones";
 import { searchParamsSchema } from "@/lib/search-params";
 import { formatDate, pluralize } from "@/lib/format";
@@ -47,17 +50,20 @@ export default async function HomePage({
   const unitId = zone?.id;
   const defaults = searchParamsSchema.parse({});
 
-  const [catsR, cityR, recentR, popularR, sponsoredR, tourismR, allR, offersR] = await Promise.allSettled([
-    getCategoriesWithCounts(unitId),
-    zone?.type_key === "ville" ? getCityWithCommunes(zone.slug) : Promise.resolve(null),
-    getRecentPlaces(8, unitId),
-    getPopularPlaces(8, unitId),
-    getSponsoredPlaces(),
-    searchPlaces({ ...defaults, categorySlug: "tourisme", unitId }),
-    searchPlaces({ ...defaults, unitId }),
-    getActivePromotions(6, unitId),
-  ]);
+  const [catsR, cityR, recentR, popularR, sponsoredR, tourismR, allR, offersR, storiesR] =
+    await Promise.allSettled([
+      getCategoriesWithCounts(unitId),
+      zone?.type_key === "ville" ? getCityWithCommunes(zone.slug) : Promise.resolve(null),
+      getRecentPlaces(8, unitId),
+      getPopularPlaces(8, unitId),
+      getSponsoredPlaces(),
+      searchPlaces({ ...defaults, categorySlug: "tourisme", unitId }),
+      searchPlaces({ ...defaults, unitId }),
+      getActivePromotions(6, unitId),
+      getActiveStories(10, unitId),
+    ]);
   const offers = settled(offersR, []);
+  const stories = settled(storiesR, []);
   const categories = settled(catsR, []);
   const city = settled(cityR, null);
   const recent = settled(recentR, []);
@@ -251,6 +257,45 @@ export default async function HomePage({
                   {s.short_description && (
                     <span className="text-muted line-clamp-2 text-sm">{s.short_description}</span>
                   )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Nouveautés du jour (24 h), publiées par les établissements */}
+      {stories.length > 0 && (
+        <Section title="Nouveautés du jour" subtitle="Publiées par les établissements, visibles 24 h.">
+          <ul className="-mx-4 flex snap-x scrollbar-none gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:px-0">
+            {stories.map((st) => (
+              <li key={st.id} className="w-64 shrink-0 snap-start">
+                <Link
+                  href={`/lieux/${st.place_slug}`}
+                  className="border-line bg-surface hover:border-brand/40 flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border shadow-[var(--shadow-card)]"
+                >
+                  {st.photo_path ? (
+                    <div className="bg-surface-2 relative aspect-[16/10]">
+                      <Image
+                        src={placeMediaUrl(st.photo_path)!}
+                        alt=""
+                        fill
+                        sizes="256px"
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="from-brand to-cyan h-1.5 bg-gradient-to-r" />
+                  )}
+                  <div className="flex flex-1 flex-col gap-1.5 p-3.5">
+                    <span className="text-sm font-semibold">
+                      {st.place_name}
+                      {isBoyomaVerified(st.verification_status) && (
+                        <VerifiedMark size={15} className="ml-1" />
+                      )}
+                    </span>
+                    <span className="text-muted line-clamp-3 text-sm">{st.body}</span>
+                  </div>
                 </Link>
               </li>
             ))}

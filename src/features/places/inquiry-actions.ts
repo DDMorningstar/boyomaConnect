@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { sendPushToPlace } from "@/lib/push";
 
 /**
  * Demande d'un visiteur à un établissement (décision D32) : un message, pas une commande. L'envoi
@@ -69,5 +70,12 @@ export async function sendInquiry(_: InquiryState, form: FormData): Promise<Inqu
       error:
         MESSAGES[error.code ?? ""] ?? "Envoi impossible. Réessayez ou contactez directement l'établissement.",
     };
+  // Notification push aux gestionnaires (sans bloquer le visiteur en cas d'échec).
+  await sendPushToPlace(v.place_id, {
+    title: v.item_id ? "Nouvelle demande sur un article" : "Nouvelle demande d'un client",
+    body: `${v.name} : ${v.message}`,
+    url: `/espace-pro/lieux/${v.place_id}/demandes`,
+    tag: "inquiry",
+  }).catch(() => undefined);
   return { ok: "Message envoyé : l'établissement vous recontactera directement." };
 }

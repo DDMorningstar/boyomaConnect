@@ -5,7 +5,7 @@
  *  - Images Supabase publiques : cache limité (60 entrées).
  *  - JAMAIS de cache pour l'API Supabase (données à jour, données privées), l'auth ou les requêtes non-GET.
  */
-const VERSION = "v3";
+const VERSION = "v4";
 const STATIC_CACHE = `boyoma-static-${VERSION}`;
 const PAGES_CACHE = `boyoma-pages-${VERSION}`;
 const IMAGES_CACHE = `boyoma-images-${VERSION}`;
@@ -112,4 +112,41 @@ self.addEventListener("fetch", (event) => {
       })(),
     );
   }
+});
+
+// Notifications push (nouvelles demandes de clients, bilan de la semaine).
+self.addEventListener("push", (event) => {
+  let data = { title: "Boyoma Connect", body: "", url: "/notifications" };
+  try {
+    data = { ...data, ...event.data.json() };
+  } catch {
+    /* charge utile illisible : notification générique */
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: data.tag,
+      data: { url: data.url },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL((event.notification.data && event.notification.data.url) || "/notifications", self.location.origin);
+  if (target.origin !== self.location.origin) return; // jamais vers un autre site
+  event.waitUntil(
+    (async () => {
+      const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const c of all) {
+        if ("focus" in c) {
+          await c.navigate(target.href).catch(() => undefined);
+          return c.focus();
+        }
+      }
+      return self.clients.openWindow(target.href);
+    })(),
+  );
 });

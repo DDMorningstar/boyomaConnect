@@ -25,6 +25,20 @@ export interface ActivePromotion {
   unit_name: string | null;
 }
 
+export interface PlaceStory {
+  id: string;
+  body: string;
+  photo_path: string | null;
+  created_at: string;
+  expires_at: string;
+}
+export interface ActiveStory extends PlaceStory {
+  place_slug: string;
+  place_name: string;
+  logo_path: string | null;
+  verification_status: string;
+}
+
 export const kisanganiToday = (offsetDays = 0) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lubumbashi" }).format(
     new Date(Date.now() + offsetDays * 86_400_000),
@@ -32,7 +46,7 @@ export const kisanganiToday = (offsetDays = 0) =>
 
 export async function getPlaceLiveInfo(placeId: string) {
   const supabase = await createSupabaseServerClient();
-  const [special, promos] = await Promise.all([
+  const [special, promos, stories, response] = await Promise.all([
     supabase
       .from("place_special_hours")
       .select("date, opens_at, closes_at, is_closed, note")
@@ -42,10 +56,25 @@ export async function getPlaceLiveInfo(placeId: string) {
       .order("date")
       .overrideTypes<SpecialHour[], { merge: false }>(),
     supabase.rpc("active_promotions", { p_place_id: placeId, p_limit: 3 }),
+    supabase
+      .from("place_stories")
+      .select("id, body, photo_path, created_at, expires_at")
+      .eq("place_id", placeId)
+      .eq("status", "published")
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(3)
+      .overrideTypes<PlaceStory[], { merge: false }>(),
+    supabase.rpc("place_response_stats", { p_place_id: placeId }),
   ]);
+  const rs = ((response.data as
+    { answered: number; median_minutes: number | null; fast: boolean }[] | null) ?? [])[0];
   return {
     specialHours: special.data ?? [],
     promotions: (promos.data as ActivePromotion[] | null) ?? [],
+    stories: stories.data ?? [],
+    /** Badge « Répond vite » : délai médian de réponse aux demandes ≤ 2 h (3 demandes traitées au moins). */
+    respondsFast: rs?.fast === true ? { medianMinutes: rs.median_minutes ?? 0 } : null,
   };
 }
 
@@ -85,4 +114,11 @@ export async function getMyReviewState(placeId: string) {
       .maybeSingle(),
   ]);
   return { signedIn: true as const, isManager: Boolean(manager.data), review: review.data ?? null };
+}
+
+/** Nouveautés du jour (accueil), les plus récentes d'abord. */
+export async function getActiveStories(limit = 10, unitId?: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("active_stories", { p_limit: limit, p_unit_id: unitId ?? null });
+  return (data as ActiveStory[] | null) ?? [];
 }

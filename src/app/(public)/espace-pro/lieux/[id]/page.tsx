@@ -23,6 +23,8 @@ import {
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { Empty, Panel, dateTime } from "./ui";
 import { ViewsChart } from "./views-chart";
+import { StoryComposer, type OwnerStory } from "./story-composer";
+import { PushToggle } from "@/components/push/push-toggle";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ p?: string }> };
 
@@ -43,10 +45,19 @@ export default async function ConsoleDashboard({ params, searchParams }: Props) 
   const requested = Number((await searchParams).p);
   const days = requested === 7 || requested === 90 ? requested : 30;
   const supabase = await createSupabaseServerClient();
-  const [{ stats, error }, inquiries, openNow] = await Promise.all([
+  const [{ stats, error }, inquiries, openNow, stories] = await Promise.all([
     getPlaceStats(place.id, days),
     getInquiries(place.id),
     supabase.rpc("is_place_open_at", { p_place_id: place.id }).then((r) => r.data as boolean | null),
+    supabase
+      .from("place_stories")
+      .select("id, body, photo_path, created_at, expires_at")
+      .eq("place_id", place.id)
+      .eq("status", "published")
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .overrideTypes<OwnerStory[], { merge: false }>()
+      .then((r) => r.data ?? []),
   ]);
   const { score, steps } = completeness(place);
   const base = `/espace-pro/lieux/${place.id}`;
@@ -89,6 +100,14 @@ export default async function ConsoleDashboard({ params, searchParams }: Props) 
           tone="muted"
         />
       </div>
+
+      <Panel
+        title="Nouveauté du jour"
+        description="Un plat du jour, un arrivage, un horaire spécial… visible 24 h sur votre fiche et dans « Nouveautés du jour » à l'accueil."
+      >
+        <StoryComposer placeId={place.id} stories={stories} />
+      </Panel>
+      <PushToggle />
 
       {/* Performance */}
       <Panel

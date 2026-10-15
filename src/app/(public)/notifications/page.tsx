@@ -4,6 +4,7 @@ import { Bell, ChevronRight } from "lucide-react";
 import { requireUser } from "@/features/auth/session";
 import { getNotifications } from "@/features/owner/business";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { PushToggle } from "@/components/push/push-toggle";
 
 export const metadata: Metadata = { title: "Notifications", robots: { index: false } };
 
@@ -27,6 +28,7 @@ export default async function NotificationsPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-4 pt-6 pb-4">
       <h1 className="text-2xl font-extrabold tracking-tight">Notifications</h1>
+      <PushToggle compact />
       {items.length === 0 ? (
         <div className="border-line text-muted flex flex-col items-center gap-2 rounded-2xl border border-dashed p-8 text-center text-sm">
           <Bell className="size-6" aria-hidden="true" />

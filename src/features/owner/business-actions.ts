@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/features/auth/session";
+import { ImageError, optimizeImage } from "@/lib/images";
 
 /**
  * Actions de la console « gérer son business » (décision D32). Chaque action revérifie la session ;
@@ -396,4 +397,56 @@ export async function markNotificationsRead(_: BizState, form: FormData): Promis
   if (error) return { error: "Action impossible." };
   revalidatePath("/notifications");
   return { ok: "Notifications marquées comme lues." };
+}
+
+// ------------------------------------------------------------------ nouveauté du jour (24 h)
+/** Publie une nouveauté visible 24 h (texte, photo facultative optimisée, sans métadonnées). */
+export async function publishStory(_: BizState, form: FormData): Promise<BizState> {
+  try {
+    const { supabase, placeId, user } = await session(form);
+    const body = text(form, "body");
+    if (body.length < 3 || body.length > 200) return { error: "Texte : 3 à 200 caractères." };
+    let photoPath: string | null = null;
+    const file = form.get("photo");
+    if (file instanceof File && file.size > 0) {
+      const image = await optimizeImage(file, "photo");
+      photoPath = `places/${placeId}/stories/${randomUUID()}.webp`;
+      const { error: up } = await supabase.storage
+        .from("place-media")
+        .upload(photoPath, image.data, { contentType: image.contentType, cacheControl: "31536000" });
+      if (up) return { error: "Envoi de la photo impossible. Réessayez." };
+    }
+    const { error } = await supabase
+      .from("place_stories")
+      .insert({ place_id: placeId, author_id: user.id, body, photo_path: photoPath });
+    if (error) {
+      if (photoPath) await supabase.storage.from("place-media").remove([photoPath]);
+      throw error;
+    }
+    revalidatePath("/");
+    return done(placeId, "", "Nouveauté publiée : visible 24 h sur votre fiche et à l'accueil.");
+  } catch (e) {
+    if (e instanceof ImageError) return { error: e.message };
+    return fail(e);
+  }
+}
+
+export async function deleteStory(_: BizState, form: FormData): Promise<BizState> {
+  try {
+    const { supabase, placeId } = await session(form);
+    const id = uuid.parse(text(form, "id"));
+    const { data } = await supabase
+      .from("place_stories")
+      .select("photo_path")
+      .eq("id", id)
+      .eq("place_id", placeId)
+      .maybeSingle<{ photo_path: string | null }>();
+    const { error } = await supabase.from("place_stories").delete().eq("id", id).eq("place_id", placeId);
+    if (error) throw error;
+    if (data?.photo_path) await supabase.storage.from("place-media").remove([data.photo_path]);
+    revalidatePath("/");
+    return done(placeId, "", "Nouveauté retirée.");
+  } catch (e) {
+    return fail(e);
+  }
 }

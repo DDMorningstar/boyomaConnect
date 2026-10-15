@@ -6,6 +6,7 @@ import { getStatusCardData } from "@/features/places/queries";
 import { placeLocation } from "@/features/zones/zones";
 import { env } from "@/lib/env";
 import { placeMediaUrl } from "@/lib/supabase/storage";
+import { VerifiedMark, isBoyomaVerified } from "@/components/places/verification-badge";
 import { PrintButton } from "./print-button";
 
 export const metadata: Metadata = { title: "Affiche QR", robots: { index: false } };
@@ -44,7 +45,15 @@ export default async function PosterPage({ params }: Props) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logo} alt="" className="mt-[8mm] size-[22mm] rounded-2xl object-cover" />
         )}
-        <h1 className="mt-[5mm] text-[26pt] leading-tight font-extrabold">{p.name}</h1>
+        <h1 className="mt-[5mm] text-[26pt] leading-tight font-extrabold">
+          {p.name}
+          {isBoyomaVerified(p.verification_status) && <VerifiedMark size={34} className="ml-2" />}
+        </h1>
+        {isBoyomaVerified(p.verification_status) && (
+          <p className="mt-1 text-[10pt] font-semibold text-sky-600">
+            Établissement vérifié par Boyoma Connect
+          </p>
+        )}
         <p className="mt-1 text-[12pt] text-slate-600">
           {p.primary_category?.name ?? "Établissement"} · {placeLocation(p.unit)}
         </p>

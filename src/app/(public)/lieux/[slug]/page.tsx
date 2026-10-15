@@ -18,7 +18,7 @@ import {
 import { CategoryBadge, CategoryIcon } from "@/components/places/category-icon";
 import { IconCover, LogoCover } from "@/components/places/place-visual";
 import { CoverPhotoButton, PhotoStrip, type ViewerPhoto } from "@/components/places/photo-viewer";
-import { VerificationBadge } from "@/components/places/verification-badge";
+import { VerificationBadge, VerifiedMark, isBoyomaVerified } from "@/components/places/verification-badge";
 import { PlaceActions, StickyPlaceActions } from "@/components/places/place-actions";
 import { OpeningHours } from "@/components/places/opening-hours";
 import { CatalogSection } from "@/components/places/catalog-section";
@@ -253,6 +253,7 @@ export default async function PlacePage({ params }: Props) {
             <div className="min-w-0">
               <h1 className="text-[1.65rem] leading-tight font-extrabold tracking-tight md:text-3xl">
                 {p.name}
+                {isBoyomaVerified(p.verification_status) && <VerifiedMark size={26} className="ml-1.5" />}
               </h1>
               {p.ownership_status === "claimed" && (
                 <p className="text-success mt-0.5 flex items-center gap-1 text-sm font-medium">
@@ -293,6 +294,8 @@ export default async function PlacePage({ params }: Props) {
             whatsapp={whatsapp}
             latitude={p.latitude}
             longitude={p.longitude}
+            address={p.address_text}
+            locality={p.unit ? placeLocation(p.unit) : null}
           />
         </div>
         <StickyPlaceActions
@@ -444,6 +447,7 @@ export default async function PlacePage({ params }: Props) {
                       <p className="bg-surface-2 mt-2 rounded-xl p-3 text-sm">
                         <span className="font-semibold">
                           Réponse de l&apos;établissement
+                          {isBoyomaVerified(p.verification_status) && <VerifiedMark size={15} className="ml-1" />}
                           {r.owner_response_at && (
                             <span className="text-muted font-normal">
                               {" "}

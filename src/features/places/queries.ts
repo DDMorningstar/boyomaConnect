@@ -232,6 +232,7 @@ export async function getPublicReviews(placeId: string, limit = 10): Promise<Pub
 
 export interface ShareCardData {
   name: string;
+  verification_status: string;
   logo_path: string | null;
   cover_path: string | null;
   ownership_status: string;
@@ -249,7 +250,7 @@ export async function getShareCardData(slug: string): Promise<ShareCardData | nu
   const { data } = await supabase
     .from("places")
     .select(
-      `name, logo_path, cover_path, ownership_status,
+      `name, logo_path, cover_path, ownership_status, verification_status,
        primary_category:categories!places_primary_category_id_fkey (name, color),
        unit:geographic_units!places_administrative_unit_id_fkey (name, type_key,
          parent:parent_id (name, type_key)),
@@ -288,7 +289,7 @@ export async function getStatusCardData(slug: string): Promise<StatusCardData | 
   const { data } = await supabase
     .from("places")
     .select(
-      `slug, name, logo_path, cover_path, ownership_status,
+      `slug, name, logo_path, cover_path, ownership_status, verification_status,
        primary_category:categories!places_primary_category_id_fkey (name, color),
        unit:geographic_units!places_administrative_unit_id_fkey (name, type_key,
          parent:parent_id (name, type_key)),
@@ -315,4 +316,49 @@ export async function getPublishedPlaceSlugs(limit = 5000) {
     .limit(limit);
   if (error) throw new DataError("Impossible de générer le sitemap", error);
   return data ?? [];
+}
+
+/** Fiches publiées d'une collection partagée (ordre de la liste conservé, 30 au plus). */
+export async function getPlacesBySlugs(slugs: string[]) {
+  const clean = [
+    ...new Set(slugs.filter((s) => /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s) && s.length <= 120)),
+  ].slice(0, 30);
+  if (!clean.length) return [];
+  const supabase = createSupabasePublicClient();
+  const { data } = await supabase
+    .from("places")
+    .select(
+      `slug, name, short_description, landmark_description, cover_path, logo_path, rating_avg, rating_count,
+       latitude, longitude, verification_status,
+       primary_category:categories!places_primary_category_id_fkey (name, icon, color),
+       unit:geographic_units!places_administrative_unit_id_fkey (name)`,
+    )
+    .in("slug", clean)
+    .eq("publication_status", "published");
+  type Row = {
+    slug: string;
+    name: string;
+    short_description: string | null;
+    landmark_description: string | null;
+    cover_path: string | null;
+    logo_path: string | null;
+    rating_avg: number | null;
+    rating_count: number | null;
+    latitude: number | null;
+    longitude: number | null;
+    verification_status: PlaceSearchRow["verification_status"];
+    primary_category: { name: string; icon: string; color: string } | null;
+    unit: { name: string } | null;
+  };
+  const rows = (data as Row[] | null) ?? [];
+  return clean
+    .map((s) => rows.find((r) => r.slug === s))
+    .filter((r): r is Row => Boolean(r))
+    .map((r) => ({
+      ...r,
+      category_name: r.primary_category?.name ?? null,
+      category_icon: r.primary_category?.icon ?? null,
+      category_color: r.primary_category?.color ?? null,
+      unit_name: r.unit?.name ?? null,
+    }));
 }

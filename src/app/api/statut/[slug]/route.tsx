@@ -5,6 +5,8 @@ import { getStatusCardData } from "@/features/places/queries";
 import { placeLocation } from "@/features/zones/zones";
 import { env } from "@/lib/env";
 import { toDataUri } from "@/lib/og-image";
+import { OgVerifiedSeal } from "@/components/places/verified-seal-og";
+import { isBoyomaVerified } from "@/components/places/verification-badge";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 
 /**
@@ -133,9 +135,20 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
           </div>
         </div>
         <div
-          style={{ fontSize: title.length > 40 ? 72 : 92, fontWeight: 800, lineHeight: 1.05, marginTop: 36 }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            fontSize: title.length > 40 ? 72 : 92,
+            fontWeight: 800,
+            lineHeight: 1.05,
+            marginTop: 36,
+          }}
         >
           {title}
+          {!item && isBoyomaVerified(p.verification_status) && (
+            <OgVerifiedSeal size={title.length > 40 ? 64 : 80} />
+          )}
         </div>
         {price && (
           <div

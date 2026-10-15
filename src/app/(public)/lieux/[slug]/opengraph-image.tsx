@@ -3,6 +3,8 @@ import { getShareCardData } from "@/features/places/queries";
 import { placeLocation } from "@/features/zones/zones";
 import { formatPrice } from "@/lib/format";
 import { toDataUri } from "@/lib/og-image";
+import { OgVerifiedSeal } from "@/components/places/verified-seal-og";
+import { isBoyomaVerified } from "@/components/places/verification-badge";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 
 // Image de partage (WhatsApp, Facebook, X…) : nom, logo, catégorie, téléphone et prix de la fiche.
@@ -95,8 +97,19 @@ export default async function OgImage({ params }: { params: Promise<{ slug: stri
               />
             )}
             <div style={{ display: "flex", flexDirection: "column", maxWidth: logo ? 880 : 1050 }}>
-              <div style={{ fontSize: name.length > 32 ? 58 : 72, fontWeight: 800, lineHeight: 1.05 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: name.length > 32 ? 58 : 72,
+                  fontWeight: 800,
+                  lineHeight: 1.05,
+                }}
+              >
                 {name}
+                {isBoyomaVerified(p?.verification_status) && (
+                  <OgVerifiedSeal size={name.length > 32 ? 52 : 64} />
+                )}
               </div>
               <div style={{ display: "flex", fontSize: 30, marginTop: 12, opacity: 0.9 }}>
                 <span style={{ color: accent === "#2563EB" ? "#93C5FD" : accent, fontWeight: 700 }}>

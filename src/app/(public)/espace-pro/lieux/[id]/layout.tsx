@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
+import { VerifiedMark, isBoyomaVerified } from "@/components/places/verification-badge";
 import { Avatar } from "@/components/ui/avatar";
 import { requireUser } from "@/features/auth/session";
 import { countNewInquiries, getConsolePlace } from "@/features/owner/business";
@@ -38,8 +39,7 @@ export default async function ConsoleLayout({
       .then((r) => (r.data as string | null) ?? "free"),
   ]);
   const base = `/espace-pro/lieux/${place.id}`;
-  const verified =
-    place.verification_status !== "unverified" && place.verification_status !== "community_reported";
+  const verified = isBoyomaVerified(place.verification_status);
 
   return (
     <div className="pt-5 pb-4">
@@ -51,7 +51,7 @@ export default async function ConsoleLayout({
         <div className="min-w-0 flex-1">
           <h1 className="flex items-center gap-1.5 truncate text-xl font-extrabold tracking-tight md:text-2xl">
             <span className="truncate">{place.name}</span>
-            {verified && <BadgeCheck className="text-success size-5 shrink-0" aria-label="Vérifiée" />}
+            {verified && <VerifiedMark size={22} />}
           </h1>
           <p className="text-muted text-sm">
             {place.primary_category?.name ?? "Établissement"} ·{" "}

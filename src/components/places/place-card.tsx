@@ -1,6 +1,6 @@
 import { MapPin, Star } from "lucide-react";
 import { PlaceThumb } from "@/components/places/place-visual";
-import { VerificationBadge } from "@/components/places/verification-badge";
+import { VerificationBadge, VerifiedMark, isBoyomaVerified } from "@/components/places/verification-badge";
 import { DistanceBadge, PlaceLink } from "@/components/places/place-card-client";
 import { placeMediaUrl } from "@/lib/supabase/storage";
 import type { VerificationStatus } from "@/types/places";
@@ -81,7 +81,10 @@ export function PlaceCard({
           />
         </div>
         <div className="flex flex-1 flex-col gap-1 p-3.5">
-          <h3 className="line-clamp-1 font-semibold">{place.name}</h3>
+          <h3 className="line-clamp-1 font-semibold">
+            {place.name}
+            {isBoyomaVerified(place.verification_status) && <VerifiedMark size={16} className="ml-1" />}
+          </h3>
           <p className="text-muted line-clamp-1 text-sm">
             {[place.category_name, place.unit_name].filter(Boolean).join(" · ") || "Tshopo"}
           </p>
@@ -106,7 +109,10 @@ export function PlaceCard({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 leading-snug font-semibold">{place.name}</h3>
+          <h3 className="line-clamp-2 leading-snug font-semibold">
+            {place.name}
+            {isBoyomaVerified(place.verification_status) && <VerifiedMark size={17} className="ml-1" />}
+          </h3>
           <DistanceBadge
             latitude={place.latitude}
             longitude={place.longitude}

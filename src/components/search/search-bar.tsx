@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, MapPin, Search, Tag, X } from "lucide-react";
+import { Loader2, MapPin, Mic, Search, Tag, X } from "lucide-react";
+import { haptic } from "@/lib/haptics";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { addRecentSearch } from "@/features/search/recent-searches";
 
@@ -11,6 +12,27 @@ interface Suggestion {
   sublabel: string | null;
   slug: string;
   ref_id: string;
+}
+
+type Recognition = {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+type RecognitionCtor = new () => Recognition;
+/** Reconnaissance vocale du navigateur (Chrome Android notamment) ; null si indisponible. */
+function speechCtor(): RecognitionCtor | null {
+  if (typeof window === "undefined") return null;
+  const w = window as unknown as {
+    SpeechRecognition?: RecognitionCtor;
+    webkitSpeechRecognition?: RecognitionCtor;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
 /** Barre de recherche avec suggestions instantanées (debounce 220 ms, annulation des requêtes obsolètes). */
@@ -31,6 +53,48 @@ export function SearchBar({
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(-1);
   const abortRef = useRef<AbortController | null>(null);
+  const [canSpeak, setCanSpeak] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const recRef = useRef<Recognition | null>(null);
+
+  useEffect(() => setCanSpeak(speechCtor() !== null), []);
+
+  function listen() {
+    const Ctor = speechCtor();
+    if (!Ctor) return;
+    if (listening) {
+      recRef.current?.stop();
+      return;
+    }
+    haptic();
+    setVoiceError(null);
+    const rec = new Ctor();
+    rec.lang = "fr-FR";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.onresult = (e) => {
+      const text = e.results[0]?.[0]?.transcript?.trim() ?? "";
+      if (text) {
+        setValue(text);
+        submit(text);
+      }
+    };
+    rec.onerror = (e) =>
+      setVoiceError(
+        e.error === "not-allowed"
+          ? "Autorisez le micro pour chercher à la voix."
+          : "Je n'ai pas compris, réessayez.",
+      );
+    rec.onend = () => setListening(false);
+    recRef.current = rec;
+    setListening(true);
+    try {
+      rec.start();
+    } catch {
+      setListening(false);
+    }
+  }
 
   useEffect(() => {
     const q = value.trim();
@@ -137,9 +201,24 @@ export function SearchBar({
           >
             <X className="size-4" />
           </button>
+        ) : canSpeak ? (
+          <button
+            type="button"
+            onClick={listen}
+            aria-pressed={listening}
+            aria-label={listening ? "Arrêter l'écoute" : "Chercher à la voix"}
+            className={`rounded-full p-2 transition-colors ${listening ? "bg-brand text-white motion-safe:animate-pulse" : "text-muted hover:bg-surface-2"}`}
+          >
+            <Mic className="size-5" aria-hidden="true" />
+          </button>
         ) : null}
       </div>
 
+      {(listening || voiceError) && (
+        <p role="status" className="text-muted mt-2 text-center text-sm">
+          {listening ? "Je vous écoute… dites par exemple « pharmacie Makiso »." : voiceError}
+        </p>
+      )}
       {open && items.length > 0 && (
         <ul
           id={listId}

@@ -1,10 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, Heart, MessageCircle, Navigation, Phone, Share2 } from "lucide-react";
+import { Bike, Check, Heart, MessageCircle, Navigation, Phone, Share2 } from "lucide-react";
 import { recordPlaceEvent } from "@/features/places/events";
 import { useFavorites, type FavoriteSnapshot } from "@/features/favorites/store";
 import { toWhatsAppNumber } from "@/lib/format";
+import { haptic } from "@/lib/haptics";
 
 interface Props {
   place: Omit<FavoriteSnapshot, "saved_at">;
@@ -12,10 +13,31 @@ interface Props {
   whatsapp: string | null;
   latitude: number | null;
   longitude: number | null;
+  /** Adresse et localité, pour le message envoyé à un taxi-moto. */
+  address?: string | null;
+  locality?: string | null;
+}
+
+/** Message WhatsApp « emmenez-moi ici » (taxi-moto, ami) : nom, repère, adresse, position. */
+export function rideMessage(p: {
+  name: string;
+  landmark?: string | null;
+  address?: string | null;
+  locality?: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}) {
+  const lines = [`Bonjour, pouvez-vous m'emmener à : ${p.name}`];
+  if (p.landmark) lines.push(`Repère : ${p.landmark}`);
+  if (p.address) lines.push(`Adresse : ${p.address}`);
+  if (p.locality) lines.push(p.locality);
+  if (p.latitude != null && p.longitude != null)
+    lines.push(`Position : https://maps.google.com/?q=${p.latitude},${p.longitude}`);
+  return lines.join("\n");
 }
 
 /** Actions principales d'une fiche. Chaque bouton déclenche une action réelle. */
-export function PlaceActions({ place, phone, whatsapp, latitude, longitude }: Props) {
+export function PlaceActions({ place, phone, whatsapp, latitude, longitude, address, locality }: Props) {
   const { isFavorite, toggle } = useFavorites();
   const fav = isFavorite(place.id);
   const [shared, setShared] = useState(false);
@@ -42,97 +64,130 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude }: Pr
     "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 text-xs font-medium transition-transform active:scale-95";
   const circle = "flex size-12 items-center justify-center rounded-full";
 
+  const canRide = hasCoords || Boolean(place.landmark_description) || Boolean(address);
+  const ride = canRide
+    ? `https://wa.me/?text=${encodeURIComponent(rideMessage({ name: place.name, landmark: place.landmark_description, address, locality, latitude, longitude }))}`
+    : null;
+
   return (
-    <div className="border-line bg-surface grid grid-cols-5 gap-1 rounded-[var(--radius-card)] border p-2 shadow-[var(--shadow-card)]">
-      {phone ? (
-        <a
-          href={`tel:${phone.replace(/\s/g, "")}`}
-          onClick={() => recordPlaceEvent(place.id, "phone_click")}
+    <div className="space-y-2">
+      <div className="border-line bg-surface grid grid-cols-5 gap-1 rounded-[var(--radius-card)] border p-2 shadow-[var(--shadow-card)]">
+        {phone ? (
+          <a
+            href={`tel:${phone.replace(/\s/g, "")}`}
+            onClick={() => {
+              haptic();
+              recordPlaceEvent(place.id, "phone_click");
+            }}
+            className={item}
+          >
+            <span className={`${circle} bg-brand text-white`}>
+              <Phone className="size-5" aria-hidden="true" />
+            </span>
+            Appeler
+          </a>
+        ) : (
+          <span className={`${item} opacity-40`} aria-disabled="true" title="Numéro non renseigné">
+            <span className={`${circle} bg-surface-2`}>
+              <Phone className="size-5" aria-hidden="true" />
+            </span>
+            Appeler
+          </span>
+        )}
+        {wa ? (
+          <a
+            href={`https://wa.me/${wa}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              haptic();
+              recordPlaceEvent(place.id, "whatsapp_click");
+            }}
+            className={item}
+          >
+            <span className={`${circle} bg-[#25D366] text-white`}>
+              <MessageCircle className="size-5" aria-hidden="true" />
+            </span>
+            WhatsApp
+          </a>
+        ) : (
+          <span className={`${item} opacity-40`} aria-disabled="true" title="WhatsApp non renseigné">
+            <span className={`${circle} bg-surface-2`}>
+              <MessageCircle className="size-5" aria-hidden="true" />
+            </span>
+            WhatsApp
+          </span>
+        )}
+        {hasCoords ? (
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              haptic();
+              recordPlaceEvent(place.id, "directions_request");
+            }}
+            className={item}
+          >
+            <span className={`${circle} bg-night dark:bg-surface-2 text-white`}>
+              <Navigation className="size-5" aria-hidden="true" />
+            </span>
+            Itinéraire
+          </a>
+        ) : (
+          <span className={`${item} opacity-40`} aria-disabled="true" title="Position GPS non renseignée">
+            <span className={`${circle} bg-surface-2`}>
+              <Navigation className="size-5" aria-hidden="true" />
+            </span>
+            Itinéraire
+          </span>
+        )}
+        <button type="button" onClick={share} className={item}>
+          <span className={`${circle} bg-surface-2`}>
+            {shared ? (
+              <Check className="text-success size-5" aria-hidden="true" />
+            ) : (
+              <Share2 className="size-5" aria-hidden="true" />
+            )}
+          </span>
+          {shared ? "Lien copié" : "Partager"}
+        </button>
+        <button
+          type="button"
+          aria-pressed={fav}
+          onClick={() => {
+            if (toggle(place)) {
+              haptic("success");
+              recordPlaceEvent(place.id, "favorite_add");
+            } else haptic();
+          }}
           className={item}
         >
-          <span className={`${circle} bg-brand text-white`}>
-            <Phone className="size-5" aria-hidden="true" />
+          <span
+            className={`${circle} transition-colors ${fav ? "bg-rose-500/15 text-rose-500" : "bg-surface-2"}`}
+          >
+            <Heart
+              className={`size-5 transition-transform ${fav ? "scale-110 fill-current" : ""}`}
+              aria-hidden="true"
+            />
           </span>
-          Appeler
-        </a>
-      ) : (
-        <span className={`${item} opacity-40`} aria-disabled="true" title="Numéro non renseigné">
-          <span className={`${circle} bg-surface-2`}>
-            <Phone className="size-5" aria-hidden="true" />
-          </span>
-          Appeler
-        </span>
-      )}
-      {wa ? (
+          {fav ? "Enregistré" : "Favori"}
+        </button>
+      </div>
+      {ride && (
         <a
-          href={`https://wa.me/${wa}`}
+          href={ride}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => recordPlaceEvent(place.id, "whatsapp_click")}
-          className={item}
+          onClick={() => {
+            haptic();
+            recordPlaceEvent(place.id, "share");
+          }}
+          className="border-line bg-surface hover:bg-surface-2 flex min-h-11 items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-semibold"
         >
-          <span className={`${circle} bg-[#25D366] text-white`}>
-            <MessageCircle className="size-5" aria-hidden="true" />
-          </span>
-          WhatsApp
+          <Bike className="size-4" aria-hidden="true" /> Envoyer l&apos;adresse à un taxi-moto (WhatsApp)
         </a>
-      ) : (
-        <span className={`${item} opacity-40`} aria-disabled="true" title="WhatsApp non renseigné">
-          <span className={`${circle} bg-surface-2`}>
-            <MessageCircle className="size-5" aria-hidden="true" />
-          </span>
-          WhatsApp
-        </span>
       )}
-      {hasCoords ? (
-        <a
-          href={`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => recordPlaceEvent(place.id, "directions_request")}
-          className={item}
-        >
-          <span className={`${circle} bg-night dark:bg-surface-2 text-white`}>
-            <Navigation className="size-5" aria-hidden="true" />
-          </span>
-          Itinéraire
-        </a>
-      ) : (
-        <span className={`${item} opacity-40`} aria-disabled="true" title="Position GPS non renseignée">
-          <span className={`${circle} bg-surface-2`}>
-            <Navigation className="size-5" aria-hidden="true" />
-          </span>
-          Itinéraire
-        </span>
-      )}
-      <button type="button" onClick={share} className={item}>
-        <span className={`${circle} bg-surface-2`}>
-          {shared ? (
-            <Check className="text-success size-5" aria-hidden="true" />
-          ) : (
-            <Share2 className="size-5" aria-hidden="true" />
-          )}
-        </span>
-        {shared ? "Lien copié" : "Partager"}
-      </button>
-      <button
-        type="button"
-        aria-pressed={fav}
-        onClick={() => {
-          if (toggle(place)) recordPlaceEvent(place.id, "favorite_add");
-        }}
-        className={item}
-      >
-        <span
-          className={`${circle} transition-colors ${fav ? "bg-rose-500/15 text-rose-500" : "bg-surface-2"}`}
-        >
-          <Heart
-            className={`size-5 transition-transform ${fav ? "scale-110 fill-current" : ""}`}
-            aria-hidden="true"
-          />
-        </span>
-        {fav ? "Enregistré" : "Favori"}
-      </button>
     </div>
   );
 }

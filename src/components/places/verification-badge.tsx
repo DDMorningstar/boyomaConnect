@@ -34,3 +34,46 @@ export function VerificationBadge({
     </span>
   );
 }
+
+/** Fiche certifiée par Boyoma Connect (visite d'un agent ou vérification par l'équipe). */
+export const isBoyomaVerified = (status?: string | null) =>
+  status === "agent_verified" || status === "admin_verified";
+
+export const VERIFIED_LABEL = "Établissement vérifié par Boyoma Connect";
+
+/**
+ * Badge de certification, à la manière des réseaux sociaux : sceau bleu et coche blanche, placé juste
+ * après le nom. Réservé aux fiches vérifiées par Boyoma (terrain ou équipe), jamais déclaratif.
+ */
+export function VerifiedMark({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      role="img"
+      aria-label={VERIFIED_LABEL}
+      className={`inline-block shrink-0 align-[-0.15em] ${className}`}
+    >
+      <title>{VERIFIED_LABEL}</title>
+      <defs>
+        <linearGradient id="bc-verified" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#38bdf8" />
+          <stop offset="1" stopColor="#1d4ed8" />
+        </linearGradient>
+      </defs>
+      <path
+        fill="url(#bc-verified)"
+        d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"
+      />
+      <path
+        d="m8.5 12.2 2.4 2.4 4.6-4.8"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

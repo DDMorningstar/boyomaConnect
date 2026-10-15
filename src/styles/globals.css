@@ -258,3 +258,16 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Économie de données (html[data-saver="on"]) : pas d'animations ni d'effets coûteux. */
+html[data-saver="on"] *,
+html[data-saver="on"] *::before,
+html[data-saver="on"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  backdrop-filter: none !important;
+}
+html[data-saver="on"] [data-decor] {
+  display: none !important;
+}

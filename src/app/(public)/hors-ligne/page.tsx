@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { WifiOff } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
+import { OfflinePlaces } from "./offline-places";
 
 export const metadata: Metadata = { title: "Hors connexion", robots: { index: false } };
 export const dynamic = "force-static";
@@ -17,6 +18,7 @@ export default function OfflinePage() {
       <ButtonLink href="/favoris" className="mt-6">
         Voir mes favoris
       </ButtonLink>
+      <OfflinePlaces />
     </div>
   );
 }

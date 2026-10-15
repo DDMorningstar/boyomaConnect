@@ -200,7 +200,21 @@ export default async function PlacePage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(p)).replace(/</g, "\\u003c") }}
       />
-      <ViewTracker placeId={p.id} />
+      <ViewTracker
+        placeId={p.id}
+        offline={{
+          slug: p.slug,
+          name: p.name,
+          category: p.primary_category?.name ?? null,
+          locality: p.unit ? placeLocation(p.unit) : null,
+          phone,
+          whatsapp,
+          landmark: p.landmark_description,
+          address: p.address_text,
+          latitude: p.latitude,
+          longitude: p.longitude,
+        }}
+      />
 
       <div
         data-place-cover
@@ -447,7 +461,9 @@ export default async function PlacePage({ params }: Props) {
                       <p className="bg-surface-2 mt-2 rounded-xl p-3 text-sm">
                         <span className="font-semibold">
                           Réponse de l&apos;établissement
-                          {isBoyomaVerified(p.verification_status) && <VerifiedMark size={15} className="ml-1" />}
+                          {isBoyomaVerified(p.verification_status) && (
+                            <VerifiedMark size={15} className="ml-1" />
+                          )}
                           {r.owner_response_at && (
                             <span className="text-muted font-normal">
                               {" "}

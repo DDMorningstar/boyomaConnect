@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { PwaManager } from "@/components/layout/pwa";
 import { ThemeWatcher } from "@/components/layout/theme-toggle";
 import { themeInitScript } from "@/lib/theme";
+import { dataSaverInitScript } from "@/lib/data-saver-script";
 import { env } from "@/lib/env";
 import "@/styles/globals.css";
 
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={jakarta.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: dataSaverInitScript }} />
       </head>
       <body className="min-h-dvh font-sans antialiased">
         <ThemeWatcher />

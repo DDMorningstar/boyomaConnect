@@ -1,4 +1,5 @@
 "use client";
+import { useDataSaver } from "@/lib/data-saver";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Expand, X } from "lucide-react";
@@ -144,7 +145,23 @@ export function PhotoStrip({
   title?: ReactNode;
 }) {
   const [open, setOpen] = useState<number | null>(null);
+  const saver = useDataSaver();
+  const [reveal, setReveal] = useState(false);
   if (photos.length <= skip) return null;
+  if (saver && !reveal) {
+    return (
+      <section className="min-w-0">
+        {title}
+        <button
+          type="button"
+          onClick={() => setReveal(true)}
+          className="border-line bg-surface hover:bg-surface-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-dashed px-4 text-sm font-semibold"
+        >
+          Afficher les photos ({photos.length - skip}) · économie de données active
+        </button>
+      </section>
+    );
+  }
   return (
     <section className="min-w-0">
       {title}

@@ -1,4 +1,5 @@
 "use client";
+import { useDataSaver } from "@/lib/data-saver";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -32,7 +33,7 @@ export interface MapViewport {
 }
 
 /** Carte MapLibre : ne charge que les lieux de la zone visible, avec regroupement des marqueurs. */
-export function PlacesMap({ view, focusSlug }: { view?: MapViewport; focusSlug?: string }) {
+function PlacesMapInner({ view, focusSlug }: { view?: MapViewport; focusSlug?: string }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   // Vue au moment de la création de la carte ; les changements suivants la déplacent (flyTo).
@@ -320,4 +321,28 @@ export function PlacesMap({ view, focusSlug }: { view?: MapViewport; focusSlug?:
       )}
     </div>
   );
+}
+
+/** Carte, chargée à la demande quand l'économie de données est active (tuiles coûteuses). */
+export function PlacesMap(props: { view?: MapViewport; focusSlug?: string }) {
+  const saver = useDataSaver();
+  const [reveal, setReveal] = useState(false);
+  if (saver && !reveal) {
+    return (
+      <div className="border-line bg-surface flex min-h-[60dvh] flex-col items-center justify-center gap-3 rounded-[var(--radius-card)] border border-dashed p-6 text-center">
+        <p className="font-semibold">Économie de données active</p>
+        <p className="text-muted max-w-xs text-sm">
+          La carte consomme beaucoup de données mobiles. Affichez-la seulement si besoin.
+        </p>
+        <button
+          type="button"
+          onClick={() => setReveal(true)}
+          className="bg-brand hover:bg-brand-strong min-h-11 rounded-full px-5 text-sm font-semibold text-white"
+        >
+          Afficher la carte
+        </button>
+      </div>
+    );
+  }
+  return <PlacesMapInner {...props} />;
 }

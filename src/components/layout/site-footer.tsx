@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
+import { DataSaverToggle } from "@/components/layout/data-saver-toggle";
 
 const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
@@ -42,6 +43,7 @@ export function SiteFooter() {
             L&apos;annuaire des lieux de Kisangani et de la Tshopo : contacts, position, catalogue et
             itinéraire.
           </p>
+          <DataSaverToggle />
         </div>
         {COLUMNS.map((col) => (
           <nav key={col.title} aria-label={col.title} className="space-y-3 text-sm">

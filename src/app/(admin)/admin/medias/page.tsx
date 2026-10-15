@@ -25,7 +25,7 @@ export default async function MediaAdmin({
     <>
       <PageHeader
         title="Photos"
-        description="Photos envoyées hors fiche validée (collecte, contributions). Les photos des propriétaires validés sont publiées directement mais peuvent être retirées ici."
+        description="Photos envoyées hors fiche validée (collecte, photos proposées par les visiteurs). Les photos des propriétaires validés sont publiées directement mais peuvent être retirées ici."
       />
       <Tabs
         active={status}
@@ -66,7 +66,11 @@ export default async function MediaAdmin({
                   ) : (
                     <span className="text-muted">Lieu inconnu</span>
                   )}
-                  <p className="text-muted text-xs">{relativeTime(m.created_at)}</p>
+                  <p className="text-muted text-xs">
+                    {m.kind === "community" ? "Proposée par un visiteur · " : ""}
+                    {relativeTime(m.created_at)}
+                  </p>
+                  {m.caption && <p className="mt-1 text-xs">« {m.caption} »</p>}
                 </div>
                 <DecisionButtons
                   compact

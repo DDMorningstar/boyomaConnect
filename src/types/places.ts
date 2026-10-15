@@ -142,6 +142,8 @@ export interface PlaceDetail {
     caption: string | null;
     width: number | null;
     height: number | null;
+    /** Une photo proposée par un visiteur (kind « community ») n'est affichée qu'une fois approuvée. */
+    moderation_status: string;
   }[];
   place_amenity_links: { amenity: { key: string; name: string; icon: string } | null }[];
   /** Provenance d'un lieu importé (ex. OpenStreetMap) : attribution obligatoire. */

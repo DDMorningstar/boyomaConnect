@@ -312,7 +312,7 @@ export async function listMedia(status: string, page: number) {
   const { data, count } = await supabase
     .from("place_media")
     .select(
-      "id, storage_path, kind, moderation_status, created_at, uploaded_by, place:places (id, slug, name)",
+      "id, storage_path, kind, caption, moderation_status, created_at, uploaded_by, place:places (id, slug, name)",
       {
         count: "exact",
       },
@@ -325,6 +325,7 @@ export async function listMedia(status: string, page: number) {
       id: string;
       storage_path: string;
       kind: string;
+      caption: string | null;
       moderation_status: string;
       created_at: string;
       place: { id: string; slug: string; name: string } | null;

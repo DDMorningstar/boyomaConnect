@@ -1,10 +1,12 @@
 "use client";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Loader2, Star } from "lucide-react";
 import { FormMessage, inputClass, labelClass } from "@/components/forms/form-message";
 import { saveReview, type ReviewState } from "@/features/places/review-actions";
 import type { MyReview } from "@/features/places/engagement";
+import { celebrate } from "@/lib/celebrate";
+import { haptic } from "@/lib/haptics";
 
 type Props =
   | { placeId: string; slug: string; signedIn: false }
@@ -57,6 +59,12 @@ function Form({ placeId, review }: { placeId: string; review: MyReview | null })
   const [rating, setRating] = useState(review?.rating ?? 0);
   const [hover, setHover] = useState(0);
   const thisMonth = new Date().toISOString().slice(0, 7);
+
+  useEffect(() => {
+    if (!state?.ok) return;
+    haptic("success");
+    celebrate();
+  }, [state]);
 
   if (state?.ok) {
     return (

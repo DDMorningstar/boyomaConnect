@@ -6,6 +6,8 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { getCurrentPermissions, getCurrentProfile, getCurrentUser } from "@/features/auth/session";
 import { signOut } from "@/features/auth/actions";
 import { ThemeSelector } from "@/components/layout/theme-toggle";
+import { ContributorBadges } from "@/components/community/contributor-badges";
+import { getMyContributions } from "@/features/community/queries";
 import { PrivacySettings } from "./privacy-settings";
 import { ProfileForms } from "./profile-forms";
 
@@ -32,7 +34,11 @@ export default async function ProfilePage() {
     );
   }
 
-  const [profile, permissions] = await Promise.all([getCurrentProfile(), getCurrentPermissions()]);
+  const [profile, permissions, contributions] = await Promise.all([
+    getCurrentProfile(),
+    getCurrentPermissions(),
+    getMyContributions(),
+  ]);
   const canModerate = permissions.has("submissions.review") || permissions.has("claims.review");
   const row =
     "border-line bg-surface hover:bg-surface-2 flex items-center gap-3 rounded-2xl border p-4 font-semibold";
@@ -45,6 +51,8 @@ export default async function ProfilePage() {
         </p>
       )}
       <ProfileForms name={profile?.display_name ?? null} avatar={profile?.avatar_url ?? null} />
+
+      {contributions && <ContributorBadges contributions={contributions} />}
 
       <nav aria-label="Espaces" className="space-y-2">
         <Link href="/espace-pro" className={row}>

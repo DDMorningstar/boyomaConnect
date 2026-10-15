@@ -187,7 +187,7 @@ const PLACE_DETAIL_SELECT = `
   place_contacts (id, kind, value, label, is_primary, verified_at, sort_order),
   place_hours (day_of_week, opens_at, closes_at, is_closed),
   place_services (id, name, description, sort_order),
-  place_media (id, storage_path, kind, caption, width, height, sort_order),
+  place_media (id, storage_path, kind, caption, width, height, sort_order, moderation_status),
   place_amenity_links (amenity:place_amenities (key, name, icon)),
   place_external_refs (source, license, attribution, source_url),
   catalog_items (id, kind, name, description, category_label, price, currency, price_type, price_unit, availability,

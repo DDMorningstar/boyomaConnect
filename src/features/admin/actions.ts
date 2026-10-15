@@ -234,6 +234,7 @@ export async function adminModerateMedia(_: ReviewState, form: FormData): Promis
     });
     if (error) throw error;
     revalidatePath("/admin/medias");
+    revalidatePath("/lieux/[slug]", "page");
     return { ok: decision === "approved" ? "Photo approuvée." : "Photo refusée." };
   });
 }

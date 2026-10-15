@@ -28,6 +28,7 @@ import { ReportForm } from "@/components/places/report-form";
 import { ViewTracker } from "@/components/places/view-tracker";
 import { InquiryForm } from "@/components/places/inquiry-form";
 import { ReviewForm } from "@/components/places/review-form";
+import { SuggestPhoto } from "@/components/places/suggest-photo";
 import { getMyReviewState, getPlaceLiveInfo, kisanganiToday } from "@/features/places/engagement";
 import { getPlaceBySlug, getPublicReviews } from "@/features/places/queries";
 import { localityName, placeLocation } from "@/features/zones/zones";
@@ -183,6 +184,13 @@ export default async function PlacePage({ params }: Props) {
   ]
     .filter((path, i, all) => all.indexOf(path) === i)
     .map((path, i) => ({ src: placeMediaUrl(path)!, alt: `Photo ${i + 1} de ${p.name}` }));
+  // Photos des visiteurs : publiées seulement après modération, présentées à part.
+  const communityPhotos: ViewerPhoto[] = p.place_media
+    .filter((m) => m.kind === "community" && m.moderation_status === "approved")
+    .map((m, i) => ({
+      src: placeMediaUrl(m.storage_path)!,
+      alt: m.caption ? `${m.caption} (photo d'un visiteur)` : `Photo ${i + 1} d'un visiteur de ${p.name}`,
+    }));
   const logo = placeMediaUrl(p.logo_path);
   const heroPhoto = logo ? null : (photos[0] ?? null);
   const phone = p.place_contacts.find((c) => c.kind === "phone")?.value ?? null;
@@ -479,6 +487,25 @@ export default async function PlacePage({ params }: Props) {
             skip={heroPhoto ? 1 : 0}
             title={<h2 className="mb-2 text-lg font-bold">Photos ({photos.length})</h2>}
           />
+
+          <section id="photos" className="scroll-mt-24 space-y-3">
+            {communityPhotos.length > 0 && (
+              <PhotoStrip
+                photos={communityPhotos}
+                title={
+                  <h2 className="mb-2 text-lg font-bold">
+                    Photos des visiteurs ({communityPhotos.length})
+                  </h2>
+                }
+              />
+            )}
+            <SuggestPhoto
+              placeId={p.id}
+              slug={p.slug}
+              signedIn={myReview.signedIn}
+              isManager={myReview.signedIn ? myReview.isManager : false}
+            />
+          </section>
 
           <section id="avis" className="scroll-mt-24 space-y-3">
             <h2 className="text-lg font-bold">Avis</h2>

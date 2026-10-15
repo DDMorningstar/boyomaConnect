@@ -25,6 +25,7 @@ import { Empty, Panel, dateTime } from "./ui";
 import { ViewsChart } from "./views-chart";
 import { StoryComposer, type OwnerStory } from "./story-composer";
 import { PushToggle } from "@/components/push/push-toggle";
+import { Milestone } from "@/components/ui/milestone";
 
 type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ p?: string }> };
 
@@ -67,6 +68,18 @@ export default async function ConsoleDashboard({ params, searchParams }: Props) 
 
   return (
     <div className="space-y-5">
+      <Milestone
+        id={`place:${place.id}:published`}
+        reached={place.publication_status === "published"}
+        title="Votre fiche est en ligne !"
+        body="Les habitants de Kisangani peuvent maintenant vous trouver, vous appeler et vous écrire."
+      />
+      <Milestone
+        id={`place:${place.id}:complete`}
+        reached={score === 100}
+        title="Fiche complète à 100 % !"
+        body="Bravo : une fiche complète inspire confiance et donne aux visiteurs tout ce qu’il faut pour venir chez vous."
+      />
       {/* Statut du jour */}
       <div className="grid gap-3 sm:grid-cols-3">
         <StatusTile

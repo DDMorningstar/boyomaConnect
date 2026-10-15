@@ -57,6 +57,27 @@ npm run render:voix                                          # out/boyoma-connec
 
 Machine à 2 cœurs : les rendus utilisent `--gl=angle` (carte graphique), environ 2 fois plus rapide.
 
+## Tutoriel « Inscrire son établissement » (vertical, ~1 min 54, voix off)
+
+`src/Tuto.tsx` : 16 phrases (voix Hortense, `scripts/voice-tuto.ps1` → `src/voice-tuto.json`), barre des
+6 étapes (Vérifier, Compte, Fiche, Contacts, Photos, Validation), sous-titres karaoké, touchers animés, zooms
+sur chaque champ.
+
+- Écrans publics : vraies captures de production (`scripts/capture-tuto.mjs` : connexion, « Créer un compte »,
+  « Ajouter mon établissement » ; plus `search.png` et `home.png`).
+- Écrans réservés aux comptes connectés (formulaire « Créer la fiche de mon établissement », Espace pro) :
+  reconstitués d'après le code de l'application (mêmes titres, champs, boutons et messages). Aucune connexion
+  à un compte n'a été utilisée pour la vidéo.
+- Données d'exemple génériques : « Mon établissement », « vous@exemple.com », numéro masqué, catégorie
+  « Restaurants » et commune « Makiso » (réelles dans l'application).
+
+```bash
+node scripts/capture-tuto.mjs                                   # captures publiques
+powershell -ExecutionPolicy Bypass -File scripts/voice-tuto.ps1 # voix + src/voice-tuto.json
+node scripts/sfx.mjs                                            # nappe music-tuto.wav (120 s)
+npm run render:tuto                                             # out/boyoma-connect-tutoriel-inscription.mp4
+```
+
 ## Commandes
 
 ```bash

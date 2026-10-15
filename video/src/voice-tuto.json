@@ -1,0 +1,1034 @@
+[
+    {
+        "id":  "t1",
+        "words":  [
+                      {
+                          "text":  "Votre",
+                          "ms":  113
+                      },
+                      {
+                          "text":  "établissement",
+                          "ms":  519
+                      },
+                      {
+                          "text":  "sur",
+                          "ms":  1466
+                      },
+                      {
+                          "text":  "Boyoma",
+                          "ms":  1738
+                      },
+                      {
+                          "text":  "Connect",
+                          "ms":  2366
+                      },
+                      {
+                          "text":  "c\u0027est",
+                          "ms":  3397
+                      },
+                      {
+                          "text":  "gratuit",
+                          "ms":  3650
+                      },
+                      {
+                          "text":  "Voici",
+                          "ms":  5499
+                      },
+                      {
+                          "text":  "comment",
+                          "ms":  6061
+                      },
+                      {
+                          "text":  "faire",
+                          "ms":  6561
+                      },
+                      {
+                          "text":  "étape",
+                          "ms":  7309
+                      },
+                      {
+                          "text":  "par",
+                          "ms":  7728
+                      },
+                      {
+                          "text":  "étape",
+                          "ms":  7978
+                      }
+                  ],
+        "say":  "Votre établissement sur Boyoma Connect, c\u0027est gratuit. Voici comment faire, étape par étape.",
+        "show":  "Votre établissement sur Boyoma Connect, c\u0027est gratuit. Voici comment faire, étape par étape.",
+        "durationMs":  6982,
+        "file":  "voice/t1.wav"
+    },
+    {
+        "id":  "t2",
+        "words":  [
+                      {
+                          "text":  "Étape",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "un",
+                          "ms":  603
+                      },
+                      {
+                          "text":  "vérifiez",
+                          "ms":  1041
+                      },
+                      {
+                          "text":  "qu\u0027il",
+                          "ms":  1835
+                      },
+                      {
+                          "text":  "n\u0027existe",
+                          "ms":  2144
+                      },
+                      {
+                          "text":  "pas",
+                          "ms":  2962
+                      },
+                      {
+                          "text":  "déjà",
+                          "ms":  3159
+                      },
+                      {
+                          "text":  "Cherchez",
+                          "ms":  4810
+                      },
+                      {
+                          "text":  "son",
+                          "ms":  5454
+                      },
+                      {
+                          "text":  "nom",
+                          "ms":  5706
+                      },
+                      {
+                          "text":  "dans",
+                          "ms":  5974
+                      },
+                      {
+                          "text":  "l\u0027application",
+                          "ms":  6156
+                      }
+                  ],
+        "say":  "Étape un : vérifiez qu\u0027il n\u0027existe pas déjà. Cherchez son nom dans l\u0027application.",
+        "show":  "Étape un : vérifiez qu\u0027il n\u0027existe pas déjà. Cherchez son nom dans l\u0027application.",
+        "durationMs":  5966,
+        "file":  "voice/t2.wav"
+    },
+    {
+        "id":  "t3",
+        "words":  [
+                      {
+                          "text":  "S\u0027il",
+                          "ms":  112
+                      },
+                      {
+                          "text":  "existe",
+                          "ms":  451
+                      },
+                      {
+                          "text":  "ouvrez",
+                          "ms":  1454
+                      },
+                      {
+                          "text":  "sa",
+                          "ms":  1834
+                      },
+                      {
+                          "text":  "fiche",
+                          "ms":  2052
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  2495
+                      },
+                      {
+                          "text":  "touchez",
+                          "ms":  2600
+                      },
+                      {
+                          "text":  "Réclamez",
+                          "ms":  3474
+                      },
+                      {
+                          "text":  "cette",
+                          "ms":  4175
+                      },
+                      {
+                          "text":  "fiche",
+                          "ms":  4450
+                      }
+                  ],
+        "say":  "S\u0027il existe, ouvrez sa fiche et touchez : Réclamez cette fiche.",
+        "show":  "S\u0027il existe, ouvrez sa fiche et touchez « Réclamez cette fiche ».",
+        "durationMs":  4366,
+        "file":  "voice/t3.wav"
+    },
+    {
+        "id":  "t4",
+        "words":  [
+                      {
+                          "text":  "Étape",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "deux",
+                          "ms":  590
+                      },
+                      {
+                          "text":  "créez",
+                          "ms":  1170
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  1668
+                      },
+                      {
+                          "text":  "compte",
+                          "ms":  2024
+                      },
+                      {
+                          "text":  "Touchez",
+                          "ms":  3725
+                      },
+                      {
+                          "text":  "Compte",
+                          "ms":  4618
+                      },
+                      {
+                          "text":  "puis",
+                          "ms":  5401
+                      },
+                      {
+                          "text":  "Créer",
+                          "ms":  6093
+                      },
+                      {
+                          "text":  "un",
+                          "ms":  6562
+                      },
+                      {
+                          "text":  "compte",
+                          "ms":  6704
+                      }
+                  ],
+        "say":  "Étape deux : créez votre compte. Touchez : Compte, puis : Créer un compte.",
+        "show":  "Étape deux : créez votre compte. Touchez « Compte », puis « Créer un compte ».",
+        "durationMs":  6021,
+        "file":  "voice/t4.wav"
+    },
+    {
+        "id":  "t5",
+        "words":  [
+                      {
+                          "text":  "Indiquez",
+                          "ms":  115
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  703
+                      },
+                      {
+                          "text":  "nom",
+                          "ms":  1068
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  1627
+                      },
+                      {
+                          "text":  "e-mail",
+                          "ms":  2038
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  2405
+                      },
+                      {
+                          "text":  "un",
+                          "ms":  2573
+                      },
+                      {
+                          "text":  "mot",
+                          "ms":  2704
+                      },
+                      {
+                          "text":  "de",
+                          "ms":  2934
+                      },
+                      {
+                          "text":  "passe",
+                          "ms":  3090
+                      },
+                      {
+                          "text":  "d\u0027au",
+                          "ms":  3420
+                      },
+                      {
+                          "text":  "moins",
+                          "ms":  3619
+                      },
+                      {
+                          "text":  "huit",
+                          "ms":  3909
+                      },
+                      {
+                          "text":  "caractères",
+                          "ms":  4148
+                      },
+                      {
+                          "text":  "puis",
+                          "ms":  5313
+                      },
+                      {
+                          "text":  "acceptez",
+                          "ms":  5667
+                      },
+                      {
+                          "text":  "les",
+                          "ms":  6406
+                      },
+                      {
+                          "text":  "conditions",
+                          "ms":  6548
+                      }
+                  ],
+        "say":  "Indiquez votre nom, votre e-mail et un mot de passe d\u0027au moins huit caractères, puis acceptez les conditions.",
+        "show":  "Indiquez votre nom, votre e-mail et un mot de passe d\u0027au moins 8 caractères, puis acceptez les conditions.",
+        "durationMs":  6122,
+        "file":  "voice/t5.wav"
+    },
+    {
+        "id":  "t6",
+        "words":  [
+                      {
+                          "text":  "Ouvrez",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "l\u0027e-mail",
+                          "ms":  497
+                      },
+                      {
+                          "text":  "reçu",
+                          "ms":  990
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  1625
+                      },
+                      {
+                          "text":  "cliquez",
+                          "ms":  1766
+                      },
+                      {
+                          "text":  "sur",
+                          "ms":  2290
+                      },
+                      {
+                          "text":  "le",
+                          "ms":  2538
+                      },
+                      {
+                          "text":  "lien",
+                          "ms":  2680
+                      },
+                      {
+                          "text":  "de",
+                          "ms":  2972
+                      },
+                      {
+                          "text":  "confirmation",
+                          "ms":  3109
+                      },
+                      {
+                          "text":  "Vous",
+                          "ms":  5372
+                      },
+                      {
+                          "text":  "pouvez",
+                          "ms":  5600
+                      },
+                      {
+                          "text":  "aussi",
+                          "ms":  6010
+                      },
+                      {
+                          "text":  "continuer",
+                          "ms":  6494
+                      },
+                      {
+                          "text":  "avec",
+                          "ms":  7174
+                      },
+                      {
+                          "text":  "Google",
+                          "ms":  7530
+                      }
+                  ],
+        "say":  "Ouvrez l\u0027e-mail reçu et cliquez sur le lien de confirmation. Vous pouvez aussi continuer avec Google.",
+        "show":  "Ouvrez l\u0027e-mail reçu et cliquez sur le lien de confirmation. Vous pouvez aussi continuer avec Google.",
+        "durationMs":  6703,
+        "file":  "voice/t6.wav"
+    },
+    {
+        "id":  "t7",
+        "words":  [
+                      {
+                          "text":  "Étape",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "trois",
+                          "ms":  594
+                      },
+                      {
+                          "text":  "touchez",
+                          "ms":  1416
+                      },
+                      {
+                          "text":  "le",
+                          "ms":  1873
+                      },
+                      {
+                          "text":  "bouton",
+                          "ms":  2015
+                      },
+                      {
+                          "text":  "plus",
+                          "ms":  2477
+                      },
+                      {
+                          "text":  "puis",
+                          "ms":  3185
+                      },
+                      {
+                          "text":  "Créer",
+                          "ms":  3876
+                      },
+                      {
+                          "text":  "ma",
+                          "ms":  4339
+                      },
+                      {
+                          "text":  "fiche",
+                          "ms":  4544
+                      }
+                  ],
+        "say":  "Étape trois : touchez le bouton plus, puis : Créer ma fiche.",
+        "show":  "Étape trois : touchez le bouton « + », puis « Créer ma fiche ».",
+        "durationMs":  4468,
+        "file":  "voice/t7.wav"
+    },
+    {
+        "id":  "t8",
+        "words":  [
+                      {
+                          "text":  "Donnez",
+                          "ms":  111
+                      },
+                      {
+                          "text":  "le",
+                          "ms":  605
+                      },
+                      {
+                          "text":  "nom",
+                          "ms":  749
+                      },
+                      {
+                          "text":  "de",
+                          "ms":  980
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  1143
+                      },
+                      {
+                          "text":  "établissement",
+                          "ms":  1452
+                      },
+                      {
+                          "text":  "sa",
+                          "ms":  2696
+                      },
+                      {
+                          "text":  "catégorie",
+                          "ms":  2937
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  4042
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  4160
+                      },
+                      {
+                          "text":  "commune",
+                          "ms":  4532
+                      },
+                      {
+                          "text":  "ou",
+                          "ms":  5052
+                      },
+                      {
+                          "text":  "territoire",
+                          "ms":  5182
+                      }
+                  ],
+        "say":  "Donnez le nom de votre établissement, sa catégorie, et votre commune ou territoire.",
+        "show":  "Donnez le nom de votre établissement, sa catégorie, et votre commune ou territoire.",
+        "durationMs":  5273,
+        "file":  "voice/t8.wav"
+    },
+    {
+        "id":  "t9",
+        "words":  [
+                      {
+                          "text":  "Ajoutez",
+                          "ms":  108
+                      },
+                      {
+                          "text":  "une",
+                          "ms":  703
+                      },
+                      {
+                          "text":  "courte",
+                          "ms":  915
+                      },
+                      {
+                          "text":  "présentation",
+                          "ms":  1319
+                      },
+                      {
+                          "text":  "l\u0027adresse",
+                          "ms":  2672
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  3340
+                      },
+                      {
+                          "text":  "un",
+                          "ms":  3505
+                      },
+                      {
+                          "text":  "repère",
+                          "ms":  3664
+                      },
+                      {
+                          "text":  "par",
+                          "ms":  4587
+                      },
+                      {
+                          "text":  "exemple",
+                          "ms":  4863
+                      },
+                      {
+                          "text":  "en",
+                          "ms":  5902
+                      },
+                      {
+                          "text":  "face",
+                          "ms":  6038
+                      },
+                      {
+                          "text":  "du",
+                          "ms":  6457
+                      },
+                      {
+                          "text":  "marché",
+                          "ms":  6611
+                      },
+                      {
+                          "text":  "central",
+                          "ms":  7108
+                      }
+                  ],
+        "say":  "Ajoutez une courte présentation, l\u0027adresse et un repère : par exemple, en face du marché central.",
+        "show":  "Ajoutez une courte présentation, l\u0027adresse et un repère : par exemple, en face du marché central.",
+        "durationMs":  6544,
+        "file":  "voice/t9.wav"
+    },
+    {
+        "id":  "t10",
+        "words":  [
+                      {
+                          "text":  "Si",
+                          "ms":  112
+                      },
+                      {
+                          "text":  "vous",
+                          "ms":  390
+                      },
+                      {
+                          "text":  "êtes",
+                          "ms":  557
+                      },
+                      {
+                          "text":  "dans",
+                          "ms":  924
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  1136
+                      },
+                      {
+                          "text":  "établissement",
+                          "ms":  1445
+                      },
+                      {
+                          "text":  "touchez",
+                          "ms":  2687
+                      },
+                      {
+                          "text":  "Utiliser",
+                          "ms":  3546
+                      },
+                      {
+                          "text":  "ma",
+                          "ms":  4262
+                      },
+                      {
+                          "text":  "position",
+                          "ms":  4456
+                      },
+                      {
+                          "text":  "actuelle",
+                          "ms":  5166
+                      },
+                      {
+                          "text":  "pour",
+                          "ms":  6282
+                      },
+                      {
+                          "text":  "le",
+                          "ms":  6518
+                      },
+                      {
+                          "text":  "placer",
+                          "ms":  6673
+                      },
+                      {
+                          "text":  "sur",
+                          "ms":  7362
+                      },
+                      {
+                          "text":  "la",
+                          "ms":  7611
+                      },
+                      {
+                          "text":  "carte",
+                          "ms":  7754
+                      }
+                  ],
+        "say":  "Si vous êtes dans votre établissement, touchez : Utiliser ma position actuelle, pour le placer sur la carte.",
+        "show":  "Si vous êtes dans votre établissement, touchez « Utiliser ma position actuelle » pour le placer sur la carte.",
+        "durationMs":  6858,
+        "file":  "voice/t10.wav"
+    },
+    {
+        "id":  "t11",
+        "words":  [
+                      {
+                          "text":  "Étape",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "quatre",
+                          "ms":  595
+                      },
+                      {
+                          "text":  "vos",
+                          "ms":  1393
+                      },
+                      {
+                          "text":  "contacts",
+                          "ms":  1621
+                      },
+                      {
+                          "text":  "Le",
+                          "ms":  3660
+                      },
+                      {
+                          "text":  "téléphone",
+                          "ms":  3909
+                      },
+                      {
+                          "text":  "public",
+                          "ms":  4639
+                      },
+                      {
+                          "text":  "est",
+                          "ms":  5239
+                      },
+                      {
+                          "text":  "obligatoire",
+                          "ms":  5345
+                      },
+                      {
+                          "text":  "Ajoutez",
+                          "ms":  7724
+                      },
+                      {
+                          "text":  "aussi",
+                          "ms":  8380
+                      },
+                      {
+                          "text":  "WhatsApp",
+                          "ms":  8827
+                      },
+                      {
+                          "text":  "l\u0027e-mail",
+                          "ms":  9884
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  10371
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  10465
+                      },
+                      {
+                          "text":  "page",
+                          "ms":  10853
+                      },
+                      {
+                          "text":  "Facebook",
+                          "ms":  11266
+                      }
+                  ],
+        "say":  "Étape quatre : vos contacts. Le téléphone public est obligatoire. Ajoutez aussi WhatsApp, l\u0027e-mail et votre page Facebook.",
+        "show":  "Étape quatre : vos contacts. Le téléphone public est obligatoire. Ajoutez aussi WhatsApp, l\u0027e-mail et votre page Facebook.",
+        "durationMs":  9631,
+        "file":  "voice/t11.wav"
+    },
+    {
+        "id":  "t12",
+        "words":  [
+                      {
+                          "text":  "Étape",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "cinq",
+                          "ms":  590
+                      },
+                      {
+                          "text":  "ajoutez",
+                          "ms":  1406
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  1983
+                      },
+                      {
+                          "text":  "logo",
+                          "ms":  2334
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  2839
+                      },
+                      {
+                          "text":  "jusqu\u0027à",
+                          "ms":  2974
+                      },
+                      {
+                          "text":  "trois",
+                          "ms":  3448
+                      },
+                      {
+                          "text":  "photos",
+                          "ms":  3796
+                      },
+                      {
+                          "text":  "Elles",
+                          "ms":  5530
+                      },
+                      {
+                          "text":  "sont",
+                          "ms":  5755
+                      },
+                      {
+                          "text":  "optimisées",
+                          "ms":  6027
+                      },
+                      {
+                          "text":  "automatiquement",
+                          "ms":  6887
+                      }
+                  ],
+        "say":  "Étape cinq : ajoutez votre logo et jusqu\u0027à trois photos. Elles sont optimisées automatiquement.",
+        "show":  "Étape cinq : ajoutez votre logo et jusqu\u0027à 3 photos. Elles sont optimisées automatiquement.",
+        "durationMs":  6551,
+        "file":  "voice/t12.wav"
+    },
+    {
+        "id":  "t13",
+        "words":  [
+                      {
+                          "text":  "Étape",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "six",
+                          "ms":  588
+                      },
+                      {
+                          "text":  "touchez",
+                          "ms":  1402
+                      },
+                      {
+                          "text":  "Envoyer",
+                          "ms":  2263
+                      },
+                      {
+                          "text":  "pour",
+                          "ms":  2812
+                      },
+                      {
+                          "text":  "validation",
+                          "ms":  3075
+                      },
+                      {
+                          "text":  "Notre",
+                          "ms":  5181
+                      },
+                      {
+                          "text":  "équipe",
+                          "ms":  5595
+                      },
+                      {
+                          "text":  "vérifie",
+                          "ms":  6090
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  6750
+                      },
+                      {
+                          "text":  "fiche",
+                          "ms":  7106
+                      },
+                      {
+                          "text":  "avant",
+                          "ms":  7600
+                      },
+                      {
+                          "text":  "de",
+                          "ms":  7906
+                      },
+                      {
+                          "text":  "la",
+                          "ms":  8043
+                      },
+                      {
+                          "text":  "publier",
+                          "ms":  8177
+                      }
+                  ],
+        "say":  "Étape six : touchez : Envoyer pour validation. Notre équipe vérifie votre fiche avant de la publier.",
+        "show":  "Étape six : touchez « Envoyer pour validation ». Notre équipe vérifie votre fiche avant de la publier.",
+        "durationMs":  7206,
+        "file":  "voice/t13.wav"
+    },
+    {
+        "id":  "t14",
+        "words":  [
+                      {
+                          "text":  "Suivez",
+                          "ms":  115
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  678
+                      },
+                      {
+                          "text":  "demande",
+                          "ms":  1049
+                      },
+                      {
+                          "text":  "dans",
+                          "ms":  1582
+                      },
+                      {
+                          "text":  "l\u0027Espace",
+                          "ms":  1735
+                      },
+                      {
+                          "text":  "pro",
+                          "ms":  2301
+                      },
+                      {
+                          "text":  "Une",
+                          "ms":  3870
+                      },
+                      {
+                          "text":  "fois",
+                          "ms":  4113
+                      },
+                      {
+                          "text":  "validée",
+                          "ms":  4436
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  5309
+                      },
+                      {
+                          "text":  "fiche",
+                          "ms":  5759
+                      },
+                      {
+                          "text":  "apparaît",
+                          "ms":  6242
+                      },
+                      {
+                          "text":  "dans",
+                          "ms":  6765
+                      },
+                      {
+                          "text":  "l\u0027application",
+                          "ms":  6940
+                      }
+                  ],
+        "say":  "Suivez votre demande dans l\u0027Espace pro. Une fois validée, votre fiche apparaît dans l\u0027application.",
+        "show":  "Suivez votre demande dans l\u0027Espace pro. Une fois validée, votre fiche apparaît dans l\u0027application.",
+        "durationMs":  6542,
+        "file":  "voice/t14.wav"
+    },
+    {
+        "id":  "t15",
+        "words":  [
+                      {
+                          "text":  "Ensuite",
+                          "ms":  115
+                      },
+                      {
+                          "text":  "complétez",
+                          "ms":  1184
+                      },
+                      {
+                          "text":  "vos",
+                          "ms":  1876
+                      },
+                      {
+                          "text":  "horaires",
+                          "ms":  2066
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  2651
+                      },
+                      {
+                          "text":  "votre",
+                          "ms":  2751
+                      },
+                      {
+                          "text":  "catalogue",
+                          "ms":  3112
+                      },
+                      {
+                          "text":  "avec",
+                          "ms":  3785
+                      },
+                      {
+                          "text":  "vos",
+                          "ms":  4094
+                      },
+                      {
+                          "text":  "prix",
+                          "ms":  4322
+                      },
+                      {
+                          "text":  "et",
+                          "ms":  5023
+                      },
+                      {
+                          "text":  "répondez",
+                          "ms":  5148
+                      },
+                      {
+                          "text":  "aux",
+                          "ms":  5778
+                      },
+                      {
+                          "text":  "demandes",
+                          "ms":  5920
+                      },
+                      {
+                          "text":  "de",
+                          "ms":  6448
+                      },
+                      {
+                          "text":  "vos",
+                          "ms":  6620
+                      },
+                      {
+                          "text":  "clients",
+                          "ms":  6798
+                      }
+                  ],
+        "say":  "Ensuite, complétez vos horaires et votre catalogue avec vos prix, et répondez aux demandes de vos clients.",
+        "show":  "Ensuite, complétez vos horaires et votre catalogue avec vos prix, et répondez aux demandes de vos clients.",
+        "durationMs":  6072,
+        "file":  "voice/t15.wav"
+    },
+    {
+        "id":  "t16",
+        "words":  [
+                      {
+                          "text":  "Boyoma",
+                          "ms":  110
+                      },
+                      {
+                          "text":  "Connect",
+                          "ms":  786
+                      },
+                      {
+                          "text":  "Votre",
+                          "ms":  2717
+                      },
+                      {
+                          "text":  "établissement",
+                          "ms":  3116
+                      },
+                      {
+                          "text":  "visible",
+                          "ms":  4356
+                      },
+                      {
+                          "text":  "dans",
+                          "ms":  5000
+                      },
+                      {
+                          "text":  "toute",
+                          "ms":  5203
+                      },
+                      {
+                          "text":  "la",
+                          "ms":  5510
+                      },
+                      {
+                          "text":  "Tchopo",
+                          "ms":  5658
+                      },
+                      {
+                          "text":  "C\u0027est",
+                          "ms":  7436
+                      },
+                      {
+                          "text":  "gratuit",
+                          "ms":  7695
+                      }
+                  ],
+        "say":  "Boyoma Connect. Votre établissement, visible dans toute la Tchopo. C\u0027est gratuit.",
+        "show":  "Boyoma Connect. Votre établissement, visible dans toute la Tshopo. C\u0027est gratuit.",
+        "durationMs":  6881,
+        "file":  "voice/t16.wav"
+    }
+]

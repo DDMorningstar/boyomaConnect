@@ -10,7 +10,8 @@
     "render:gratuit:vertical": "remotion render src/index.ts Gratuit30-vertical out/boyoma-connect-gratuit-9x16.mp4 --codec h264 --crf 18 --gl=angle",
     "render:gratuit:carre": "remotion render src/index.ts Gratuit30-carre out/boyoma-connect-gratuit-1x1.mp4 --codec h264 --crf 18 --gl=angle",
     "render:gratuit:horizontal": "remotion render src/index.ts Gratuit30-horizontal out/boyoma-connect-gratuit-16x9.mp4 --codec h264 --crf 18 --gl=angle",
-    "render:voix": "remotion render src/index.ts Voix33 out/boyoma-connect-voix-9x16.mp4 --codec h264 --crf 18 --audio-codec aac --gl=angle"
+    "render:voix": "remotion render src/index.ts Voix33 out/boyoma-connect-voix-9x16.mp4 --codec h264 --crf 18 --audio-codec aac --gl=angle",
+    "render:tuto": "remotion render src/index.ts Tuto out/boyoma-connect-tutoriel-inscription.mp4 --codec h264 --crf 18 --audio-codec aac --gl=angle"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.535",

@@ -100,10 +100,10 @@ function bandpass(input, freqAt, q = 1.2) {
 }
 
 // Nappe musicale : accords (La m – Fa – Do – Sol) en sinus désaccordés + pulsation douce, 100 BPM.
-{
+// (pub 34 s ; tutoriel 120 s, pulsation plus légère)
+for (const [file, d, kick] of [["music.wav", 34, 0.55], ["music-tuto.wav", 120, 0.25]]) {
   const bpm = 100;
   const beat = 60 / bpm;
-  const d = 34;
   const s = buf(d);
   const note = (m) => 440 * 2 ** ((m - 69) / 12);
   const chords = [
@@ -126,12 +126,12 @@ function bandpass(input, freqAt, q = 1.2) {
     v *= env;
     // Pulsation grave sur chaque temps + souffle aigu sur les contretemps.
     const tb = t % beat;
-    v += Math.sin(2 * Math.PI * (45 + 60 * Math.exp(-tb * 30)) * tb) * Math.exp(-tb * 9) * 0.55;
+    v += Math.sin(2 * Math.PI * (45 + 60 * Math.exp(-tb * 30)) * tb) * Math.exp(-tb * 9) * kick;
     const off = (t + beat / 2) % beat;
     v += noise() * Math.exp(-off * 60) * 0.06;
     // Fondu d'entrée et de sortie.
     v *= Math.min(1, t / 1.5) * Math.min(1, (d - t) / 2.5);
     s[i] = v;
   }
-  wav("music.wav", Array.from(s));
+  wav(file, Array.from(s));
 }

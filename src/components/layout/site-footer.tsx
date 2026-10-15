@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
 import { DataSaverToggle } from "@/components/layout/data-saver-toggle";
+import { LanguageSelector } from "@/components/layout/language-selector";
 
 const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
@@ -44,6 +45,7 @@ export function SiteFooter() {
             itinéraire.
           </p>
           <DataSaverToggle />
+          <LanguageSelector compact />
         </div>
         {COLUMNS.map((col) => (
           <nav key={col.title} aria-label={col.title} className="space-y-3 text-sm">

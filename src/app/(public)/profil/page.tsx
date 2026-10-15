@@ -6,6 +6,7 @@ import { Button, ButtonLink } from "@/components/ui/button";
 import { getCurrentPermissions, getCurrentProfile, getCurrentUser } from "@/features/auth/session";
 import { signOut } from "@/features/auth/actions";
 import { ThemeSelector } from "@/components/layout/theme-toggle";
+import { LanguageSelector } from "@/components/layout/language-selector";
 import { ContributorBadges } from "@/components/community/contributor-badges";
 import { getMyContributions } from "@/features/community/queries";
 import { PrivacySettings } from "./privacy-settings";
@@ -28,6 +29,8 @@ export default async function ProfilePage() {
         </div>
         <h2>Apparence</h2>
         <ThemeSelector />
+        <h2>Langue · Monoko · Lugha</h2>
+        <LanguageSelector />
         <h2>Confidentialité sur cet appareil</h2>
         <PrivacySettings />
       </InfoPage>
@@ -82,6 +85,9 @@ export default async function ProfilePage() {
 
       <h2>Apparence</h2>
       <ThemeSelector />
+
+      <h2>Langue · Monoko · Lugha</h2>
+      <LanguageSelector />
 
       <h2>Confidentialité sur cet appareil</h2>
       <PrivacySettings />

@@ -4,6 +4,7 @@ import { PwaManager } from "@/components/layout/pwa";
 import { ThemeWatcher } from "@/components/layout/theme-toggle";
 import { themeInitScript } from "@/lib/theme";
 import { dataSaverInitScript } from "@/lib/data-saver-script";
+import { localeInitScript } from "@/lib/i18n";
 import { env } from "@/lib/env";
 import "@/styles/globals.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: dataSaverInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
       </head>
       <body className="min-h-dvh font-sans antialiased">
         <ThemeWatcher />

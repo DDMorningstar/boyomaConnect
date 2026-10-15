@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, MapPin, Mic, Search, Tag, X } from "lucide-react";
 import { haptic } from "@/lib/haptics";
+import { useLocale } from "@/lib/use-locale";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { addRecentSearch } from "@/features/search/recent-searches";
 
@@ -48,6 +49,7 @@ export function SearchBar({
   const router = useRouter();
   const listId = useId();
   const [value, setValue] = useState(defaultValue);
+  const { locale, t } = useLocale();
   const [items, setItems] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,7 +72,8 @@ export function SearchBar({
     haptic();
     setVoiceError(null);
     const rec = new Ctor();
-    rec.lang = "fr-FR";
+    // Pas de reconnaissance vocale lingala dans les navigateurs : français par défaut.
+    rec.lang = locale === "sw" ? "sw-TZ" : "fr-FR";
     rec.interimResults = false;
     rec.maxAlternatives = 1;
     rec.onresult = (e) => {
@@ -153,7 +156,7 @@ export function SearchBar({
       }}
     >
       <label htmlFor={`${listId}-input`} className="sr-only">
-        Rechercher un lieu, un service, une catégorie ou une commune
+        {t("search.label")}
       </label>
       <Search
         className="text-muted pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2"
@@ -167,7 +170,7 @@ export function SearchBar({
         autoFocus={autoFocus}
         value={value}
         maxLength={120}
-        placeholder="Pharmacie, hôtel, garage, quartier…"
+        placeholder={t("search.placeholder")}
         onChange={(e) => {
           setValue(e.target.value);
           setOpen(true);
@@ -197,7 +200,7 @@ export function SearchBar({
             type="button"
             onClick={() => setValue("")}
             className="text-muted hover:bg-surface-2 rounded-full p-1.5"
-            aria-label="Effacer"
+            aria-label={t("search.clear")}
           >
             <X className="size-4" />
           </button>

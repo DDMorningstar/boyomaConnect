@@ -2,16 +2,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PUBLIC_NAV } from "@/components/layout/nav-items";
+import { useLocale } from "@/lib/use-locale";
 
 export function BottomNav() {
   const pathname = usePathname() ?? "/";
+  const { t } = useLocale();
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={t("nav.main")}
       className="border-line bg-surface/90 fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] backdrop-blur-lg md:hidden"
     >
       <ul className="mx-auto grid max-w-lg grid-cols-5">
-        {PUBLIC_NAV.map(({ href, label, icon: Icon, match }) => {
+        {PUBLIC_NAV.map(({ href, key, icon: Icon, match }) => {
           const active = match(pathname);
           return (
             <li key={href}>
@@ -35,7 +37,7 @@ export function BottomNav() {
                     aria-hidden="true"
                   />
                 </span>
-                {label}
+                {t(key)}
               </Link>
             </li>
           );

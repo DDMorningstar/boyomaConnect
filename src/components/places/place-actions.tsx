@@ -6,6 +6,7 @@ import { recordPlaceEvent } from "@/features/places/events";
 import { useFavorites, type FavoriteSnapshot } from "@/features/favorites/store";
 import { toWhatsAppNumber } from "@/lib/format";
 import { haptic } from "@/lib/haptics";
+import { useLocale } from "@/lib/use-locale";
 
 interface Props {
   place: Omit<FavoriteSnapshot, "saved_at">;
@@ -39,6 +40,7 @@ export function rideMessage(p: {
 /** Actions principales d'une fiche. Chaque bouton déclenche une action réelle. */
 export function PlaceActions({ place, phone, whatsapp, latitude, longitude, address, locality }: Props) {
   const { isFavorite, toggle } = useFavorites();
+  const { t } = useLocale();
   const fav = isFavorite(place.id);
   const [shared, setShared] = useState(false);
   const wa = whatsapp ? toWhatsAppNumber(whatsapp) : null;
@@ -84,14 +86,14 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude, addr
             <span className={`${circle} bg-brand text-white`}>
               <Phone className="size-5" aria-hidden="true" />
             </span>
-            Appeler
+            {t("action.call")}
           </a>
         ) : (
           <span className={`${item} opacity-40`} aria-disabled="true" title="Numéro non renseigné">
             <span className={`${circle} bg-surface-2`}>
               <Phone className="size-5" aria-hidden="true" />
             </span>
-            Appeler
+            {t("action.call")}
           </span>
         )}
         {wa ? (
@@ -132,14 +134,14 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude, addr
             <span className={`${circle} bg-night dark:bg-surface-2 text-white`}>
               <Navigation className="size-5" aria-hidden="true" />
             </span>
-            Itinéraire
+            {t("action.directions")}
           </a>
         ) : (
           <span className={`${item} opacity-40`} aria-disabled="true" title="Position GPS non renseignée">
             <span className={`${circle} bg-surface-2`}>
               <Navigation className="size-5" aria-hidden="true" />
             </span>
-            Itinéraire
+            {t("action.directions")}
           </span>
         )}
         <button type="button" onClick={share} className={item}>
@@ -150,7 +152,7 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude, addr
               <Share2 className="size-5" aria-hidden="true" />
             )}
           </span>
-          {shared ? "Lien copié" : "Partager"}
+          {shared ? t("action.copied") : t("action.share")}
         </button>
         <button
           type="button"
@@ -171,7 +173,7 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude, addr
               aria-hidden="true"
             />
           </span>
-          {fav ? "Enregistré" : "Favori"}
+          {fav ? t("action.saved") : t("action.save")}
         </button>
       </div>
       {ride && (
@@ -185,7 +187,7 @@ export function PlaceActions({ place, phone, whatsapp, latitude, longitude, addr
           }}
           className="border-line bg-surface hover:bg-surface-2 flex min-h-11 items-center justify-center gap-2 rounded-2xl border px-4 text-sm font-semibold"
         >
-          <Bike className="size-4" aria-hidden="true" /> Envoyer l&apos;adresse à un taxi-moto (WhatsApp)
+          <Bike className="size-4" aria-hidden="true" /> {t("action.ride")}
         </a>
       )}
     </div>
@@ -213,6 +215,7 @@ export function StickyPlaceActions({
   longitude: number | null;
   watchId: string;
 }) {
+  const { t } = useLocale();
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
   const wa = whatsapp ? toWhatsAppNumber(whatsapp) : null;
@@ -251,7 +254,7 @@ export function StickyPlaceActions({
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => recordPlaceEvent(placeId, "directions_request")}
-          aria-label="Itinéraire"
+          aria-label={t("action.directions")}
           className={`${btn} bg-night dark:bg-surface-2 text-white`}
         >
           <Navigation className="size-5" aria-hidden="true" />
@@ -275,7 +278,7 @@ export function StickyPlaceActions({
           onClick={() => recordPlaceEvent(placeId, "phone_click")}
           className="bg-brand inline-flex h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-semibold text-white transition-transform active:scale-95"
         >
-          <Phone className="size-4" aria-hidden="true" /> Appeler
+          <Phone className="size-4" aria-hidden="true" /> {t("action.call")}
         </a>
       )}
     </div>,

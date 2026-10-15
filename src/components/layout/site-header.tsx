@@ -9,6 +9,7 @@ import { PUBLIC_NAV } from "@/components/layout/nav-items";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Avatar } from "@/components/ui/avatar";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useLocale } from "@/lib/use-locale";
 
 interface Account {
   name: string | null;
@@ -43,12 +44,13 @@ function useAccount() {
 export function SiteHeader() {
   const pathname = usePathname() ?? "/";
   const account = useAccount();
+  const { t } = useLocale();
   return (
     <header className="border-line/70 bg-bg/80 sticky top-0 z-30 border-b backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
         <Logo />
-        <nav aria-label="Navigation principale" className="hidden items-center gap-1 md:flex">
-          {PUBLIC_NAV.filter((n) => n.href !== "/profil").map(({ href, label, match }) => (
+        <nav aria-label={t("nav.main")} className="hidden items-center gap-1 md:flex">
+          {PUBLIC_NAV.filter((n) => n.href !== "/profil").map(({ href, key, match }) => (
             <Link
               key={href}
               href={href}
@@ -57,7 +59,7 @@ export function SiteHeader() {
                 match(pathname) ? "bg-brand/10 text-brand" : "text-muted hover:text-ink hover:bg-surface-2"
               }`}
             >
-              {label}
+              {t(key)}
             </Link>
           ))}
         </nav>
@@ -67,7 +69,7 @@ export function SiteHeader() {
           {account ? (
             <Link
               href="/profil"
-              aria-label="Mon compte"
+              aria-label={t("header.myAccount")}
               className="hover:ring-brand/40 hidden rounded-full ring-2 ring-transparent transition md:block"
             >
               <Avatar src={account.avatar} name={account.name} size={40} />
@@ -77,7 +79,7 @@ export function SiteHeader() {
               href={`/connexion?next=${encodeURIComponent(pathname)}`}
               className="border-line bg-surface hover:bg-surface-2 hidden min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold md:inline-flex"
             >
-              <LogIn className="size-4" aria-hidden="true" /> Se connecter
+              <LogIn className="size-4" aria-hidden="true" /> {t("header.signIn")}
             </Link>
           ) : null}
           <Link
@@ -85,8 +87,8 @@ export function SiteHeader() {
             className="bg-night dark:bg-brand inline-flex min-h-10 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5 active:scale-95"
           >
             <Plus className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Ajouter un lieu</span>
-            <span className="sr-only sm:hidden">Ajouter un lieu</span>
+            <span className="hidden sm:inline">{t("header.addPlace")}</span>
+            <span className="sr-only sm:hidden">{t("header.addPlace")}</span>
           </Link>
         </div>
       </div>

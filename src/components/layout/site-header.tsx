@@ -8,7 +8,7 @@ import { NotificationBell } from "@/components/layout/notification-bell";
 import { PUBLIC_NAV } from "@/components/layout/nav-items";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Avatar } from "@/components/ui/avatar";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { loadSupabaseBrowserClient } from "@/lib/supabase/lazy";
 import { useLocale } from "@/lib/use-locale";
 
 interface Account {
@@ -20,22 +20,26 @@ interface Account {
 function useAccount() {
   const [account, setAccount] = useState<Account | null | undefined>(undefined);
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
     let active = true;
-    async function load(userId: string | undefined) {
-      if (!userId) return active && setAccount(null);
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", userId)
-        .maybeSingle();
-      if (active) setAccount({ name: data?.display_name ?? null, avatar: data?.avatar_url ?? null });
-    }
-    supabase.auth.getSession().then(({ data }) => load(data.session?.user.id));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => load(session?.user.id));
+    let unsubscribe: (() => void) | undefined;
+    void loadSupabaseBrowserClient().then((supabase) => {
+      if (!active) return;
+      async function load(userId: string | undefined) {
+        if (!userId) return active && setAccount(null);
+        const { data } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url")
+          .eq("id", userId)
+          .maybeSingle();
+        if (active) setAccount({ name: data?.display_name ?? null, avatar: data?.avatar_url ?? null });
+      }
+      supabase.auth.getSession().then(({ data }) => load(data.session?.user.id));
+      const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => load(session?.user.id));
+      unsubscribe = () => sub.subscription.unsubscribe();
+    });
     return () => {
       active = false;
-      sub.subscription.unsubscribe();
+      unsubscribe?.();
     };
   }, []);
   return account;

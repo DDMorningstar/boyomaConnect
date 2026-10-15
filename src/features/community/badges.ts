@@ -23,13 +23,62 @@ export interface BadgeDef {
 export const total = (c: Contributions) => c.reviews + c.photos + c.reports + c.places;
 
 export const BADGES: BadgeDef[] = [
-  { key: "first-review", label: "Premier avis", description: "Un avis publié", icon: "star", goal: 1, count: (c) => c.reviews },
-  { key: "critic", label: "Critique local", description: "10 avis publiés", icon: "star", goal: 10, count: (c) => c.reviews },
-  { key: "first-photo", label: "Œil de Boyoma", description: "Une photo publiée", icon: "camera", goal: 1, count: (c) => c.photos },
-  { key: "photographer", label: "Photographe du quartier", description: "10 photos publiées", icon: "camera", goal: 10, count: (c) => c.photos },
-  { key: "guardian", label: "Gardien des fiches", description: "Un signalement d'erreur traité", icon: "shield", goal: 1, count: (c) => c.reports },
-  { key: "scout", label: "Éclaireur", description: "Un établissement ajouté et validé", icon: "map", goal: 1, count: (c) => c.places },
-  { key: "pillar", label: "Pilier de Boyoma", description: "25 contributions validées", icon: "trophy", goal: 25, count: total },
+  {
+    key: "first-review",
+    label: "Premier avis",
+    description: "Un avis publié",
+    icon: "star",
+    goal: 1,
+    count: (c) => c.reviews,
+  },
+  {
+    key: "critic",
+    label: "Critique local",
+    description: "10 avis publiés",
+    icon: "star",
+    goal: 10,
+    count: (c) => c.reviews,
+  },
+  {
+    key: "first-photo",
+    label: "Œil de Boyoma",
+    description: "Une photo publiée",
+    icon: "camera",
+    goal: 1,
+    count: (c) => c.photos,
+  },
+  {
+    key: "photographer",
+    label: "Photographe du quartier",
+    description: "10 photos publiées",
+    icon: "camera",
+    goal: 10,
+    count: (c) => c.photos,
+  },
+  {
+    key: "guardian",
+    label: "Gardien des fiches",
+    description: "Un signalement d'erreur traité",
+    icon: "shield",
+    goal: 1,
+    count: (c) => c.reports,
+  },
+  {
+    key: "scout",
+    label: "Éclaireur",
+    description: "Un établissement ajouté et validé",
+    icon: "map",
+    goal: 1,
+    count: (c) => c.places,
+  },
+  {
+    key: "pillar",
+    label: "Pilier de Boyoma",
+    description: "25 contributions validées",
+    icon: "trophy",
+    goal: 25,
+    count: total,
+  },
 ];
 
 export interface BadgeProgress {

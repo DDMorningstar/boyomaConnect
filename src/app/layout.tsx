@@ -5,6 +5,7 @@ import { ThemeWatcher } from "@/components/layout/theme-toggle";
 import { themeInitScript } from "@/lib/theme";
 import { dataSaverInitScript } from "@/lib/data-saver-script";
 import { localeInitScript } from "@/lib/i18n";
+import { WebVitals } from "@/components/layout/web-vitals";
 import { env } from "@/lib/env";
 import "@/styles/globals.css";
 
@@ -46,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-dvh font-sans antialiased">
         <ThemeWatcher />
+        <WebVitals />
         <a
           href="#contenu"
           className="focus:bg-brand sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:rounded-full focus:px-4 focus:py-2 focus:text-white"

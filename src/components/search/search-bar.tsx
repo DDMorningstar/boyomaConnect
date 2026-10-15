@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, MapPin, Mic, Search, Tag, X } from "lucide-react";
 import { haptic } from "@/lib/haptics";
 import { useLocale } from "@/lib/use-locale";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { loadSupabaseBrowserClient } from "@/lib/supabase/lazy";
 import { addRecentSearch } from "@/features/search/recent-searches";
 
 interface Suggestion {
@@ -111,7 +111,7 @@ export function SearchBar({
       const controller = new AbortController();
       abortRef.current = controller;
       setLoading(true);
-      const { data, error } = await getSupabaseBrowserClient()
+      const { data, error } = await (await loadSupabaseBrowserClient())
         .rpc("search_suggestions", { p_query: q, p_limit: 8 })
         .abortSignal(controller.signal);
       if (controller.signal.aborted) return;

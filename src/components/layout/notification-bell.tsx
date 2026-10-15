@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { loadSupabaseBrowserClient } from "@/lib/supabase/lazy";
 
 /** Cloche des notifications (compte connecté) : nombre de non lues, rafraîchi à chaque navigation. */
 export function NotificationBell() {
@@ -11,11 +11,13 @@ export function NotificationBell() {
   const [unread, setUnread] = useState(0);
   useEffect(() => {
     let active = true;
-    void getSupabaseBrowserClient()
-      .from("notifications")
-      .select("id", { count: "exact", head: true })
-      .is("read_at", null)
-      .then(({ count }) => active && setUnread(count ?? 0));
+    void loadSupabaseBrowserClient().then((supabase) =>
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .is("read_at", null)
+        .then(({ count }) => active && setUnread(count ?? 0)),
+    );
     return () => {
       active = false;
     };

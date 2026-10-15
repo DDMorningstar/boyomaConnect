@@ -38,7 +38,8 @@ const fr = {
   "action.saved": "Enregistré",
   "action.ride": "Envoyer l'adresse à un taxi-moto (WhatsApp)",
   "lang.title": "Langue",
-  "lang.note": "Lingala et swahili : navigation, recherche et boutons des fiches. Traduction en cours de relecture.",
+  "lang.note":
+    "Lingala et swahili : navigation, recherche et boutons des fiches. Traduction en cours de relecture.",
 } as const;
 
 export type MessageKey = keyof typeof fr;

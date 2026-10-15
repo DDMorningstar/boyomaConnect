@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Flag, Loader2 } from "lucide-react";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { loadSupabaseBrowserClient } from "@/lib/supabase/lazy";
 
 const REASONS = [
   ["wrong_info", "Informations incorrectes"],
@@ -23,7 +23,7 @@ export function ReportForm({ placeId }: { placeId: string }) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     setState("sending");
-    const { error } = await getSupabaseBrowserClient().rpc("report_place", {
+    const { error } = await (await loadSupabaseBrowserClient()).rpc("report_place", {
       p_place_id: placeId,
       p_reason: String(form.get("reason")),
       p_details: String(form.get("details") ?? "").slice(0, 2000) || null,

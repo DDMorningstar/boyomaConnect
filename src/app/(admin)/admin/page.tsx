@@ -18,6 +18,7 @@ import { ActivityChart, BarList } from "@/components/admin/activity-chart";
 import { Card, CardHeader, EmptyState, PageHeader, StatCard, relativeTime } from "@/components/admin/ui";
 import { requireAdmin } from "@/features/admin/access";
 import { getDashboard } from "@/features/admin/queries";
+import { VitalsCard } from "@/components/admin/vitals-card";
 
 export const metadata = { title: "Tableau de bord" };
 
@@ -261,6 +262,8 @@ export default async function AdminDashboard() {
           )}
         </Card>
       </div>
+
+      <VitalsCard />
 
       <p className="text-muted mt-6 flex items-center gap-1.5 text-xs">
         <ShoppingBag className="size-3.5" aria-hidden="true" /> Données réelles de la base (événements

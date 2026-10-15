@@ -1,6 +1,25 @@
-# Avancement — mis à jour le 11/10/2026
+# Avancement — mis à jour le 15/10/2026
 
 ## Réellement exécuté et vérifié
+
+### Expérience « aimante » (15/10/2026, D34–D37)
+
+- Badge « vérifié » (fiche, cartes, console, images de partage) — visible seulement après vérification
+  (Admin → Vérifications ; 0 fiche vérifiée à ce jour). Vraie 404 pour les fiches inexistantes (vérifiée).
+- Taxi-moto (adresse via WhatsApp), collections partageables, recherche vocale, invitation à installer,
+  vibrations ; économiseur de données et fiches consultées hors ligne (test navigateur OK).
+- Nouveauté du jour, « Répond vite », bilan hebdomadaire (cron lundi 7 h), notifications push
+  (testées en transaction annulée et chiffrement vérifié ; envoi réel non testé faute de clés VAPID).
+- Photos proposées par les visiteurs + modération + notification : testé en base (transaction annulée :
+  chemin invalide refusé, propriétaire bloqué, notification créée, compteur à jour) ; rendu de la fiche vérifié.
+  Envoi réel d'une photo non testé (nécessite un compte connecté).
+- Badges de contributeur (/profil), confettis (avis, photo, fiche en ligne, fiche complète), états vides illustrés.
+- Recherche tolérante : « farmacie », « restorant », « nganda », « zando », « dawa », « lopitalo » passent
+  de 0 résultat à des résultats pertinents ; recherches exactes inchangées (vérifié en base et navigateur).
+- Interface lingala / swahili (navigation, recherche, actions) : test navigateur OK (bascule, `<html lang>`).
+- Lighthouse mobile (production, avant optimisation) : performance 56–66, accessibilité 96–97,
+  bonnes pratiques 96–100, SEO 91–100 ; LCP 3,4–4,8 s ; réponse serveur 0,6–2,4 s (région iad1 ≠ Paris).
+  Correctifs : région `cdg1`, supabase-js à la demande, mesure réelle (Admin → tableau de bord).
 
 - Projet Supabase `boyoma-connect` créé (plan gratuit, eu-west-3).
 - 9 migrations appliquées sans erreur : extensions/PostGIS, identité & permissions, géographie (Tshopo,
@@ -131,12 +150,17 @@
 
 ## Non testé
 
-- Rendu visuel réel, Lighthouse, Web Vitals (aucune mesure effectuée).
+- Web Vitals réels : la collecte démarre au déploiement (voir tableau de bord admin).
+- Traductions lingala et swahili, synonymes ln/sw : à faire relire par des locuteurs natifs.
 - Carte (dépend du fournisseur de tuiles), géolocalisation, installation PWA, Service Worker.
 - Parcours connecté complet (connexion Google réelle, création, validation, gestion, envoi d'images) :
   dépend de l'activation du fournisseur Google dans Supabase (voir DEPLOYMENT.md).
 
 ## Blocages / actions humaines
+
+- Notifications push : générer une paire de clés (`npx web-push generate-vapid-keys`) et renseigner sur Vercel
+  `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (mailto:), puis redéployer.
+  Le bilan hebdomadaire utilise le `CRON_SECRET` existant.
 
 - Malipo : renseigner sur Vercel `SUPABASE_SECRET_KEY`, `MALIPO_API_KEY` (sk_test_), `MALIPO_WEBHOOK_SECRET`,
   `CRON_SECRET`, déclarer l'URL du webhook, lancer `scripts/malipo-sandbox-test.mjs` (voir MALIPO_INTEGRATION.md).

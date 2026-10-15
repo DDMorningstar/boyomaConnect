@@ -69,8 +69,8 @@ export default async function ConsoleLayout({
           Voir ma fiche <ExternalLink className="size-3.5" aria-hidden="true" />
         </Link>
       </header>
-      <div className="grid gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
-        <aside className="lg:sticky lg:top-20 lg:self-start">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <aside className="min-w-0 lg:sticky lg:top-20 lg:self-start">
           <ConsoleNav base={base} newInquiries={newInquiries} />
         </aside>
         <div className="min-w-0">{children}</div>

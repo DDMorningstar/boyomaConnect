@@ -71,6 +71,12 @@ export function SearchBar({
   const recRef = useRef<Recognition | null>(null);
 
   useEffect(() => setCanSpeak(speechCtor() !== null), []);
+  // Le message d'erreur vocale disparaît seul (bulle flottante, sans décaler la page).
+  useEffect(() => {
+    if (!voiceError) return;
+    const timer = setTimeout(() => setVoiceError(null), 6000);
+    return () => clearTimeout(timer);
+  }, [voiceError]);
 
   function listen() {
     const Ctor = speechCtor();
@@ -120,7 +126,9 @@ export function SearchBar({
       const controller = new AbortController();
       abortRef.current = controller;
       setLoading(true);
-      const { data, error } = await (await loadSupabaseBrowserClient())
+      const { data, error } = await (
+        await loadSupabaseBrowserClient()
+      )
         .rpc("search_suggestions", { p_query: q, p_limit: 8 })
         .abortSignal(controller.signal);
       if (controller.signal.aborted) return;
@@ -179,9 +187,10 @@ export function SearchBar({
         autoFocus={autoFocus}
         value={value}
         maxLength={120}
-        placeholder={t("search.placeholder")}
+        placeholder={listening ? "Je vous écoute… parlez maintenant" : t("search.placeholder")}
         onChange={(e) => {
           setValue(e.target.value);
+          setVoiceError(null);
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
@@ -199,7 +208,7 @@ export function SearchBar({
         aria-expanded={open && items.length > 0}
         aria-controls={listId}
         aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-        className={`border-line bg-surface placeholder:text-muted focus:border-brand/50 focus:ring-brand/10 w-full rounded-2xl border pr-12 pl-12 shadow-[var(--shadow-card)] transition-shadow outline-none focus:ring-4 ${height}`}
+        className={`border-line bg-surface placeholder:text-muted focus:border-brand/50 focus:ring-brand/10 w-full rounded-2xl border pr-12 pl-12 shadow-[var(--shadow-card)] transition-shadow outline-none focus:ring-4 ${listening ? "border-brand ring-brand/15 placeholder:text-brand ring-4" : ""} ${height}`}
       />
       <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center">
         {loading ? (
@@ -226,9 +235,16 @@ export function SearchBar({
         ) : null}
       </div>
 
-      {(listening || voiceError) && (
-        <p role="status" className="text-muted mt-2 text-center text-sm">
-          {listening ? "Je vous écoute… dites par exemple « pharmacie Makiso »." : voiceError}
+      {/* Annonce pour les lecteurs d'écran ; à l'écran, l'état d'écoute est dans le champ (aucun décalage). */}
+      <p role="status" className="sr-only">
+        {listening ? "Je vous écoute… dites par exemple « pharmacie Makiso »." : (voiceError ?? "")}
+      </p>
+      {voiceError && !listening && (
+        <p
+          aria-hidden="true"
+          className="animate-fade-up border-line bg-surface text-muted absolute inset-x-0 top-full z-50 mt-2 rounded-2xl border px-4 py-2.5 text-center text-sm shadow-[var(--shadow-float)]"
+        >
+          {voiceError}
         </p>
       )}
       {open && items.length > 0 && (

@@ -26,6 +26,16 @@ type Recognition = {
   stop: () => void;
 };
 type RecognitionCtor = new () => Recognition;
+
+/** Causes d'échec de la reconnaissance vocale, expliquées au visiteur. */
+const VOICE_ERRORS: Record<string, string> = {
+  "not-allowed": "Micro bloqué : autorisez-le pour ce site dans les réglages du navigateur.",
+  "service-not-allowed": "La recherche vocale n'est pas disponible dans ce navigateur. Essayez Chrome.",
+  "audio-capture": "Aucun micro détecté sur cet appareil.",
+  network: "La recherche vocale a besoin d'Internet. Vérifiez votre connexion.",
+  "no-speech": "Je n'ai rien entendu. Appuyez sur le micro et parlez.",
+  "language-not-supported": "Cette langue n'est pas reconnue à la voix sur cet appareil.",
+};
 /** Reconnaissance vocale du navigateur (Chrome Android notamment) ; null si indisponible. */
 function speechCtor(): RecognitionCtor | null {
   if (typeof window === "undefined") return null;
@@ -83,12 +93,10 @@ export function SearchBar({
         submit(text);
       }
     };
-    rec.onerror = (e) =>
-      setVoiceError(
-        e.error === "not-allowed"
-          ? "Autorisez le micro pour chercher à la voix."
-          : "Je n'ai pas compris, réessayez.",
-      );
+    rec.onerror = (e) => {
+      if (e.error === "aborted") return;
+      setVoiceError(VOICE_ERRORS[e.error] ?? "Je n'ai pas compris, réessayez.");
+    };
     rec.onend = () => setListening(false);
     recRef.current = rec;
     setListening(true);
@@ -96,6 +104,7 @@ export function SearchBar({
       rec.start();
     } catch {
       setListening(false);
+      setVoiceError("Le micro n'a pas pu démarrer. Réessayez.");
     }
   }
 
